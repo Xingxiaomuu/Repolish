@@ -37,7 +37,8 @@ ENV PATH="/usr/local/lib/python3.12/site-packages/bin:/usr/local/bin:$PATH"
 WORKDIR /app/html-ppt-app/backend
 
 COPY html-ppt-app/backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir --force-reinstall bcrypt==4.0.1
 
 # ── Copy application code ────────────────────────────────────────────
 # Project root files (CLAUDE.md, .gitignore, etc.)
