@@ -1,0 +1,319 @@
+ACT NOW — use the Skill tool immediately to invoke html-ppt. Then use Write to create the index.html file.
+
+【Task】Generate an HTML presentation following a detailed slide-by-slide plan. Each slide has specific source context — use it, do NOT summarize it away.
+
+【Output Directory】You MUST write index.html and all assets to: C:\Users\User\OneDrive\Documents\GitHub\My-projects\Slidehttp\html-ppt-app\backend\outputs\20260525_143807_612090
+
+【Topic】2026 Flagship Smartphone Comparison
+
+【Language】English
+
+【Style Requirements】暗色
+
+【Audience】Consumer
+
+【Extra Requirements】Do a buying recommendation
+
+【No Web Research】
+Use ONLY the report content provided by the user. Do not search the web.
+- Base all slides on the user's content, data, and structure.
+- Do not fabricate or supplement data with external knowledge.
+- If the content lacks specific data, use "Data pending" rather than guessing.
+
+【Deck Type】reading deck
+- Target slide count: 10
+- Do NOT fabricate data. If a slide's source_context lacks data, write "Data pending — to be supplemented" rather than making up numbers.
+- Preserve original company names, technology names, region names, and metrics exactly as they appear in the source context.
+- This is a reading deck. Prioritize information density over visual flair.
+
+【Deck Plan — Slide Structure】
+Slide 1: 2026 Flagship Smartphone Comparison: iPhone 17 Pro Max vs Samsung S26 Ultra vs Huawei Mate 80 Pro
+  Layout: cover | Sources: (cover/toc)
+  Goal: Present the report title, date, and key highlights to set context.
+  Key points: (see source context)
+
+Slide 2: Table of Contents
+  Layout: toc | Sources: (cover/toc)
+  Goal: Provide an overview of the report structure.
+  Key points: 2026 Flagship Smartphone Comparison: iPhone 17 Pro Max vs Samsung S26 Ultra vs Huawei Mate 80 Pro; Performance analysis:; Hardware analysis:
+
+Slide 3: 2026 Flagship Smartphone Comparison: iPhone 17 Pro Max vs Samsung S26 Ultra vs Huawei Mate 80 Pro
+  Layout: two-column | Sources: S1
+  Goal: Cover multiple related sections. Keep original data, company names, and metrics intact.
+  Key points: 2026 Flagship Smartphone Comparison: iPhone 17 Pro Max vs Samsung S26 Ultra vs Huawei Mate 80 Pro
+I.; Core Performance Comparison
+Aspect	Apple iPhone 17 Pro Max	Samsung Galaxy S26 Ultra	Huawei Mate 80 Pro / Pro Max
+Processor	Apple A19 Pro (3nm)	Snapdragon 8 Gen 5 for Galaxy (2nm)	Kirin 9030 / 9030 Pro
+CPU Architecture	Hexa-core (2x 4.26GHz + 4x efficiency)	Octa-core (2x 4.74GHz Prime + 6x 3.62GHz performance)	Octa-core (exact clocks undisclosed)
+GPU	A19 Pro GPU	Adreno 840	Kirin Maleoon architecture
+RAM	12GB LPDDR5X	12GB / 16GB (512GB/1TB models)	12GB / 16GB
+AnTuTu V10	~2,319,000	>3,720,000	~940,000 (HarmonyOS 6 environment)
+Geekbench 6 (single)	Not disclosed	~3,818	~1,706 (effective ~1,774 after scaling)
+Geekbench 6 (multi)	Not disclosed	~11,214	~5,479 (effective ~7,122 after scaling)
+Manufacturing process	3nm	2nm	Not disclosed
+
+Slide 4: Performance analysis:
+  Layout: kpi-grid | Sources: S2
+  Goal: Cover multiple related sections. Keep original data, company names, and metrics intact.
+  Key points: Performance analysis:
+
+Samsung S26 Ultra has the highest raw benchmark scores – thanks to its 2nm custom Snapdragon chip and aggressive high-frequency scheduling, it exceeds 3.72 million on AnTuTu.; Its GPU short‑term burst performance is 5–12% faster than rivals, but after 4 minutes of high load it throttles.; Apple A19 Pro offers steady, refined performance – around 2.32 million on AnTuTu, strong single‑core performance as usual, and with the first‑ever VC vapor chamber, game frame stability has improved.
+
+Slide 5: Hardware analysis:
+  Layout: kpi-grid | Sources: S3
+  Goal: Cover multiple related sections. Keep original data, company names, and metrics intact.
+  Key points: Hardware analysis:
+
+Display: All three have top‑tier 120Hz LTPO OLED panels.; Samsung has a slight resolution edge, while Apple and Huawei both reach 3000 nits outdoor brightness – daily use is indistinguishable.; Camera system: Samsung offers the most complete focal length coverage (200MP main + dual tele).
+
+Slide 6: User experience summary:
+  Layout: two-column | Sources: S4
+  Goal: Cover multiple related sections. Keep original data, company names, and metrics intact.
+  Key points: User experience summary:
+
+Gamers: Apple offers the most reliable frame stability and best‑ever iPhone thermals.; Huawei’s Pro Max Wind Speed edition uses active cooling to excel in sustained high‑load gaming.; Samsung has the highest burst performance but throttles after ~4 minutes.
+
+Slide 7: Special features analysis: & Price analysis:
+  Layout: two-column | Sources: S5, S6
+  Goal: Cover multiple related sections. Keep original data, company names, and metrics intact.
+  Key points: Special features analysis:
+
+Satellite communication: Huawei Mate 80 Pro Max offers the most complete dual‑mode solution (BeiDou messaging + Tiantong calling), with ~30 free BeiDou messages per month.; Samsung has also added Tiantong satellite calling.; iPhone does not support satellite communication yet.
+
+Slide 8: ✅ Choose iPhone 17 Pro Max if you: & ✅ Choose Samsung Galaxy S26 Ultra if you: & ✅ Choose Huawei Mate 80 Pro / Pro Max if you:
+  Layout: kpi-grid | Sources: S7, S8, S9
+  Goal: Cover multiple related sections. Keep original data, company names, and metrics intact.
+  Key points: ✅ Choose iPhone 17 Pro Max if you:
+
+Are deeply invested in the Apple ecosystem (Mac, iPad, AirPods) and want seamless integration
+
+Prioritise industry‑leading video recording and post‑production (content creator / vlogger)
+
+Seek extreme long‑term smoothness and high resale value
+
+Demand maximum privacy for AI (Apple Intelligence runs fully on‑device)
+
+Don’t mind 40W charging or the lack of satellite calling
+
+✅ Choose Samsung Galaxy S26 Ultra if you:
+
+Are a heavy mobile gamer who values GPU burst power (accepting throttling after a few minutes)
+
+Want the absolute best display – Samsung’s calibration and sharpness are widely praised
+
+Need the S Pen for note‑taking, drawing, or office work
+
+Prefer Samsung/Windows ecosystem synergy and value 7 years of OS updates
+
+Don’t care about charging speed (45W) or 5000mAh battery endurance
+
+✅ Choose Huawei Mate 80 Pro / Pro Max if you:
+
+Have a genuine need for satellite communication (outdoor workers, adventurers) – get the Pro Max Wind Speed edition
+
+Are a business user who values excellent signal quality and HarmonyOS synergy with domestic office devices
+
+Demand long battery life and fast charging (5750mAh + 100W is among the best in flagships)
+
+Have a tighter budget but still want a flagship experience (current price advantage is huge)
+
+Prefer pure HarmonyOS and want a locally‑optimised software and AI experience
+
+Summary
+Dimension	Winner	Reason
+Raw benchmark performance	Samsung S26 Ultra	3.72M AnTuTu + 2nm chip – strongest short‑term burst
+Gaming stability	Apple iPhone 17 Pro Max	≥59 fps + 41°C – most reliable real‑world gaming experience
+Battery & charging	Huawei Mate 80 Pro	5750/6000 mAh + 100W – clear leader in specs and real‑life endurance
+Video (imaging)	Apple iPhone 17 Pro Max	Uniform 48MP + 4K 120fps – still the industry benchmark for video
+Photo (versatility)	Samsung / Huawei tie	Samsung best focal coverage; Huawei unique variable aperture & color
+Longest OS update support	Samsung S26 Ultra	7 years of OS & security updates – longest among flagships
+Best value for money now	Huawei Mate 80 Pro	Actual price as low as ¥4699 – far cheaper than the other two
+Satellite communication	Huawei Mate 80 Pro Max	Supports both BeiDou messaging + Tiantong two‑way satellite calling
+
+Slide 9: One‑line buying guide:
+  Layout: two-column | Sources: S10
+  Goal: Cover multiple related sections. Keep original data, company names, and metrics intact.
+  Key points: One‑line buying guide:
+
+Deep in Apple ecosystem?; Take iPhone 17 Pro Max.; Crave extreme specs and burst performance?
+
+Slide 10: Summary & Outlook
+  Layout: two-column | Sources: S9, S10
+  Goal: Summarize key findings and provide forward-looking statements.
+  Key points: Key regions: Chinese, China
+
+【Per-Slide Source Context — USE THIS, DO NOT SUMMARIZE】
+=== Slide 1: 2026 Flagship Smartphone Comparison: iPhone 17 Pro Max vs Samsung S26 Ultra vs Huawei Mate 80 Pro ===
+(No specific context — generate from deck plan)
+
+=== Slide 2: Table of Contents ===
+(No specific context — generate from deck plan)
+
+=== Slide 3: 2026 Flagship Smartphone Comparison: iPhone 17 Pro Max vs Samsung S26 Ultra vs Huawei Mate 80 Pro ===
+[Section: 2026 Flagship Smartphone Comparison: iPhone 17 Pro Max vs Samsung S26 Ultra vs Huawei Mate 80 Pro (ID: S1)]
+2026 Flagship Smartphone Comparison: iPhone 17 Pro Max vs Samsung S26 Ultra vs Huawei Mate 80 Pro
+I. Core Performance Comparison
+Aspect	Apple iPhone 17 Pro Max	Samsung Galaxy S26 Ultra	Huawei Mate 80 Pro / Pro Max
+Processor	Apple A19 Pro (3nm)	Snapdragon 8 Gen 5 for Galaxy (2nm)	Kirin 9030 / 9030 Pro
+CPU Architecture	Hexa-core (2x 4.26GHz + 4x efficiency)	Octa-core (2x 4.74GHz Prime + 6x 3.62GHz performance)	Octa-core (exact clocks undisclosed)
+GPU	A19 Pro GPU	Adreno 840	Kirin Maleoon architecture
+RAM	12GB LPDDR5X	12GB / 16GB (512GB/1TB models)	12GB / 16GB
+AnTuTu V10	~2,319,000	>3,720,000	~940,000 (HarmonyOS 6 environment)
+Geekbench 6 (single)	Not disclosed	~3,818	~1,706 (effective ~1,774 after scaling)
+Geekbench 6 (multi)	Not disclosed	~11,214	~5,479 (effective ~7,122 after scaling)
+Manufacturing process	3nm	2nm	Not disclosed
+
+=== Slide 4: Performance analysis: ===
+[Section: Performance analysis: (ID: S2)]
+Performance analysis:
+
+Samsung S26 Ultra has the highest raw benchmark scores – thanks to its 2nm custom Snapdragon chip and aggressive high-frequency scheduling, it exceeds 3.72 million on AnTuTu. Its GPU short‑term burst performance is 5–12% faster than rivals, but after 4 minutes of high load it throttles.
+
+Apple A19 Pro offers steady, refined performance – around 2.32 million on AnTuTu, strong single‑core performance as usual, and with the first‑ever VC vapor chamber, game frame stability has improved.
+
+Huawei Kirin 9030 Pro still lags in raw performance – despite a significant generational boost (~7,122 multi‑core effective), it remains noticeably behind Apple and Samsung. Huawei frames this as entering a “performance saturation zone,” focusing on efficiency and AI balance rather than peak numbers.
+
+II. Hardware Configuration
+Aspect	Apple iPhone 17 Pro Max	Samsung Galaxy S26 Ultra	Huawei Mate 80 Pro / Pro Max
+Display size	6.9 inches	6.9 inches	6.75" (Pro) / 6.9" (Pro Max)
+Resolution	2868 × 1320	3120 × 1440	2832 × 1280 (Pro)
+Refresh rate	120Hz ProMotion	120Hz	1–120Hz LTPO
+Peak brightness	~3000 nits (outdoor)	Not disclosed	3000 nits (Pro)
+Rear camera	Triple 48MP (main f/1.6, ultrawide f/2.2, 5x tele f/2.8)	200MP main (f/1.4) + 50MP ultrawide + 50MP 5x periscope + 10MP 3x tele	50MP RYYB main (f/1.4–f/4.0 variable) + 40MP ultrawide + 48MP macro tele (4x)
+Battery capacity	~4832 mAh	5000 mAh	5750 mAh (Pro) / 6000 mAh (Pro Max)
+Wired charging	~40W (50% in 20 min)	45W	100W SuperCharge
+Wireless charging	25W MagSafe	Not disclosed	80W wireless
+Water resistance	IP68 (6m for 30 min)	IP68	IP68
+Weight	Not disclosed	~214g	Not disclosed
+
+=== Slide 5: Hardware analysis: ===
+[Section: Hardware analysis: (ID: S3)]
+Hardware analysis:
+
+Display: All three have top‑tier 120Hz LTPO OLED panels. Samsung has a slight resolution edge, while Apple and Huawei both reach 3000 nits outdoor brightness – daily use is indistinguishable.
+
+Camera system: Samsung offers the most complete focal length coverage (200MP main + dual tele). Apple achieves uniform 48MP across all three lenses and remains the video benchmark. Huawei continues with variable aperture (f/1.4–f/4.0) plus RYYB sensor and XMAGE algorithm, delivering a distinctive color style and strong low‑light performance.
+
+Battery & charging: Huawei leads by a large margin – 5750/6000 mAh + 100W wired is far superior to Apple’s ~4832 mAh / 40W and Samsung’s 5000 mAh / 45W. However, iPhone’s power efficiency under light loads can sometimes result in comparable or even better real‑world battery life than some larger‑battery Android phones.
+
+III. System & User Experience
+Aspect	Apple iPhone 17 Pro Max	Samsung Galaxy S26 Ultra	Huawei Mate 80 Pro / Pro Max
+OS	iOS 26	One UI 8.5 (Android 16)	HarmonyOS 6.0 / 6.1 (Pure Harmony)
+Update commitment	~5–6 years	7 years of OS & security updates	Not disclosed
+Gaming performance	1h Genshin Impact max settings: ≥59 fps, max temp ~41°C	High‑load mobile games avg 54 fps, some dips	Genshin Impact max settings: stable 59 fps, good long‑session thermals
+Thermal management	First VC vapor chamber + unibody aluminum shell, warm but not hot	Graphene cooling area +25%, notable improvement over previous gen	Standard model decent; Pro Max “Wind Speed” edition has active fan cooling
+Smoothness	Very high, though some users report occasional iOS 26 frame drops	One UI 8.5 animations smooth, no stutter	HarmonyOS 6.0 daily smoothness greatly improved, heavy‑load frame stability +50%
+Signal performance	Mixed reputation	Weak‑network stability needs refinement	Huawei’s traditional strength – Lingxi antenna technology
+
+=== Slide 6: User experience summary: ===
+[Section: User experience summary: (ID: S4)]
+User experience summary:
+
+Gamers: Apple offers the most reliable frame stability and best‑ever iPhone thermals. Huawei’s Pro Max Wind Speed edition uses active cooling to excel in sustained high‑load gaming. Samsung has the highest burst performance but throttles after ~4 minutes.
+
+Smoothness & OS: All three are extremely smooth in daily use. iOS 26 and pure HarmonyOS 6 emphasise simplicity and fluidity (though with initial bugs); One UI 8.5 remains the most feature‑rich and customisable. Notably, Huawei Mate 80 Pro under HarmonyOS 6.0 keeps apps launching and switching smoothly even when storage is >80% full.
+
+Signal: Huawei, drawing on its telecom heritage and Lingxi antenna technology, remains the most reliable choice for signal. iPhone’s signal reputation is middling.
+
+IV. Special Features & Ecosystem
+Feature	Apple iPhone 17 Pro Max	Samsung Galaxy S26 Ultra	Huawei Mate 80 Pro / Pro Max
+Satellite coms	Not supported	Tiantong satellite calling (eSIM)	Pro: BeiDou messaging only; Pro Max: BeiDou + Tiantong two‑way satellite calling
+AI capabilities	Apple Intelligence (fully on‑device, maximum privacy)	Galaxy AI (triple‑engine)	Pangu AI + pure HarmonyOS: sensitive tasks on‑device, general tasks optional cloud
+Ecosystem synergy	Seamless Apple ecosystem (iMessage, AirDrop, Mac)	Windows / Samsung ecosystem integration	HarmonyOS Super Device, multi‑device flow, best for Chinese office & IoT ecosystem
+Unique hardware	Titanium/aluminum build, 3D structured‑light Face ID	Hardware‑level privacy screen, S Pen (Ultra)	Kunlun Glass, variable‑aperture main camera, active cooling (Pro Max Wind Speed)
+Biometrics / payment	Face ID + Apple Pay	Ultrasonic under‑display fingerprint + Samsung Pay	3D face payment + under‑display fingerprint + Huawei Pay
+
+=== Slide 7: Special features analysis: & Price analysis: ===
+[Section: Special features analysis: (ID: S5)]
+Special features analysis:
+
+Satellite communication: Huawei Mate 80 Pro Max offers the most complete dual‑mode solution (BeiDou messaging + Tiantong calling), with ~30 free BeiDou messages per month. Samsung has also added Tiantong satellite calling. iPhone does not support satellite communication yet. AI capabilities: All three deeply integrate AI but with different focuses: Apple emphasises on‑device privacy, Huawei uses a hybrid cloud/on‑device model, and Samsung promotes Galaxy AI for cross‑scenario intelligence. The China version of iPhone still lacks some international AI features. Huawei HarmonyOS works increasingly well with Chinese domestic office and IoT devices. Price Comparison (current market as of May 2026, based on 256GB starting price)
+Model	Official launch price (starting)	Current discounted price	Remarks
+Apple iPhone 17 Pro Max	¥9999	~¥8999	¥1000 direct discount for 618, plus trade‑in offers
+Samsung Galaxy S26 Ultra	¥9999	~¥9999 (limited discount)	Few channel discounts; 256GB version not heavily reduced
+Huawei Mate 80 Pro	¥6999 (16GB+512GB)	~¥4699–5800 (varies by channel)	Wide price fluctuation; with government subsidy as low as ~¥4700
+[Section: Price analysis: (ID: S6)]
+Price analysis:
+
+Huawei Mate 80 Pro offers outstanding value at this point – with 618 promotions and subsidies, some channels sell it for under ¥5000, over ¥4000 cheaper than similarly‑specced rivals.
+
+Apple & Samsung both launched at ¥9999. Apple has proactively cut ¥1000 to ¥8999 for 618, while Samsung has fewer discounts due to rising memory costs. Both remain near the ¥10,000 price tier.
+
+Watch for 618 deals – All three flagships are currently in the 618 price war. Apple and Huawei have significant subsidies; final prices may change dynamically, so compare real‑time offers before buying.
+
+VI. Comprehensive Buying Advice
+
+=== Slide 8: ✅ Choose iPhone 17 Pro Max if you: & ✅ Choose Samsung Galaxy S26 Ultra if you: & ✅ Choose Huawei Mate 80 Pro / Pro Max if you: ===
+[Section: ✅ Choose iPhone 17 Pro Max if you: (ID: S7)]
+✅ Choose iPhone 17 Pro Max if you:
+
+Are deeply invested in the Apple ecosystem (Mac, iPad, AirPods) and want seamless integration
+
+Prioritise industry‑leading video recording and post‑production (content creator / vlogger)
+
+Seek extreme long‑term smoothness and high resale value
+
+Demand maximum privacy for AI (Apple Intelligence runs fully on‑device)
+
+Don’t mind 40W charging or the lack of satellite calling
+[Section: ✅ Choose Samsung Galaxy S26 Ultra if you: (ID: S8)]
+✅ Choose Samsung Galaxy S26 Ultra if you:
+
+Are a heavy mobile gamer who values GPU burst power (accepting throttling after a few minutes)
+
+Want the absolute best display – Samsung’s calibration and sharpness are widely praised
+
+Need the S Pen for note‑taking, drawing, or office work
+
+Prefer Samsung/Windows ecosystem synergy and value 7 years of OS updates
+
+Don’t care about charging speed (45W) or 5000mAh battery endurance
+[Section: ✅ Choose Huawei Mate 80 Pro / Pro Max if you: (ID: S9)]
+
+
+[... Full text: 1413 chars, excerpt: 0 chars. Key data preserved.]
+
+=== Slide 9: One‑line buying guide: ===
+[Section: One‑line buying guide: (ID: S10)]
+One‑line buying guide:
+
+Deep in Apple ecosystem? Take iPhone 17 Pro Max.
+
+Crave extreme specs and burst performance? Samsung S26 Ultra.
+
+Value signal, battery life, satellite coms, and great value? Huawei Mate 80 Pro series is currently the most compelling choice.
+During the 618 sales season, keep an eye on platform subsidies and trade‑in deals to get the best price.
+
+=== Slide 10: Summary & Outlook ===
+[Section: ✅ Choose Huawei Mate 80 Pro / Pro Max if you: (ID: S9)]
+
+
+[... Full text: 1413 chars, excerpt: 0 chars. Key data preserved.]
+[Section: One‑line buying guide: (ID: S10)]
+One‑line buying guide:
+
+Deep in Apple ecosystem? Take iPhone 17 Pro Max.
+
+Crave extreme specs and burst performance? Samsung S26 Ultra.
+
+Value signal, battery life, satellite coms, and great value? Huawei Mate 80 Pro series is currently the most compelling choice.
+During the 618 sales season, keep an eye on platform subsidies and trade‑in deals to get the best price.
+
+【Generation Rules — CRITICAL, READ CAREFULLY】
+1. Each slide MUST be based on its corresponding source_context block above. Do not generate from global memory or general knowledge.
+2. Preserve original data: company names, technology names, region names, and metrics (%, $, CAGR, market size, years) MUST appear verbatim from the source_context.
+3. If a slide's source_context is sparse or lacks specific data, display "Data pending — to be supplemented" rather than inventing plausible-sounding numbers.
+4. Keep the deck plan structure: slide titles, goals, key_points, and preferred_layout are provided as guidance. You may adjust layout but keep the content structure.
+5. Include keyboard navigation (arrow keys, space), theme switching (dropdown or button), and speaker notes for every slide.
+6. Speaker notes should explain the slide's data sources and key takeaways — reference the source_context sections.
+7. For reading decks: use denser text layouts, smaller fonts for body text, larger content areas.
+8. For tables detected in source_context: render them as HTML tables, not as paragraphs.
+9. Output language: English.
+10. Do NOT wrap the output — write index.html directly with the Write tool.
+
+【How to proceed】
+1. Use the Skill tool to invoke html-ppt — this will give you the templates and guidance.
+2. Read the html-ppt skill templates and assets from .agents/skills/html-ppt/ to understand available themes and layouts.
+3. Generate the presentation following the deck plan and using the source_context for each slide.
+4. Use the Write tool to create index.html at the output directory path.
+5. Verify that key data points from source_context appear in the slides.

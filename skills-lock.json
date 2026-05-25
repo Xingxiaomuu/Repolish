@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "html-ppt": {
+      "source": "lewislulu/html-ppt-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "55b8f19bc7feee6c7a78f35e0a7884057a0c0f1b13db84fa171e4b363079a7ff"
+    }
+  }
+}

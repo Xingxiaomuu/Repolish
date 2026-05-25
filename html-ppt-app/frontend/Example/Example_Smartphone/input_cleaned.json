@@ -1,0 +1,247 @@
+{
+  "raw_text": "2026 Flagship Smartphone Comparison: iPhone 17 Pro Max vs Samsung S26 Ultra vs Huawei Mate 80 Pro\nI. Core Performance Comparison\nAspect\tApple iPhone 17 Pro Max\tSamsung Galaxy S26 Ultra\tHuawei Mate 80 Pro / Pro Max\nProcessor\tApple A19 Pro (3nm)\tSnapdragon 8 Gen 5 for Galaxy (2nm)\tKirin 9030 / 9030 Pro\nCPU Architecture\tHexa-core (2x 4.26GHz + 4x efficiency)\tOcta-core (2x 4.74GHz Prime + 6x 3.62GHz performance)\tOcta-core (exact clocks undisclosed)\nGPU\tA19 Pro GPU\tAdreno 840\tKirin Maleoon architecture\nRAM\t12GB LPDDR5X\t12GB / 16GB (512GB/1TB models)\t12GB / 16GB\nAnTuTu V10\t~2,319,000\t>3,720,000\t~940,000 (HarmonyOS 6 environment)\nGeekbench 6 (single)\tNot disclosed\t~3,818\t~1,706 (effective ~1,774 after scaling)\nGeekbench 6 (multi)\tNot disclosed\t~11,214\t~5,479 (effective ~7,122 after scaling)\nManufacturing process\t3nm\t2nm\tNot disclosed\nPerformance analysis:\n\nSamsung S26 Ultra has the highest raw benchmark scores – thanks to its 2nm custom Snapdragon chip and aggressive high-frequency scheduling, it exceeds 3.72 million on AnTuTu. Its GPU short‑term burst performance is 5–12% faster than rivals, but after 4 minutes of high load it throttles.\n\nApple A19 Pro offers steady, refined performance – around 2.32 million on AnTuTu, strong single‑core performance as usual, and with the first‑ever VC vapor chamber, game frame stability has improved.\n\nHuawei Kirin 9030 Pro still lags in raw performance – despite a significant generational boost (~7,122 multi‑core effective), it remains noticeably behind Apple and Samsung. Huawei frames this as entering a “performance saturation zone,” focusing on efficiency and AI balance rather than peak numbers.\n\nII. Hardware Configuration\nAspect\tApple iPhone 17 Pro Max\tSamsung Galaxy S26 Ultra\tHuawei Mate 80 Pro / Pro Max\nDisplay size\t6.9 inches\t6.9 inches\t6.75\" (Pro) / 6.9\" (Pro Max)\nResolution\t2868 × 1320\t3120 × 1440\t2832 × 1280 (Pro)\nRefresh rate\t120Hz ProMotion\t120Hz\t1–120Hz LTPO\nPeak brightness\t~3000 nits (outdoor)\tNot disclosed\t3000 nits (Pro)\nRear camera\tTriple 48MP (main f/1.6, ultrawide f/2.2, 5x tele f/2.8)\t200MP main (f/1.4) + 50MP ultrawide + 50MP 5x periscope + 10MP 3x tele\t50MP RYYB main (f/1.4–f/4.0 variable) + 40MP ultrawide + 48MP macro tele (4x)\nBattery capacity\t~4832 mAh\t5000 mAh\t5750 mAh (Pro) / 6000 mAh (Pro Max)\nWired charging\t~40W (50% in 20 min)\t45W\t100W SuperCharge\nWireless charging\t25W MagSafe\tNot disclosed\t80W wireless\nWater resistance\tIP68 (6m for 30 min)\tIP68\tIP68\nWeight\tNot disclosed\t~214g\tNot disclosed\nHardware analysis:\n\nDisplay: All three have top‑tier 120Hz LTPO OLED panels. Samsung has a slight resolution edge, while Apple and Huawei both reach 3000 nits outdoor brightness – daily use is indistinguishable.\n\nCamera system: Samsung offers the most complete focal length coverage (200MP main + dual tele). Apple achieves uniform 48MP across all three lenses and remains the video benchmark. Huawei continues with variable aperture (f/1.4–f/4.0) plus RYYB sensor and XMAGE algorithm, delivering a distinctive color style and strong low‑light performance.\n\nBattery & charging: Huawei leads by a large margin – 5750/6000 mAh + 100W wired is far superior to Apple’s ~4832 mAh / 40W and Samsung’s 5000 mAh / 45W. However, iPhone’s power efficiency under light loads can sometimes result in comparable or even better real‑world battery life than some larger‑battery Android phones.\n\nIII. System & User Experience\nAspect\tApple iPhone 17 Pro Max\tSamsung Galaxy S26 Ultra\tHuawei Mate 80 Pro / Pro Max\nOS\tiOS 26\tOne UI 8.5 (Android 16)\tHarmonyOS 6.0 / 6.1 (Pure Harmony)\nUpdate commitment\t~5–6 years\t7 years of OS & security updates\tNot disclosed\nGaming performance\t1h Genshin Impact max settings: ≥59 fps, max temp ~41°C\tHigh‑load mobile games avg 54 fps, some dips\tGenshin Impact max settings: stable 59 fps, good long‑session thermals\nThermal management\tFirst VC vapor chamber + unibody aluminum shell, warm but not hot\tGraphene cooling area +25%, notable improvement over previous gen\tStandard model decent; Pro Max “Wind Speed” edition has active fan cooling\nSmoothness\tVery high, though some users report occasional iOS 26 frame drops\tOne UI 8.5 animations smooth, no stutter\tHarmonyOS 6.0 daily smoothness greatly improved, heavy‑load frame stability +50%\nSignal performance\tMixed reputation\tWeak‑network stability needs refinement\tHuawei’s traditional strength – Lingxi antenna technology\nUser experience summary:\n\nGamers: Apple offers the most reliable frame stability and best‑ever iPhone thermals. Huawei’s Pro Max Wind Speed edition uses active cooling to excel in sustained high‑load gaming. Samsung has the highest burst performance but throttles after ~4 minutes.\n\nSmoothness & OS: All three are extremely smooth in daily use. iOS 26 and pure HarmonyOS 6 emphasise simplicity and fluidity (though with initial bugs); One UI 8.5 remains the most feature‑rich and customisable. Notably, Huawei Mate 80 Pro under HarmonyOS 6.0 keeps apps launching and switching smoothly even when storage is >80% full.\n\nSignal: Huawei, drawing on its telecom heritage and Lingxi antenna technology, remains the most reliable choice for signal. iPhone’s signal reputation is middling.\n\nIV. Special Features & Ecosystem\nFeature\tApple iPhone 17 Pro Max\tSamsung Galaxy S26 Ultra\tHuawei Mate 80 Pro / Pro Max\nSatellite coms\tNot supported\tTiantong satellite calling (eSIM)\tPro: BeiDou messaging only; Pro Max: BeiDou + Tiantong two‑way satellite calling\nAI capabilities\tApple Intelligence (fully on‑device, maximum privacy)\tGalaxy AI (triple‑engine)\tPangu AI + pure HarmonyOS: sensitive tasks on‑device, general tasks optional cloud\nEcosystem synergy\tSeamless Apple ecosystem (iMessage, AirDrop, Mac)\tWindows / Samsung ecosystem integration\tHarmonyOS Super Device, multi‑device flow, best for Chinese office & IoT ecosystem\nUnique hardware\tTitanium/aluminum build, 3D structured‑light Face ID\tHardware‑level privacy screen, S Pen (Ultra)\tKunlun Glass, variable‑aperture main camera, active cooling (Pro Max Wind Speed)\nBiometrics / payment\tFace ID + Apple Pay\tUltrasonic under‑display fingerprint + Samsung Pay\t3D face payment + under‑display fingerprint + Huawei Pay\nSpecial features analysis:\n\nSatellite communication: Huawei Mate 80 Pro Max offers the most complete dual‑mode solution (BeiDou messaging + Tiantong calling), with ~30 free BeiDou messages per month. Samsung has also added Tiantong satellite calling. iPhone does not support satellite communication yet.\n\nAI capabilities: All three deeply integrate AI but with different focuses: Apple emphasises on‑device privacy, Huawei uses a hybrid cloud/on‑device model, and Samsung promotes Galaxy AI for cross‑scenario intelligence. The China version of iPhone still lacks some international AI features.\n\nEcosystem choice: Which brand to choose heavily depends on your existing devices. Apple ecosystem gives the best closed‑loop experience for Mac, iPad, AirPods users. Huawei HarmonyOS works increasingly well with Chinese domestic office and IoT devices. Samsung suits those who prefer a mix of Windows and Android ecosystems.\n\nV. Price Comparison (current market as of May 2026, based on 256GB starting price)\nModel\tOfficial launch price (starting)\tCurrent discounted price\tRemarks\nApple iPhone 17 Pro Max\t¥9999\t~¥8999\t¥1000 direct discount for 618, plus trade‑in offers\nSamsung Galaxy S26 Ultra\t¥9999\t~¥9999 (limited discount)\tFew channel discounts; 256GB version not heavily reduced\nHuawei Mate 80 Pro\t¥6999 (16GB+512GB)\t~¥4699–5800 (varies by channel)\tWide price fluctuation; with government subsidy as low as ~¥4700\nPrice analysis:\n\nHuawei Mate 80 Pro offers outstanding value at this point – with 618 promotions and subsidies, some channels sell it for under ¥5000, over ¥4000 cheaper than similarly‑specced rivals.\n\nApple & Samsung both launched at ¥9999. Apple has proactively cut ¥1000 to ¥8999 for 618, while Samsung has fewer discounts due to rising memory costs. Both remain near the ¥10,000 price tier.\n\nWatch for 618 deals – All three flagships are currently in the 618 price war. Apple and Huawei have significant subsidies; final prices may change dynamically, so compare real‑time offers before buying.\n\nVI. Comprehensive Buying Advice\n✅ Choose iPhone 17 Pro Max if you:\n\nAre deeply invested in the Apple ecosystem (Mac, iPad, AirPods) and want seamless integration\n\nPrioritise industry‑leading video recording and post‑production (content creator / vlogger)\n\nSeek extreme long‑term smoothness and high resale value\n\nDemand maximum privacy for AI (Apple Intelligence runs fully on‑device)\n\nDon’t mind 40W charging or the lack of satellite calling\n\n✅ Choose Samsung Galaxy S26 Ultra if you:\n\nAre a heavy mobile gamer who values GPU burst power (accepting throttling after a few minutes)\n\nWant the absolute best display – Samsung’s calibration and sharpness are widely praised\n\nNeed the S Pen for note‑taking, drawing, or office work\n\nPrefer Samsung/Windows ecosystem synergy and value 7 years of OS updates\n\nDon’t care about charging speed (45W) or 5000mAh battery endurance\n\n✅ Choose Huawei Mate 80 Pro / Pro Max if you:\n\nHave a genuine need for satellite communication (outdoor workers, adventurers) – get the Pro Max Wind Speed edition\n\nAre a business user who values excellent signal quality and HarmonyOS synergy with domestic office devices\n\nDemand long battery life and fast charging (5750mAh + 100W is among the best in flagships)\n\nHave a tighter budget but still want a flagship experience (current price advantage is huge)\n\nPrefer pure HarmonyOS and want a locally‑optimised software and AI experience\n\nSummary\nDimension\tWinner\tReason\nRaw benchmark performance\tSamsung S26 Ultra\t3.72M AnTuTu + 2nm chip – strongest short‑term burst\nGaming stability\tApple iPhone 17 Pro Max\t≥59 fps + 41°C – most reliable real‑world gaming experience\nBattery & charging\tHuawei Mate 80 Pro\t5750/6000 mAh + 100W – clear leader in specs and real‑life endurance\nVideo (imaging)\tApple iPhone 17 Pro Max\tUniform 48MP + 4K 120fps – still the industry benchmark for video\nPhoto (versatility)\tSamsung / Huawei tie\tSamsung best focal coverage; Huawei unique variable aperture & color\nLongest OS update support\tSamsung S26 Ultra\t7 years of OS & security updates – longest among flagships\nBest value for money now\tHuawei Mate 80 Pro\tActual price as low as ¥4699 – far cheaper than the other two\nSatellite communication\tHuawei Mate 80 Pro Max\tSupports both BeiDou messaging + Tiantong two‑way satellite calling\nOne‑line buying guide:\n\nDeep in Apple ecosystem? Take iPhone 17 Pro Max.\n\nCrave extreme specs and burst performance? Samsung S26 Ultra.\n\nValue signal, battery life, satellite coms, and great value? Huawei Mate 80 Pro series is currently the most compelling choice.\nDuring the 618 sales season, keep an eye on platform subsidies and trade‑in deals to get the best price.",
+  "clean_text": "2026 Flagship Smartphone Comparison: iPhone 17 Pro Max vs Samsung S26 Ultra vs Huawei Mate 80 Pro\nI. Core Performance Comparison\nAspect\tApple iPhone 17 Pro Max\tSamsung Galaxy S26 Ultra\tHuawei Mate 80 Pro / Pro Max\nProcessor\tApple A19 Pro (3nm)\tSnapdragon 8 Gen 5 for Galaxy (2nm)\tKirin 9030 / 9030 Pro\nCPU Architecture\tHexa-core (2x 4.26GHz + 4x efficiency)\tOcta-core (2x 4.74GHz Prime + 6x 3.62GHz performance)\tOcta-core (exact clocks undisclosed)\nGPU\tA19 Pro GPU\tAdreno 840\tKirin Maleoon architecture\nRAM\t12GB LPDDR5X\t12GB / 16GB (512GB/1TB models)\t12GB / 16GB\nAnTuTu V10\t~2,319,000\t>3,720,000\t~940,000 (HarmonyOS 6 environment)\nGeekbench 6 (single)\tNot disclosed\t~3,818\t~1,706 (effective ~1,774 after scaling)\nGeekbench 6 (multi)\tNot disclosed\t~11,214\t~5,479 (effective ~7,122 after scaling)\nManufacturing process\t3nm\t2nm\tNot disclosed\nPerformance analysis:\n\nSamsung S26 Ultra has the highest raw benchmark scores – thanks to its 2nm custom Snapdragon chip and aggressive high-frequency scheduling, it exceeds 3.72 million on AnTuTu. Its GPU short‑term burst performance is 5–12% faster than rivals, but after 4 minutes of high load it throttles.\n\nApple A19 Pro offers steady, refined performance – around 2.32 million on AnTuTu, strong single‑core performance as usual, and with the first‑ever VC vapor chamber, game frame stability has improved.\n\nHuawei Kirin 9030 Pro still lags in raw performance – despite a significant generational boost (~7,122 multi‑core effective), it remains noticeably behind Apple and Samsung. Huawei frames this as entering a “performance saturation zone,” focusing on efficiency and AI balance rather than peak numbers.\n\nII. Hardware Configuration\nAspect\tApple iPhone 17 Pro Max\tSamsung Galaxy S26 Ultra\tHuawei Mate 80 Pro / Pro Max\nDisplay size\t6.9 inches\t6.9 inches\t6.75\" (Pro) / 6.9\" (Pro Max)\nResolution\t2868 × 1320\t3120 × 1440\t2832 × 1280 (Pro)\nRefresh rate\t120Hz ProMotion\t120Hz\t1–120Hz LTPO\nPeak brightness\t~3000 nits (outdoor)\tNot disclosed\t3000 nits (Pro)\nRear camera\tTriple 48MP (main f/1.6, ultrawide f/2.2, 5x tele f/2.8)\t200MP main (f/1.4) + 50MP ultrawide + 50MP 5x periscope + 10MP 3x tele\t50MP RYYB main (f/1.4–f/4.0 variable) + 40MP ultrawide + 48MP macro tele (4x)\nBattery capacity\t~4832 mAh\t5000 mAh\t5750 mAh (Pro) / 6000 mAh (Pro Max)\nWired charging\t~40W (50% in 20 min)\t45W\t100W SuperCharge\nWireless charging\t25W MagSafe\tNot disclosed\t80W wireless\nWater resistance\tIP68 (6m for 30 min)\tIP68\tIP68\nWeight\tNot disclosed\t~214g\tNot disclosed\nHardware analysis:\n\nDisplay: All three have top‑tier 120Hz LTPO OLED panels. Samsung has a slight resolution edge, while Apple and Huawei both reach 3000 nits outdoor brightness – daily use is indistinguishable.\n\nCamera system: Samsung offers the most complete focal length coverage (200MP main + dual tele). Apple achieves uniform 48MP across all three lenses and remains the video benchmark. Huawei continues with variable aperture (f/1.4–f/4.0) plus RYYB sensor and XMAGE algorithm, delivering a distinctive color style and strong low‑light performance.\n\nBattery & charging: Huawei leads by a large margin – 5750/6000 mAh + 100W wired is far superior to Apple’s ~4832 mAh / 40W and Samsung’s 5000 mAh / 45W. However, iPhone’s power efficiency under light loads can sometimes result in comparable or even better real‑world battery life than some larger‑battery Android phones.\n\nIII. System & User Experience\nAspect\tApple iPhone 17 Pro Max\tSamsung Galaxy S26 Ultra\tHuawei Mate 80 Pro / Pro Max\nOS\tiOS 26\tOne UI 8.5 (Android 16)\tHarmonyOS 6.0 / 6.1 (Pure Harmony)\nUpdate commitment\t~5–6 years\t7 years of OS & security updates\tNot disclosed\nGaming performance\t1h Genshin Impact max settings: ≥59 fps, max temp ~41°C\tHigh‑load mobile games avg 54 fps, some dips\tGenshin Impact max settings: stable 59 fps, good long‑session thermals\nThermal management\tFirst VC vapor chamber + unibody aluminum shell, warm but not hot\tGraphene cooling area +25%, notable improvement over previous gen\tStandard model decent; Pro Max “Wind Speed” edition has active fan cooling\nSmoothness\tVery high, though some users report occasional iOS 26 frame drops\tOne UI 8.5 animations smooth, no stutter\tHarmonyOS 6.0 daily smoothness greatly improved, heavy‑load frame stability +50%\nSignal performance\tMixed reputation\tWeak‑network stability needs refinement\tHuawei’s traditional strength – Lingxi antenna technology\nUser experience summary:\n\nGamers: Apple offers the most reliable frame stability and best‑ever iPhone thermals. Huawei’s Pro Max Wind Speed edition uses active cooling to excel in sustained high‑load gaming. Samsung has the highest burst performance but throttles after ~4 minutes.\n\nSmoothness & OS: All three are extremely smooth in daily use. iOS 26 and pure HarmonyOS 6 emphasise simplicity and fluidity (though with initial bugs); One UI 8.5 remains the most feature‑rich and customisable. Notably, Huawei Mate 80 Pro under HarmonyOS 6.0 keeps apps launching and switching smoothly even when storage is >80% full.\n\nSignal: Huawei, drawing on its telecom heritage and Lingxi antenna technology, remains the most reliable choice for signal. iPhone’s signal reputation is middling.\n\nIV. Special Features & Ecosystem\nFeature\tApple iPhone 17 Pro Max\tSamsung Galaxy S26 Ultra\tHuawei Mate 80 Pro / Pro Max\nSatellite coms\tNot supported\tTiantong satellite calling (eSIM)\tPro: BeiDou messaging only; Pro Max: BeiDou + Tiantong two‑way satellite calling\nAI capabilities\tApple Intelligence (fully on‑device, maximum privacy)\tGalaxy AI (triple‑engine)\tPangu AI + pure HarmonyOS: sensitive tasks on‑device, general tasks optional cloud\nEcosystem synergy\tSeamless Apple ecosystem (iMessage, AirDrop, Mac)\tWindows / Samsung ecosystem integration\tHarmonyOS Super Device, multi‑device flow, best for Chinese office & IoT ecosystem\nUnique hardware\tTitanium/aluminum build, 3D structured‑light Face ID\tHardware‑level privacy screen, S Pen (Ultra)\tKunlun Glass, variable‑aperture main camera, active cooling (Pro Max Wind Speed)\nBiometrics / payment\tFace ID + Apple Pay\tUltrasonic under‑display fingerprint + Samsung Pay\t3D face payment + under‑display fingerprint + Huawei Pay\nSpecial features analysis:\n\nSatellite communication: Huawei Mate 80 Pro Max offers the most complete dual‑mode solution (BeiDou messaging + Tiantong calling), with ~30 free BeiDou messages per month. Samsung has also added Tiantong satellite calling. iPhone does not support satellite communication yet.\n\nAI capabilities: All three deeply integrate AI but with different focuses: Apple emphasises on‑device privacy, Huawei uses a hybrid cloud/on‑device model, and Samsung promotes Galaxy AI for cross‑scenario intelligence. The China version of iPhone still lacks some international AI features.\n\nEcosystem choice: Which brand to choose heavily depends on your existing devices. Apple ecosystem gives the best closed‑loop experience for Mac, iPad, AirPods users. Huawei HarmonyOS works increasingly well with Chinese domestic office and IoT devices. Samsung suits those who prefer a mix of Windows and Android ecosystems.\n\nV. Price Comparison (current market as of May 2026, based on 256GB starting price)\nModel\tOfficial launch price (starting)\tCurrent discounted price\tRemarks\nApple iPhone 17 Pro Max\t¥9999\t~¥8999\t¥1000 direct discount for 618, plus trade‑in offers\nSamsung Galaxy S26 Ultra\t¥9999\t~¥9999 (limited discount)\tFew channel discounts; 256GB version not heavily reduced\nHuawei Mate 80 Pro\t¥6999 (16GB+512GB)\t~¥4699–5800 (varies by channel)\tWide price fluctuation; with government subsidy as low as ~¥4700\nPrice analysis:\n\nHuawei Mate 80 Pro offers outstanding value at this point – with 618 promotions and subsidies, some channels sell it for under ¥5000, over ¥4000 cheaper than similarly‑specced rivals.\n\nApple & Samsung both launched at ¥9999. Apple has proactively cut ¥1000 to ¥8999 for 618, while Samsung has fewer discounts due to rising memory costs. Both remain near the ¥10,000 price tier.\n\nWatch for 618 deals – All three flagships are currently in the 618 price war. Apple and Huawei have significant subsidies; final prices may change dynamically, so compare real‑time offers before buying.\n\nVI. Comprehensive Buying Advice\n✅ Choose iPhone 17 Pro Max if you:\n\nAre deeply invested in the Apple ecosystem (Mac, iPad, AirPods) and want seamless integration\n\nPrioritise industry‑leading video recording and post‑production (content creator / vlogger)\n\nSeek extreme long‑term smoothness and high resale value\n\nDemand maximum privacy for AI (Apple Intelligence runs fully on‑device)\n\nDon’t mind 40W charging or the lack of satellite calling\n\n✅ Choose Samsung Galaxy S26 Ultra if you:\n\nAre a heavy mobile gamer who values GPU burst power (accepting throttling after a few minutes)\n\nWant the absolute best display – Samsung’s calibration and sharpness are widely praised\n\nNeed the S Pen for note‑taking, drawing, or office work\n\nPrefer Samsung/Windows ecosystem synergy and value 7 years of OS updates\n\nDon’t care about charging speed (45W) or 5000mAh battery endurance\n\n✅ Choose Huawei Mate 80 Pro / Pro Max if you:\n\nHave a genuine need for satellite communication (outdoor workers, adventurers) – get the Pro Max Wind Speed edition\n\nAre a business user who values excellent signal quality and HarmonyOS synergy with domestic office devices\n\nDemand long battery life and fast charging (5750mAh + 100W is among the best in flagships)\n\nHave a tighter budget but still want a flagship experience (current price advantage is huge)\n\nPrefer pure HarmonyOS and want a locally‑optimised software and AI experience\n\nSummary\nDimension\tWinner\tReason\nRaw benchmark performance\tSamsung S26 Ultra\t3.72M AnTuTu + 2nm chip – strongest short‑term burst\nGaming stability\tApple iPhone 17 Pro Max\t≥59 fps + 41°C – most reliable real‑world gaming experience\nBattery & charging\tHuawei Mate 80 Pro\t5750/6000 mAh + 100W – clear leader in specs and real‑life endurance\nVideo (imaging)\tApple iPhone 17 Pro Max\tUniform 48MP + 4K 120fps – still the industry benchmark for video\nPhoto (versatility)\tSamsung / Huawei tie\tSamsung best focal coverage; Huawei unique variable aperture & color\nLongest OS update support\tSamsung S26 Ultra\t7 years of OS & security updates – longest among flagships\nBest value for money now\tHuawei Mate 80 Pro\tActual price as low as ¥4699 – far cheaper than the other two\nSatellite communication\tHuawei Mate 80 Pro Max\tSupports both BeiDou messaging + Tiantong two‑way satellite calling\nOne‑line buying guide:\n\nDeep in Apple ecosystem? Take iPhone 17 Pro Max.\n\nCrave extreme specs and burst performance? Samsung S26 Ultra.\n\nValue signal, battery life, satellite coms, and great value? Huawei Mate 80 Pro series is currently the most compelling choice.\nDuring the 618 sales season, keep an eye on platform subsidies and trade‑in deals to get the best price.",
+  "sections": [
+    {
+      "section_id": "S1",
+      "title": "2026 Flagship Smartphone Comparison: iPhone 17 Pro Max vs Samsung S26 Ultra vs Huawei Mate 80 Pro",
+      "text": "2026 Flagship Smartphone Comparison: iPhone 17 Pro Max vs Samsung S26 Ultra vs Huawei Mate 80 Pro\nI. Core Performance Comparison\nAspect\tApple iPhone 17 Pro Max\tSamsung Galaxy S26 Ultra\tHuawei Mate 80 Pro / Pro Max\nProcessor\tApple A19 Pro (3nm)\tSnapdragon 8 Gen 5 for Galaxy (2nm)\tKirin 9030 / 9030 Pro\nCPU Architecture\tHexa-core (2x 4.26GHz + 4x efficiency)\tOcta-core (2x 4.74GHz Prime + 6x 3.62GHz performance)\tOcta-core (exact clocks undisclosed)\nGPU\tA19 Pro GPU\tAdreno 840\tKirin Maleoon architecture\nRAM\t12GB LPDDR5X\t12GB / 16GB (512GB/1TB models)\t12GB / 16GB\nAnTuTu V10\t~2,319,000\t>3,720,000\t~940,000 (HarmonyOS 6 environment)\nGeekbench 6 (single)\tNot disclosed\t~3,818\t~1,706 (effective ~1,774 after scaling)\nGeekbench 6 (multi)\tNot disclosed\t~11,214\t~5,479 (effective ~7,122 after scaling)\nManufacturing process\t3nm\t2nm\tNot disclosed",
+      "char_count": 838,
+      "detected_entities": {
+        "companies": [],
+        "technologies": [],
+        "regions": [],
+        "metrics": [
+          "1T"
+        ]
+      }
+    },
+    {
+      "section_id": "S2",
+      "title": "Performance analysis:",
+      "text": "Performance analysis:\n\nSamsung S26 Ultra has the highest raw benchmark scores – thanks to its 2nm custom Snapdragon chip and aggressive high-frequency scheduling, it exceeds 3.72 million on AnTuTu. Its GPU short‑term burst performance is 5–12% faster than rivals, but after 4 minutes of high load it throttles.\n\nApple A19 Pro offers steady, refined performance – around 2.32 million on AnTuTu, strong single‑core performance as usual, and with the first‑ever VC vapor chamber, game frame stability has improved.\n\nHuawei Kirin 9030 Pro still lags in raw performance – despite a significant generational boost (~7,122 multi‑core effective), it remains noticeably behind Apple and Samsung. Huawei frames this as entering a “performance saturation zone,” focusing on efficiency and AI balance rather than peak numbers.\n\nII. Hardware Configuration\nAspect\tApple iPhone 17 Pro Max\tSamsung Galaxy S26 Ultra\tHuawei Mate 80 Pro / Pro Max\nDisplay size\t6.9 inches\t6.9 inches\t6.75\" (Pro) / 6.9\" (Pro Max)\nResolution\t2868 × 1320\t3120 × 1440\t2832 × 1280 (Pro)\nRefresh rate\t120Hz ProMotion\t120Hz\t1–120Hz LTPO\nPeak brightness\t~3000 nits (outdoor)\tNot disclosed\t3000 nits (Pro)\nRear camera\tTriple 48MP (main f/1.6, ultrawide f/2.2, 5x tele f/2.8)\t200MP main (f/1.4) + 50MP ultrawide + 50MP 5x periscope + 10MP 3x tele\t50MP RYYB main (f/1.4–f/4.0 variable) + 40MP ultrawide + 48MP macro tele (4x)\nBattery capacity\t~4832 mAh\t5000 mAh\t5750 mAh (Pro) / 6000 mAh (Pro Max)\nWired charging\t~40W (50% in 20 min)\t45W\t100W SuperCharge\nWireless charging\t25W MagSafe\tNot disclosed\t80W wireless\nWater resistance\tIP68 (6m for 30 min)\tIP68\tIP68\nWeight\tNot disclosed\t~214g\tNot disclosed",
+      "char_count": 1652,
+      "detected_entities": {
+        "companies": [],
+        "technologies": [
+          "chip",
+          "AI",
+          "Battery"
+        ],
+        "regions": [],
+        "metrics": [
+          "3.72 million",
+          "12%",
+          "4 m",
+          "2.32 million",
+          "7,122 m",
+          "48M",
+          "200M",
+          "50M",
+          "10M",
+          "40M",
+          "4832 m",
+          "5000 m",
+          "5750 m",
+          "6000 m",
+          "50%",
+          "20 m",
+          "6m",
+          "30 m"
+        ]
+      }
+    },
+    {
+      "section_id": "S3",
+      "title": "Hardware analysis:",
+      "text": "Hardware analysis:\n\nDisplay: All three have top‑tier 120Hz LTPO OLED panels. Samsung has a slight resolution edge, while Apple and Huawei both reach 3000 nits outdoor brightness – daily use is indistinguishable.\n\nCamera system: Samsung offers the most complete focal length coverage (200MP main + dual tele). Apple achieves uniform 48MP across all three lenses and remains the video benchmark. Huawei continues with variable aperture (f/1.4–f/4.0) plus RYYB sensor and XMAGE algorithm, delivering a distinctive color style and strong low‑light performance.\n\nBattery & charging: Huawei leads by a large margin – 5750/6000 mAh + 100W wired is far superior to Apple’s ~4832 mAh / 40W and Samsung’s 5000 mAh / 45W. However, iPhone’s power efficiency under light loads can sometimes result in comparable or even better real‑world battery life than some larger‑battery Android phones.\n\nIII. System & User Experience\nAspect\tApple iPhone 17 Pro Max\tSamsung Galaxy S26 Ultra\tHuawei Mate 80 Pro / Pro Max\nOS\tiOS 26\tOne UI 8.5 (Android 16)\tHarmonyOS 6.0 / 6.1 (Pure Harmony)\nUpdate commitment\t~5–6 years\t7 years of OS & security updates\tNot disclosed\nGaming performance\t1h Genshin Impact max settings: ≥59 fps, max temp ~41°C\tHigh‑load mobile games avg 54 fps, some dips\tGenshin Impact max settings: stable 59 fps, good long‑session thermals\nThermal management\tFirst VC vapor chamber + unibody aluminum shell, warm but not hot\tGraphene cooling area +25%, notable improvement over previous gen\tStandard model decent; Pro Max “Wind Speed” edition has active fan cooling\nSmoothness\tVery high, though some users report occasional iOS 26 frame drops\tOne UI 8.5 animations smooth, no stutter\tHarmonyOS 6.0 daily smoothness greatly improved, heavy‑load frame stability +50%\nSignal performance\tMixed reputation\tWeak‑network stability needs refinement\tHuawei’s traditional strength – Lingxi antenna technology",
+      "char_count": 1889,
+      "detected_entities": {
+        "companies": [],
+        "technologies": [
+          "Battery",
+          "battery",
+          "Wind"
+        ],
+        "regions": [],
+        "metrics": [
+          "200M",
+          "48M",
+          "6000 m",
+          "4832 m",
+          "5000 m",
+          "25%",
+          "50%"
+        ]
+      }
+    },
+    {
+      "section_id": "S4",
+      "title": "User experience summary:",
+      "text": "User experience summary:\n\nGamers: Apple offers the most reliable frame stability and best‑ever iPhone thermals. Huawei’s Pro Max Wind Speed edition uses active cooling to excel in sustained high‑load gaming. Samsung has the highest burst performance but throttles after ~4 minutes.\n\nSmoothness & OS: All three are extremely smooth in daily use. iOS 26 and pure HarmonyOS 6 emphasise simplicity and fluidity (though with initial bugs); One UI 8.5 remains the most feature‑rich and customisable. Notably, Huawei Mate 80 Pro under HarmonyOS 6.0 keeps apps launching and switching smoothly even when storage is >80% full.\n\nSignal: Huawei, drawing on its telecom heritage and Lingxi antenna technology, remains the most reliable choice for signal. iPhone’s signal reputation is middling.\n\nIV. Special Features & Ecosystem\nFeature\tApple iPhone 17 Pro Max\tSamsung Galaxy S26 Ultra\tHuawei Mate 80 Pro / Pro Max\nSatellite coms\tNot supported\tTiantong satellite calling (eSIM)\tPro: BeiDou messaging only; Pro Max: BeiDou + Tiantong two‑way satellite calling\nAI capabilities\tApple Intelligence (fully on‑device, maximum privacy)\tGalaxy AI (triple‑engine)\tPangu AI + pure HarmonyOS: sensitive tasks on‑device, general tasks optional cloud\nEcosystem synergy\tSeamless Apple ecosystem (iMessage, AirDrop, Mac)\tWindows / Samsung ecosystem integration\tHarmonyOS Super Device, multi‑device flow, best for Chinese office & IoT ecosystem\nUnique hardware\tTitanium/aluminum build, 3D structured‑light Face ID\tHardware‑level privacy screen, S Pen (Ultra)\tKunlun Glass, variable‑aperture main camera, active cooling (Pro Max Wind Speed)\nBiometrics / payment\tFace ID + Apple Pay\tUltrasonic under‑display fingerprint + Samsung Pay\t3D face payment + under‑display fingerprint + Huawei Pay",
+      "char_count": 1760,
+      "detected_entities": {
+        "companies": [],
+        "technologies": [
+          "Wind",
+          "AI",
+          "IoT"
+        ],
+        "regions": [
+          "Chinese"
+        ],
+        "metrics": [
+          "4 m",
+          "80%"
+        ]
+      }
+    },
+    {
+      "section_id": "S5",
+      "title": "Special features analysis:",
+      "text": "Special features analysis:\n\nSatellite communication: Huawei Mate 80 Pro Max offers the most complete dual‑mode solution (BeiDou messaging + Tiantong calling), with ~30 free BeiDou messages per month. Samsung has also added Tiantong satellite calling. iPhone does not support satellite communication yet.\n\nAI capabilities: All three deeply integrate AI but with different focuses: Apple emphasises on‑device privacy, Huawei uses a hybrid cloud/on‑device model, and Samsung promotes Galaxy AI for cross‑scenario intelligence. The China version of iPhone still lacks some international AI features.\n\nEcosystem choice: Which brand to choose heavily depends on your existing devices. Apple ecosystem gives the best closed‑loop experience for Mac, iPad, AirPods users. Huawei HarmonyOS works increasingly well with Chinese domestic office and IoT devices. Samsung suits those who prefer a mix of Windows and Android ecosystems.\n\nV. Price Comparison (current market as of May 2026, based on 256GB starting price)\nModel\tOfficial launch price (starting)\tCurrent discounted price\tRemarks\nApple iPhone 17 Pro Max\t¥9999\t~¥8999\t¥1000 direct discount for 618, plus trade‑in offers\nSamsung Galaxy S26 Ultra\t¥9999\t~¥9999 (limited discount)\tFew channel discounts; 256GB version not heavily reduced\nHuawei Mate 80 Pro\t¥6999 (16GB+512GB)\t~¥4699–5800 (varies by channel)\tWide price fluctuation; with government subsidy as low as ~¥4700",
+      "char_count": 1415,
+      "detected_entities": {
+        "companies": [],
+        "technologies": [
+          "AI",
+          "IoT"
+        ],
+        "regions": [
+          "China",
+          "Chinese"
+        ],
+        "metrics": [
+          "8999\t¥"
+        ]
+      }
+    },
+    {
+      "section_id": "S6",
+      "title": "Price analysis:",
+      "text": "Price analysis:\n\nHuawei Mate 80 Pro offers outstanding value at this point – with 618 promotions and subsidies, some channels sell it for under ¥5000, over ¥4000 cheaper than similarly‑specced rivals.\n\nApple & Samsung both launched at ¥9999. Apple has proactively cut ¥1000 to ¥8999 for 618, while Samsung has fewer discounts due to rising memory costs. Both remain near the ¥10,000 price tier.\n\nWatch for 618 deals – All three flagships are currently in the 618 price war. Apple and Huawei have significant subsidies; final prices may change dynamically, so compare real‑time offers before buying.\n\nVI. Comprehensive Buying Advice",
+      "char_count": 631,
+      "detected_entities": {
+        "companies": [],
+        "technologies": [],
+        "regions": [],
+        "metrics": [
+          "1000 t"
+        ]
+      }
+    },
+    {
+      "section_id": "S7",
+      "title": "✅ Choose iPhone 17 Pro Max if you:",
+      "text": "✅ Choose iPhone 17 Pro Max if you:\n\nAre deeply invested in the Apple ecosystem (Mac, iPad, AirPods) and want seamless integration\n\nPrioritise industry‑leading video recording and post‑production (content creator / vlogger)\n\nSeek extreme long‑term smoothness and high resale value\n\nDemand maximum privacy for AI (Apple Intelligence runs fully on‑device)\n\nDon’t mind 40W charging or the lack of satellite calling",
+      "char_count": 410,
+      "detected_entities": {
+        "companies": [],
+        "technologies": [
+          "AI"
+        ],
+        "regions": [],
+        "metrics": []
+      }
+    },
+    {
+      "section_id": "S8",
+      "title": "✅ Choose Samsung Galaxy S26 Ultra if you:",
+      "text": "✅ Choose Samsung Galaxy S26 Ultra if you:\n\nAre a heavy mobile gamer who values GPU burst power (accepting throttling after a few minutes)\n\nWant the absolute best display – Samsung’s calibration and sharpness are widely praised\n\nNeed the S Pen for note‑taking, drawing, or office work\n\nPrefer Samsung/Windows ecosystem synergy and value 7 years of OS updates\n\nDon’t care about charging speed (45W) or 5000mAh battery endurance",
+      "char_count": 425,
+      "detected_entities": {
+        "companies": [],
+        "technologies": [
+          "battery"
+        ],
+        "regions": [],
+        "metrics": [
+          "5000m"
+        ]
+      }
+    },
+    {
+      "section_id": "S9",
+      "title": "✅ Choose Huawei Mate 80 Pro / Pro Max if you:",
+      "text": "✅ Choose Huawei Mate 80 Pro / Pro Max if you:\n\nHave a genuine need for satellite communication (outdoor workers, adventurers) – get the Pro Max Wind Speed edition\n\nAre a business user who values excellent signal quality and HarmonyOS synergy with domestic office devices\n\nDemand long battery life and fast charging (5750mAh + 100W is among the best in flagships)\n\nHave a tighter budget but still want a flagship experience (current price advantage is huge)\n\nPrefer pure HarmonyOS and want a locally‑optimised software and AI experience\n\nSummary\nDimension\tWinner\tReason\nRaw benchmark performance\tSamsung S26 Ultra\t3.72M AnTuTu + 2nm chip – strongest short‑term burst\nGaming stability\tApple iPhone 17 Pro Max\t≥59 fps + 41°C – most reliable real‑world gaming experience\nBattery & charging\tHuawei Mate 80 Pro\t5750/6000 mAh + 100W – clear leader in specs and real‑life endurance\nVideo (imaging)\tApple iPhone 17 Pro Max\tUniform 48MP + 4K 120fps – still the industry benchmark for video\nPhoto (versatility)\tSamsung / Huawei tie\tSamsung best focal coverage; Huawei unique variable aperture & color\nLongest OS update support\tSamsung S26 Ultra\t7 years of OS & security updates – longest among flagships\nBest value for money now\tHuawei Mate 80 Pro\tActual price as low as ¥4699 – far cheaper than the other two\nSatellite communication\tHuawei Mate 80 Pro Max\tSupports both BeiDou messaging + Tiantong two‑way satellite calling",
+      "char_count": 1413,
+      "detected_entities": {
+        "companies": [],
+        "technologies": [
+          "Wind",
+          "battery",
+          "fast charging",
+          "AI",
+          "chip",
+          "Battery"
+        ],
+        "regions": [],
+        "metrics": [
+          "5750m",
+          "3.72M",
+          "6000 m",
+          "48M"
+        ]
+      }
+    },
+    {
+      "section_id": "S10",
+      "title": "One‑line buying guide:",
+      "text": "One‑line buying guide:\n\nDeep in Apple ecosystem? Take iPhone 17 Pro Max.\n\nCrave extreme specs and burst performance? Samsung S26 Ultra.\n\nValue signal, battery life, satellite coms, and great value? Huawei Mate 80 Pro series is currently the most compelling choice.\nDuring the 618 sales season, keep an eye on platform subsidies and trade‑in deals to get the best price.",
+      "char_count": 369,
+      "detected_entities": {
+        "companies": [],
+        "technologies": [
+          "battery"
+        ],
+        "regions": [],
+        "metrics": []
+      }
+    }
+  ],
+  "tables": [],
+  "global_entities": {
+    "companies": [],
+    "technologies": [
+      "chip",
+      "AI",
+      "Battery",
+      "battery",
+      "Wind",
+      "IoT",
+      "fast charging"
+    ],
+    "regions": [
+      "Chinese",
+      "China"
+    ],
+    "metrics": [
+      "1T",
+      "3.72 million",
+      "12%",
+      "4 m",
+      "2.32 million",
+      "7,122 m",
+      "48M",
+      "200M",
+      "50M",
+      "10M",
+      "40M",
+      "4832 m",
+      "5000 m",
+      "5750 m",
+      "6000 m",
+      "50%",
+      "20 m",
+      "6m",
+      "30 m",
+      "25%",
+      "80%",
+      "8999\t¥",
+      "1000 t",
+      "5000m",
+      "5750m",
+      "3.72M"
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "topic": "Hello World Test",
+  "content": "This is a simple test presentation to verify the system works.",
+  "language": "English",
+  "style": "minimal",
+  "slide_count": 3,
+  "audience": "developers",
+  "extra_requirements": "Keyboard navigation, theme switching, and speaker notes. Make it minimal and fast."
+}

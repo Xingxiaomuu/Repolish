@@ -1,0 +1,95 @@
+ACT NOW — use the Skill tool immediately to invoke html-ppt. Then use Write to create the index.html file.
+
+【Task】Generate an HTML presentation and write it to disk.
+
+【Output Directory】You MUST write index.html and all assets to: C:\Users\User\OneDrive\Documents\GitHub\My-projects\Slidehttp\html-ppt-app\backend\outputs\20260523_133349_547673
+
+【Topic】日本旅游计划
+
+【Language】中文
+
+【Slide Count】Approximately 8 slides.
+
+【Audience】朋友
+
+【Style Requirements】明亮
+
+【Extra Requirements】调研一下各个方案的成本
+
+【Report Content】
+方案 A：秋天红叶，最推荐
+时间：11月21日–11月29日，或 11月28日–12月6日
+ 请假：5天
+ 天数：9天
+路线建议：
+大阪进，东京出 / 或大阪往返
+ Day 1：新加坡 → 大阪
+ Day 2–4：京都：岚山、东福寺、清水寺、南禅寺、永观堂
+ Day 5：奈良 / 宇治
+ Day 6：大阪
+ Day 7–8：东京 / 箱根 / 河口湖
+ Day 9：回新加坡
+这个窗口最适合第一次认真看日本秋色。日本官方旅游资料说，11月日本大部分地区天气清爽、红叶明显；东京和京都的红叶通常在 11月下旬到12月初更稳。
+
+方案 B：利用 Deepavali，年假效率最高
+时间：11月7日–11月15日
+ 请假：4天
+ 天数：9天
+路线建议：
+东京 + 日光 + 箱根 / 河口湖
+ Day 1：新加坡 → 东京
+ Day 2–3：东京
+ Day 4–5：日光，看湖区、神社、早秋色
+ Day 6：箱根 / 河口湖
+ Day 7–8：东京自由安排
+ Day 9：回新加坡
+这个时间京都可能还没到最好状态，但日本红叶是从北向南、高海拔向低海拔推进，11月上旬更适合日光、长野、富士五湖这类稍冷区域。Navitime 的区域参考也显示，关东、甲信越、北陆等地红叶窗口覆盖 9月下旬到12月下旬。
+
+方案 C：冬天雪景，北海道
+时间：12月19日–12月27日
+ 请假：4天
+ 天数：9天
+路线建议：
+札幌 + 小樽 + 登别 + 旭川/美瑛
+ Day 1：新加坡 → 札幌
+ Day 2：札幌
+ Day 3：小樽
+ Day 4：登别温泉
+ Day 5–6：旭川 / 美瑛 / 富良野
+ Day 7：札幌购物、夜景、灯饰
+ Day 8：机动日
+ Day 9：回新加坡
+优点是雪景、温泉、城市节奏比较舒服。缺点是交通受天气影响更大，且圣诞周价格偏高。北海道官方旅游页列有冬季雪祭和札幌冬季灯饰类活动；但著名的札幌雪祭通常在2月，不是12月底。
+
+【Research Phase — MUST complete BEFORE generating the PPT】
+You MUST conduct deep web research FIRST, then use the findings to generate a data-rich presentation.
+
+Step 1 — Extensive Web Research:
+- Use WebSearch to search for the topic from multiple angles:
+  * Industry overview & market size (search for recent reports, stats, forecasts)
+  * Key trends & developments in 2025-2026
+  * Major players & competitive landscape
+  * Recent news, mergers, regulatory changes
+  * Relevant data: revenue, growth rates, market share, user numbers
+- Do at least 8-12 different searches covering the angles above
+- Use WebFetch on the 3-5 most authoritative sources to extract detailed data
+- Search in {language} for local-market data if applicable
+
+Step 2 — Compile Research Brief:
+- Organize findings: key numbers, market data, quotes, trends
+- Note specific data points with their sources
+- Identify the most compelling insights for the audience
+
+Step 3 — Generate the PPT:
+- Use the Skill tool to invoke html-ppt
+- Read templates from .agents/skills/html-ppt/
+- Generate a {slide_count}-slide deck that INCORPORATES the research data
+- Include specific numbers, growth rates, market sizes from your research
+- Add source citations in speaker notes where appropriate
+
+【How to proceed】
+1. Use the Skill tool to invoke html-ppt — this will give you the templates and guidance.
+2. Read the html-ppt skill templates and assets from .agents/skills/html-ppt/ to understand available themes and layouts.
+3. Use the Write tool to create index.html at the output directory path.
+4. Include keyboard navigation, theme switching, and speaker notes.
+5. Do NOT just describe what you would do — use the tools and write the actual files.

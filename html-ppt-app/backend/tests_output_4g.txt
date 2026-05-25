@@ -1,0 +1,46 @@
+============================================================
+Phase 4E — Quality Checker Tests
+============================================================
+
+── Test 1: Normal report passes all checks ──
+  Status: pass, Score: 97/100
+  Passed: 18, Warnings: 1, Failed: 0
+  ✓ Overall status should be 'pass'
+  ✓ Score should be >= 80
+  ✓ Should have at least 10 passing checks
+  ✓ Should have zero failures
+  ✓ index.html exists
+  ✓ Standalone is clean
+  ✓ No placeholders
+  ✓ Speaker notes present
+  ✓ Theme switching present
+  ✓ Keyboard navigation present
+  ✓ Entity retention good
+  ✓ Data retention good
+
+── Test 2: Placeholder HTML detected ──
+  Status: warning, Score: 65/100
+  Passed: 8, Warnings: 18, Failed: 0
+  ✓ Should find >=3 placeholder issues, found 11
+  ✓ Found: placeholder_bracket_title
+  ✓ Found: placeholder_mustache
+  ✓ Found: placeholder_lorem_ipsum
+  ✓ Found: placeholder_todo
+  ✓ Found: placeholder_xxx_marker
+  ✓ Found: placeholder_tbd
+  ✓ Found: placeholder_untitled
+  ✓ Found: placeholder_title_here
+  ✓ Found: placeholder_fill_this
+  ✓ Found: placeholder_content_here
+  ✓ Empty slides should be flagged
+  ✓ No speaker notes
+
+── Test 3: standalone.html with asset refs detected ──
+  Status: fail, Score: 94/100
+  ✓ standalone.html with local assets/ refs must FAIL
+  ✓ index.html exists
+  ✓ standalone_integrity should be in errors list, got ['standalone_integrity']
+
+============================================================
+Results: 18/18 passed
+All tests passed!

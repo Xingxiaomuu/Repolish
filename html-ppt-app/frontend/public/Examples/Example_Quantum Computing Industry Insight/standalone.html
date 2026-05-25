@@ -1,0 +1,1885 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="arctic-cool">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>全球量子计算产业洞察（2026）</title>
+
+<style>
+/* html-ppt :: base.css — reset + shared tokens + layout primitives */
+/* Default tokens. Themes in assets/themes/*.css override the :root block. */
+:root {
+  --bg: #ffffff;
+  --bg-soft: #f7f7f8;
+  --surface: #ffffff;
+  --surface-2: #f2f2f4;
+  --border: rgba(0,0,0,.08);
+  --border-strong: rgba(0,0,0,.16);
+  --text-1: #111216;
+  --text-2: #55596a;
+  --text-3: #8a8f9e;
+  --accent: #3b6cff;
+  --accent-2: #7a5cff;
+  --accent-3: #ff5c8a;
+  --good: #1aaf6c;
+  --warn: #f5a524;
+  --bad:  #e0445a;
+  --grad: linear-gradient(135deg,#3b6cff,#7a5cff 55%,#ff5c8a);
+  --grad-soft: linear-gradient(135deg,#eef2ff,#f5ecff 55%,#ffeef5);
+  --radius: 18px;
+  --radius-sm: 12px;
+  --radius-lg: 26px;
+  --shadow: 0 10px 30px rgba(18,24,40,.08), 0 2px 6px rgba(18,24,40,.04);
+  --shadow-lg: 0 24px 60px rgba(18,24,40,.14), 0 6px 16px rgba(18,24,40,.06);
+  --font-sans: -apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif;
+  --font-serif: Georgia,serif;
+  --font-mono: SFMono-Regular,Menlo,monospace;
+  --font-display: var(--font-sans);
+  --letter-tight: -.03em;
+  --letter-normal: -.01em;
+  --ease: cubic-bezier(.4,0,.2,1);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text-1);
+  font-family:var(--font-sans);font-weight:400;line-height:1.6;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+  letter-spacing:var(--letter-normal)}
+img,svg,video{max-width:100%;display:block}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+code,kbd,pre,samp{font-family:var(--font-mono)}
+
+/* ================= SLIDE SYSTEM ================= */
+.deck{position:relative;width:100vw;height:100vh;overflow:hidden;background:var(--bg)}
+.slide{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:72px 96px;
+  box-sizing:border-box;
+  opacity:0;pointer-events:none;
+  transition:opacity .5s var(--ease), transform .5s var(--ease);
+  transform:translateX(30px);
+  overflow:hidden;
+}
+.slide.is-active{opacity:1;pointer-events:auto;transform:translateX(0);z-index:2}
+.slide.is-prev{transform:translateX(-30px)}
+
+/* single-page standalone (used when a layout file is opened directly) */
+body.single .slide{position:relative;width:100vw;height:100vh;opacity:1;transform:none;pointer-events:auto}
+
+/* ================= TYPOGRAPHY ================= */
+.eyebrow{font-size:13px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--text-3)}
+.kicker{font-size:14px;font-weight:600;color:var(--accent);letter-spacing:.08em;text-transform:uppercase}
+h1.title,.h1{font-family:var(--font-display);font-size:72px;line-height:1.05;font-weight:800;letter-spacing:var(--letter-tight);margin:0 0 18px;color:var(--text-1)}
+h2.title,.h2{font-family:var(--font-display);font-size:54px;line-height:1.1;font-weight:700;letter-spacing:var(--letter-tight);margin:0 0 14px}
+h3,.h3{font-size:32px;line-height:1.2;font-weight:600;letter-spacing:var(--letter-normal);margin:0 0 10px}
+h4,.h4{font-size:22px;line-height:1.3;font-weight:600;margin:0 0 8px}
+.lede{font-size:22px;line-height:1.55;color:var(--text-2);font-weight:300;max-width:62ch}
+.dim{color:var(--text-2)}
+.dim2{color:var(--text-3)}
+.mono{font-family:var(--font-mono)}
+.serif{font-family:var(--font-serif)}
+.gradient-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+
+/* ================= LAYOUT PRIMITIVES ================= */
+.stack>*+*{margin-top:14px}
+.row{display:flex;gap:24px;align-items:center}
+.row.wrap{flex-wrap:wrap}
+.grid{display:grid;gap:24px}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.center{display:flex;align-items:center;justify-content:center;text-align:center}
+.fill{flex:1}
+.sp-t{padding-top:24px}.sp-b{padding-bottom:24px}
+.mt-s{margin-top:8px}.mt-m{margin-top:18px}.mt-l{margin-top:32px}
+.mb-s{margin-bottom:8px}.mb-m{margin-bottom:18px}.mb-l{margin-bottom:32px}
+
+/* ================= CARDS ================= */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:26px 28px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.card-soft{background:var(--surface-2);border:1px solid var(--border)}
+.card-outline{background:transparent;border:1.5px solid var(--border-strong);box-shadow:none}
+.card-accent{background:var(--surface);border-top:3px solid var(--accent)}
+.card-hover{transition:transform .3s var(--ease),box-shadow .3s var(--ease)}
+.card-hover:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+
+.pill{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:500;
+  background:var(--surface-2);color:var(--text-2);border:1px solid var(--border)}
+.pill-accent{background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);border-color:color-mix(in srgb,var(--accent) 28%,transparent)}
+
+/* ================= BARS / DIVIDERS ================= */
+.divider{height:1px;background:var(--border);width:100%}
+.divider-accent{height:3px;width:72px;background:var(--accent);border-radius:2px}
+
+/* ================= CHROME (header/footer/progress) ================= */
+.deck-header{position:absolute;top:24px;left:40px;right:40px;display:flex;align-items:center;justify-content:space-between;
+  font-size:12px;color:var(--text-3);letter-spacing:.12em;text-transform:uppercase;z-index:10;pointer-events:none}
+.deck-footer{position:absolute;bottom:24px;left:40px;right:40px;display:flex;align-items:center;justify-content:space-between;
+  font-size:12px;color:var(--text-3);z-index:10;pointer-events:none}
+.slide-number::before{content:attr(data-current)}
+.slide-number::after{content:" / " attr(data-total)}
+.progress-bar{position:fixed;left:0;right:0;bottom:0;height:3px;background:transparent;z-index:20}
+.progress-bar > span{display:block;height:100%;width:0;background:var(--accent);transition:width .3s var(--ease)}
+
+/* ================= PRESENTER / OVERVIEW ================= */
+.notes{display:none!important}
+.notes-overlay{position:fixed;inset:auto 0 0 0;max-height:42vh;background:rgba(20,22,30,.95);color:#e8ebf4;
+  padding:20px 32px;font-size:16px;line-height:1.6;border-top:1px solid rgba(255,255,255,.1);transform:translateY(100%);
+  transition:transform .3s var(--ease);z-index:40;overflow:auto;font-family:var(--font-sans)}
+.notes-overlay.open{transform:translateY(0)}
+.overview{position:fixed;inset:0;background:rgba(10,12,18,.92);backdrop-filter:blur(12px);z-index:50;
+  display:none;padding:40px;overflow:auto}
+.overview.open{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;align-content:start}
+.overview .thumb{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  aspect-ratio:16/9;overflow:hidden;cursor:pointer;position:relative;color:var(--text-1);padding:16px;
+  font-size:11px;transition:transform .2s var(--ease)}
+.overview .thumb:hover{transform:scale(1.04)}
+.overview .thumb .n{position:absolute;top:8px;left:10px;font-weight:700;font-size:14px;color:var(--text-3)}
+.overview .thumb .t{position:absolute;bottom:10px;left:14px;right:14px;font-weight:600;color:var(--text-1)}
+
+/* ================= PRESENTER VIEW ================= */
+/* Presenter view opens in a separate popup window (S key).
+ * All presenter styles are self-contained in the popup HTML generated by runtime.js.
+ * The audience window (this file) is NOT affected — it stays as normal deck view.
+ * Only the .notes class below is needed to hide speaker notes from audience. */
+
+/* ================= UTILITY ================= */
+.hidden{display:none!important}
+.nowrap{white-space:nowrap}
+.tr{text-align:right}.tc{text-align:center}.tl{text-align:left}
+.uppercase{text-transform:uppercase;letter-spacing:.12em}
+
+/* ================= PRINT ================= */
+@media print{
+  .slide{position:relative;opacity:1!important;transform:none!important;page-break-after:always;height:100vh}
+  .deck-header,.deck-footer,.progress-bar,.notes-overlay,.overview{display:none!important}
+}
+
+</style>
+
+<style>
+/* html-ppt :: animations.css
+ * Apply by adding class="anim-<name>" or data-anim="<name>".
+ * Durations are deliberately snappy; tweak --anim-dur per element.
+ */
+:root{--anim-dur:.7s;--anim-ease:cubic-bezier(.4,0,.2,1)}
+
+/* ---------- FADE DIRECTIONALS ---------- */
+@keyframes kf-fade-up{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:none}}
+@keyframes kf-fade-down{from{opacity:0;transform:translateY(-32px)}to{opacity:1;transform:none}}
+@keyframes kf-fade-left{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
+@keyframes kf-fade-right{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+.anim-fade-up{animation:kf-fade-up var(--anim-dur) var(--anim-ease) both}
+.anim-fade-down{animation:kf-fade-down var(--anim-dur) var(--anim-ease) both}
+.anim-fade-left{animation:kf-fade-left var(--anim-dur) var(--anim-ease) both}
+.anim-fade-right{animation:kf-fade-right var(--anim-dur) var(--anim-ease) both}
+
+/* ---------- RISE / DROP / ZOOM / BLUR / GLITCH ---------- */
+@keyframes kf-rise{from{opacity:0;transform:translateY(60px) scale(.97);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+@keyframes kf-drop{from{opacity:0;transform:translateY(-60px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes kf-zoom{0%{opacity:0;transform:scale(.6)}60%{transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
+@keyframes kf-blur{from{opacity:0;filter:blur(18px)}to{opacity:1;filter:none}}
+@keyframes kf-glitch{0%{opacity:0;transform:translateX(0);clip-path:inset(0 0 0 0)}
+  20%{opacity:1;transform:translateX(-6px);clip-path:inset(20% 0 30% 0)}
+  40%{transform:translateX(4px);clip-path:inset(50% 0 10% 0)}
+  60%{transform:translateX(-3px);clip-path:inset(10% 0 60% 0)}
+  80%{transform:translateX(2px);clip-path:inset(0 0 0 0)}
+  100%{opacity:1;transform:none}}
+.anim-rise-in{animation:kf-rise .9s var(--anim-ease) both}
+.anim-drop-in{animation:kf-drop .8s var(--anim-ease) both}
+.anim-zoom-pop{animation:kf-zoom .7s cubic-bezier(.22,1.3,.36,1) both}
+.anim-blur-in{animation:kf-blur .8s var(--anim-ease) both}
+.anim-glitch-in{animation:kf-glitch .8s steps(5,end) both}
+
+/* ---------- TYPEWRITER ---------- */
+.anim-typewriter{display:inline-block;overflow:hidden;white-space:nowrap;border-right:2px solid currentColor;
+  width:0;animation:kf-type 2.4s steps(40,end) forwards, kf-caret 1s step-end infinite}
+@keyframes kf-type{to{width:100%}}
+@keyframes kf-caret{50%{border-color:transparent}}
+
+/* ---------- GLOW / SHIMMER / GRADIENT-FLOW ---------- */
+@keyframes kf-neon{0%,100%{text-shadow:0 0 8px var(--accent),0 0 20px var(--accent)}
+  50%{text-shadow:0 0 16px var(--accent),0 0 40px var(--accent),0 0 80px var(--accent)}}
+.anim-neon-glow{animation:kf-neon 2s ease-in-out infinite}
+
+.anim-shimmer-sweep{position:relative;overflow:hidden}
+.anim-shimmer-sweep::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(110deg,transparent 40%,rgba(255,255,255,.55) 50%,transparent 60%);
+  transform:translateX(-100%);animation:kf-shimmer 2.4s var(--anim-ease) infinite}
+@keyframes kf-shimmer{to{transform:translateX(100%)}}
+
+.anim-gradient-flow{background:linear-gradient(90deg,var(--accent),var(--accent-2,var(--accent)),var(--accent-3,var(--accent)),var(--accent));
+  background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+  animation:kf-gradflow 4s linear infinite}
+@keyframes kf-gradflow{to{background-position:300% 0}}
+
+/* ---------- STAGGER LIST ---------- */
+.anim-stagger-list > *{opacity:0;animation:kf-rise .65s var(--anim-ease) both}
+.anim-stagger-list > *:nth-child(1){animation-delay:.05s}
+.anim-stagger-list > *:nth-child(2){animation-delay:.15s}
+.anim-stagger-list > *:nth-child(3){animation-delay:.25s}
+.anim-stagger-list > *:nth-child(4){animation-delay:.35s}
+.anim-stagger-list > *:nth-child(5){animation-delay:.45s}
+.anim-stagger-list > *:nth-child(6){animation-delay:.55s}
+.anim-stagger-list > *:nth-child(7){animation-delay:.65s}
+.anim-stagger-list > *:nth-child(8){animation-delay:.75s}
+.anim-stagger-list > *:nth-child(n+9){animation-delay:.85s}
+
+/* ---------- COUNTER-UP (JS-driven, marker class only) ---------- */
+.counter{font-variant-numeric:tabular-nums}
+
+/* ---------- SVG PATH DRAW ---------- */
+.anim-path-draw path,.anim-path-draw line,.anim-path-draw polyline,.anim-path-draw circle,.anim-path-draw rect{
+  stroke-dasharray:1000;stroke-dashoffset:1000;animation:kf-draw 2s var(--anim-ease) forwards}
+@keyframes kf-draw{to{stroke-dashoffset:0}}
+
+/* ---------- PARALLAX TILT (hover) ---------- */
+.anim-parallax-tilt{transform-style:preserve-3d;transition:transform .4s var(--anim-ease)}
+.anim-parallax-tilt:hover{transform:perspective(900px) rotateX(6deg) rotateY(-8deg) translateZ(10px)}
+
+/* ---------- CARD FLIP 3D ---------- */
+@keyframes kf-flip{from{transform:perspective(1200px) rotateY(-90deg);opacity:0}
+  to{transform:perspective(1200px) rotateY(0);opacity:1}}
+.anim-card-flip-3d{animation:kf-flip .9s var(--anim-ease) both;transform-style:preserve-3d;backface-visibility:hidden}
+
+/* ---------- CUBE ROTATE 3D ---------- */
+@keyframes kf-cube{from{transform:perspective(1200px) rotateX(20deg) rotateY(-90deg) translateZ(-200px);opacity:0}
+  to{transform:perspective(1200px) rotateX(0) rotateY(0) translateZ(0);opacity:1}}
+.anim-cube-rotate-3d{animation:kf-cube 1s var(--anim-ease) both}
+
+/* ---------- PAGE TURN 3D ---------- */
+@keyframes kf-pageturn{from{transform:perspective(1600px) rotateY(-85deg);transform-origin:left center;opacity:0}
+  to{transform:perspective(1600px) rotateY(0);opacity:1}}
+.anim-page-turn-3d{animation:kf-pageturn 1s var(--anim-ease) both;transform-origin:left center}
+
+/* ---------- PERSPECTIVE ZOOM ---------- */
+@keyframes kf-pzoom{from{opacity:0;transform:perspective(1400px) translateZ(-400px) rotateX(12deg)}
+  to{opacity:1;transform:none}}
+.anim-perspective-zoom{animation:kf-pzoom 1s var(--anim-ease) both}
+
+/* ---------- MARQUEE SCROLL ---------- */
+.anim-marquee-scroll{display:flex;gap:48px;white-space:nowrap;animation:kf-marquee 20s linear infinite}
+@keyframes kf-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ---------- KEN BURNS ---------- */
+@keyframes kf-kenburns{0%{transform:scale(1) translate(0,0)}100%{transform:scale(1.15) translate(-2%,-1%)}}
+.anim-kenburns{animation:kf-kenburns 14s ease-in-out infinite alternate}
+
+/* ---------- CONFETTI BURST (pseudo — pure CSS sparkles) ---------- */
+.anim-confetti-burst{position:relative}
+.anim-confetti-burst::before,.anim-confetti-burst::after{
+  content:"";position:absolute;top:50%;left:50%;width:8px;height:8px;border-radius:50%;
+  background:var(--accent);box-shadow:
+    20px -30px 0 var(--accent-2,var(--accent)),-25px -20px 0 var(--accent-3,var(--accent)),
+    30px 20px 0 var(--good,#1aaf6c),-30px 25px 0 var(--warn,#f5a524),
+    40px -10px 0 var(--bad,#e0445a),-45px 0 0 var(--accent),
+    10px 40px 0 var(--accent-2,var(--accent)),-15px -40px 0 var(--accent-3,var(--accent));
+  opacity:0;animation:kf-confetti 1.2s var(--anim-ease) forwards}
+.anim-confetti-burst::after{animation-delay:.15s;transform:rotate(45deg)}
+@keyframes kf-confetti{0%{opacity:0;transform:scale(.2)}30%{opacity:1}100%{opacity:0;transform:scale(2.2)}}
+
+/* ---------- SPOTLIGHT ---------- */
+@keyframes kf-spot{0%{clip-path:circle(0% at 50% 50%)}100%{clip-path:circle(140% at 50% 50%)}}
+.anim-spotlight{animation:kf-spot 1.1s var(--anim-ease) both}
+
+/* ---------- MORPH SHAPE (SVG) ---------- */
+.anim-morph-shape path{animation:kf-morph 6s ease-in-out infinite alternate}
+@keyframes kf-morph{0%{d:path("M60,120 Q120,20 180,120 T300,120")}
+  100%{d:path("M60,120 Q120,220 180,120 T300,120")}}
+
+/* ---------- RIPPLE REVEAL ---------- */
+@keyframes kf-ripple{0%{clip-path:circle(0% at 20% 80%);opacity:.4}
+  100%{clip-path:circle(160% at 20% 80%);opacity:1}}
+.anim-ripple-reveal{animation:kf-ripple 1.2s var(--anim-ease) both}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce){
+  [class*="anim-"]{animation:none!important;transition:none!important}
+}
+
+</style>
+<style>
+/* Pink-blue bright accent override for reading deck */
+:root {
+  --accent: #2b6fcf;
+  --accent-2: #c44b8b;
+  --accent-3: #6f8aa6;
+  --grad: linear-gradient(135deg, #2b6fcf, #5b8fd4 40%, #c44b8b 85%);
+  --grad-soft: linear-gradient(135deg, #e7eef7, #f3e8f0);
+  --reading-fs: 15px;
+  --reading-lh: 1.65;
+  --reading-fs-sm: 13px;
+}
+/* Reading deck — denser content */
+.reading-deck .slide { padding: 56px 80px; }
+.reading-deck .h1 { font-size: 52px; }
+.reading-deck .h2 { font-size: 38px; margin-bottom: 8px; }
+.reading-deck .h3 { font-size: 24px; }
+.reading-deck .h4 { font-size: 17px; }
+.reading-deck .kicker { font-size: 13px; }
+.reading-deck .lede { font-size: 18px; }
+.reading-deck p, .reading-deck li { font-size: var(--reading-fs); line-height: var(--reading-lh); }
+.reading-deck .card { padding: 18px 22px; }
+.reading-deck .grid { gap: 16px; }
+.reading-deck .small { font-size: var(--reading-fs-sm); line-height: 1.5; }
+.reading-deck .pill { font-size: 11px; padding: 3px 10px; }
+/* Tables in reading deck */
+.reading-deck .t { font-size: 13px; }
+.reading-deck .t th, .reading-deck .t td { padding: 9px 12px; }
+.reading-deck .t th { font-size: 11px; }
+/* Cover custom */
+.cover-subtitle { font-size: 22px; color: var(--text-2); font-weight: 300; max-width: 56ch; margin: 12px 0 24px; line-height: 1.55; }
+/* Two-column with dense text */
+.col-dense { font-size: var(--reading-fs); line-height: var(--reading-lh); }
+.col-dense h4 { font-size: 17px; margin: 0 0 4px; color: var(--accent); }
+.col-dense ul { margin: 4px 0 0; padding-left: 16px; }
+.col-dense li { margin-bottom: 4px; }
+.col-dense p { margin: 4px 0; }
+/* KPI special */
+.kpi-label { font-size: 12px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .08em; }
+.kpi-val { font-size: 48px; font-weight: 800; line-height: 1.1; }
+.kpi-sub { font-size: 13px; color: var(--text-2); margin-top: 4px; }
+/* Mini table */
+.mini-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.mini-table th, .mini-table td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+.mini-table th { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-3); font-weight: 600; }
+.mini-table tr:hover td { background: var(--surface-2); }
+/* Source tag */
+.src-tag { display: inline-block; padding: 1px 8px; border-radius: 4px; font-size: 10px; background: var(--surface-2); color: var(--text-3); margin-right: 4px; }
+/* Highlight box */
+.hl-box { background: var(--grad-soft); border-left: 4px solid var(--accent); padding: 14px 18px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: var(--reading-fs); line-height: var(--reading-lh); }
+.hl-box-warn { border-left-color: var(--warn); }
+</style>
+<style data-theme="arctic-cool">
+/* theme: arctic-cool — 冷色调 蓝/青/石板灰 */
+:root{
+  --bg:#f2f6fb;--bg-soft:#e7eef7;--surface:#ffffff;--surface-2:#edf3fa;
+  --border:rgba(40,70,110,.12);--border-strong:rgba(40,70,110,.24);
+  --text-1:#0e1f33;--text-2:#3a5778;--text-3:#6b819b;
+  --accent:#1e6fb0;--accent-2:#17b1b1;--accent-3:#6f8aa6;
+  --good:#1aaf84;--warn:#d19030;--bad:#c5485a;
+  --grad:linear-gradient(135deg,#1e6fb0,#17b1b1 60%,#5fb9d6);
+  --grad-soft:linear-gradient(135deg,#e7eef7,#dff3f3);
+  --radius:14px;--radius-sm:10px;--radius-lg:22px;
+  --shadow:0 10px 28px rgba(40,70,110,.12);
+  --shadow-lg:0 24px 60px rgba(40,70,110,.18);
+  --font-sans:sans-serif;
+}
+
+</style>
+<style data-theme="corporate-clean" disabled>
+/* theme: corporate-clean — 企业商务 */
+:root{
+  --bg:#ffffff;--bg-soft:#f5f7fa;--surface:#ffffff;--surface-2:#f0f3f7;
+  --border:rgba(10,37,64,.12);--border-strong:rgba(10,37,64,.28);
+  --text-1:#0a2540;--text-2:#425466;--text-3:#8898aa;
+  --accent:#0a2540;--accent-2:#1d4ed8;--accent-3:#64748b;
+  --good:#0e9f6e;--warn:#d97706;--bad:#dc2626;
+  --grad:linear-gradient(135deg,#0a2540,#1d4ed8);
+  --grad-soft:linear-gradient(135deg,#f0f4fb,#e4ecf7);
+  --radius:6px;--radius-sm:4px;--radius-lg:10px;
+  --shadow:0 1px 3px rgba(10,37,64,.08),0 4px 12px rgba(10,37,64,.05);
+  --shadow-lg:0 4px 12px rgba(10,37,64,.1),0 16px 40px rgba(10,37,64,.08);
+  --font-sans:sans-serif;
+  --font-display:sans-serif;
+}
+.card{border:1px solid var(--border)}
+.divider-accent{background:var(--accent);height:3px;width:56px}
+.kicker{color:var(--accent-2)}
+h1.title,h2.title,.h1,.h2{font-weight:700;color:var(--accent)}
+
+</style>
+<style data-theme="blueprint" disabled>
+/* theme: blueprint — 蓝图工程 */
+:root{
+  --bg:#0b3a6f;--bg-soft:#0a3260;--surface:rgba(255,255,255,.06);--surface-2:rgba(255,255,255,.1);
+  --border:rgba(190,220,255,.3);--border-strong:rgba(190,220,255,.55);
+  --text-1:#e8f3ff;--text-2:#b8d4f0;--text-3:#7da8cf;
+  --accent:#ffffff;--accent-2:#aee1ff;--accent-3:#ffd27a;
+  --good:#8ef0a6;--warn:#ffd27a;--bad:#ff8a96;
+  --grad:linear-gradient(135deg,#ffffff,#aee1ff);
+  --grad-soft:linear-gradient(135deg,#0a3260,#0b3a6f);
+  --radius:2px;--radius-sm:2px;--radius-lg:4px;
+  --shadow:none;--shadow-lg:0 16px 40px rgba(0,0,0,.3);
+  --font-sans:monospace;
+  --font-display:monospace;
+}
+body{background:
+  linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px) 0 0/40px 40px,
+  linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px) 0 0/40px 40px,
+  #0b3a6f}
+.card{border:1px dashed rgba(190,220,255,.45);background:rgba(255,255,255,.04)}
+
+</style>
+<style data-theme="minimal-white" disabled>
+/* theme: minimal-white — 极简白，克制高级 */
+:root{
+  --bg:#ffffff;--bg-soft:#fafafa;--surface:#ffffff;--surface-2:#f5f5f6;
+  --border:rgba(17,18,22,.08);--border-strong:rgba(17,18,22,.16);
+  --text-1:#0c0d10;--text-2:#55596a;--text-3:#9ca1b0;
+  --accent:#111216;--accent-2:#3b3f4a;--accent-3:#6b6f7a;
+  --good:#1aaf6c;--warn:#c98500;--bad:#c13a3a;
+  --grad:linear-gradient(135deg,#111216,#3b3f4a);
+  --grad-soft:linear-gradient(135deg,#f5f5f6,#ffffff);
+  --radius:14px;--radius-sm:8px;--radius-lg:22px;
+  --shadow:0 1px 2px rgba(17,18,22,.04),0 8px 24px rgba(17,18,22,.06);
+  --shadow-lg:0 20px 60px rgba(17,18,22,.1);
+  --font-sans:sans-serif;
+  --font-display:sans-serif;
+  --letter-tight:-.035em;
+}
+
+</style>
+<style data-theme="editorial-serif" disabled>
+/* theme: editorial-serif — 杂志风衬线，高级 */
+:root{
+  --bg:#faf7f2;--bg-soft:#f3efe6;--surface:#ffffff;--surface-2:#f7f2e8;
+  --border:rgba(40,28,18,.12);--border-strong:rgba(40,28,18,.24);
+  --text-1:#1b1410;--text-2:#5c4a3e;--text-3:#8a7868;
+  --accent:#8a2a1c;--accent-2:#c97a4a;--accent-3:#1b1410;
+  --good:#3f7d4f;--warn:#b07a1f;--bad:#8a2a1c;
+  --grad:linear-gradient(135deg,#8a2a1c,#c97a4a);
+  --grad-soft:linear-gradient(135deg,#faf7f2,#f3efe6);
+  --radius:4px;--radius-sm:2px;--radius-lg:8px;
+  --shadow:0 2px 12px rgba(40,28,18,.06);
+  --shadow-lg:0 20px 50px rgba(40,28,18,.14);
+  --font-sans:serif;
+  --font-display:serif;
+  --font-serif:serif;
+  --letter-tight:-.02em;
+}
+.h1,.h2,h1.title,h2.title{font-style:italic;font-weight:600}
+
+</style>
+</head>
+<body class="reading-deck" data-themes="arctic-cool,corporate-clean,blueprint,minimal-white,editorial-serif">
+<div class="deck">
+
+<!-- ==================== SLIDE 1: COVER ==================== -->
+<section class="slide center tc" data-title="封面">
+  <div class="deck-header"><span class="eyebrow">战略投资部 · 产业研究报告</span><span class="eyebrow">2026 年 5 月</span></div>
+  <div class="anim-stagger-list">
+    <p class="kicker">Quantum Computing Industry Insight</p>
+    <h1 class="h1 anim-fade-up" data-anim="fade-up">
+      <span class="gradient-text">全球量子计算产业洞察</span><br>市场规模、供应链竞争格局<br>与技术演进（2026）
+    </h1>
+    <p class="cover-subtitle">涵盖截至 2026 年 5 月最新信息，特别聚焦美国政府以 20 亿美元重注量子计算的最新政策动向。</p>
+    <div class="row wrap" style="justify-content:center; gap:10px;">
+      <span class="pill pill-accent">20 亿美元 CHIPS 专项投资</span>
+      <span class="pill">9 家量子硬件企业</span>
+      <span class="pill">5 大物理模态</span>
+      <span class="pill">CAGR 34.7%</span>
+      <span class="pill">北美 54% 市场份额</span>
+    </div>
+  </div>
+  <div class="deck-footer"><span class="dim2">Slidehttp · 量子计算产业研究组</span><span class="slide-number" data-current="1" data-total="17"></span></div>
+  <div class="notes">封面页：介绍报告主题——全球量子计算产业洞察。本报告覆盖截至 2026 年 5 月的最新信息，核心焦点是美国政府通过 CHIPS 法案向九家本土量子企业注入 20.13 亿美元的里程碑事件。报告面向战略投资部，重点分析市场规模、供应链格局、技术路线竞争态势、投资机会与风险。</div>
+</section>
+
+<!-- ==================== SLIDE 2: TOC ==================== -->
+<section class="slide" data-title="目录">
+  <p class="kicker">Contents · 目录</p>
+  <h2 class="h2">报告结构概览</h2>
+  <div class="grid g2 mt-m anim-stagger-list" data-anim-target>
+    <div class="card card-hover"><div class="row"><div class="h3 dim2" style="width:48px;font-size:28px;">01</div><div><h4>市场份额与产业总览</h4><p class="dim small">全球市场规模、投融资热度、区域竞争格局</p></div></div></div>
+    <div class="card card-hover"><div class="row"><div class="h3 dim2" style="width:48px;font-size:28px;">02</div><div><h4>供应链与竞争格局</h4><p class="dim small">产业链结构、技术路线、头部企业动态</p></div></div></div>
+    <div class="card card-hover"><div class="row"><div class="h3 dim2" style="width:48px;font-size:28px;">03</div><div><h4>美国政府 20 亿美元 CHIPS 投资</h4><p class="dim small">资金分配方案、战略意图、国家安全考量</p></div></div></div>
+    <div class="card card-hover"><div class="row"><div class="h3 dim2" style="width:48px;font-size:28px;">04</div><div><h4>主要技术演进</h4><p class="dim small">超导、离子阱、光量子、中性原子、AI 赋能</p></div></div></div>
+    <div class="card card-hover"><div class="row"><div class="h3 dim2" style="width:48px;font-size:28px;">05</div><div><h4>机会窗口</h4><p class="dim small">政策红利、AI 融合、早期商业化、供应链国产化</p></div></div></div>
+    <div class="card card-hover"><div class="row"><div class="h3 dim2" style="width:48px;font-size:28px;">06</div><div><h4>风险分析</h4><p class="dim small">技术路线、商业化周期、估值泡沫、地缘政治</p></div></div></div>
+    <div class="card card-hover"><div class="row"><div class="h3 dim2" style="width:48px;font-size:28px;">07</div><div><h4>投资策略与展望</h4><p class="dim small">策略选择、关键信号、分水岭判断</p></div></div></div>
+    <div class="card card-hover"><div class="row"><div class="h3 dim2" style="width:48px;font-size:28px;">08</div><div><h4>附录与数据来源</h4><p class="dim small">QY Research、Fortune BI、KB Securities 等</p></div></div></div>
+  </div>
+  <div class="deck-footer"><span class="dim2">全球量子计算产业洞察（2026）</span><span>目录</span></div>
+  <div class="notes">目录页：报告共分七章，覆盖市场规模、供应链格局、美国 CHIPS 投资、技术演进、机会窗口、风险分析以及投资策略建议。</div>
+</section>
+
+<!-- ==================== SLIDE 3: MARKET SIZE TABLE ==================== -->
+<section class="slide" data-title="全球市场规模与增长前景">
+  <p class="kicker">一、市场份额与产业总览 · 1.1</p>
+  <h2 class="h2">全球市场规模与增长前景</h2>
+  <p class="lede" style="font-size:16px; max-width:72ch;">全球量子计算产业正从实验室走向商业化前夕。以下为各权威机构对市场规模的测算：</p>
+  <div class="card mt-s" style="padding:8px 14px;">
+  <table class="t" style="font-size:13px;">
+    <thead><tr><th>数据来源</th><th>2025 年规模</th><th>2026 年预测</th><th>目标年份</th><th>长期目标规模</th><th>CAGR</th></tr></thead>
+    <tbody>
+      <tr><td><b>QY Research</b></td><td>16.09 亿美元</td><td>约 17—18 亿美元</td><td>2032 年</td><td>126 亿美元</td><td><b>34.7%</b></td></tr>
+      <tr><td><b>Fortune Business Insights</b></td><td>15.3 亿美元</td><td>20.4 亿美元</td><td>2034 年</td><td>183.3 亿美元</td><td><b>31.6%</b></td></tr>
+      <tr><td><b>Global Growth Insights</b></td><td>约 8 亿美元</td><td>10.8 亿美元</td><td>2035 年</td><td>160 亿美元</td><td>—</td></tr>
+      <tr><td><b>Meticulous Research</b></td><td>—</td><td>—</td><td>2036 年</td><td>864 亿美元</td><td><b>26.0%</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="grid g3 mt-m">
+    <div class="card card-soft"><p class="small" style="margin:0;"><b>区域分布：</b>北美以约 54% 的全球市场份额占据绝对主导地位，亚太地区和欧洲紧随其后。</p></div>
+    <div class="card card-soft"><p class="small" style="margin:0;"><b>产品结构：</b>硬件是最大的细分市场，占比超过 82%；软件和云服务处于起步阶段但增长迅猛。</p></div>
+    <div class="card card-soft"><p class="small" style="margin:0;"><b>应用领域：</b>医疗是目前最大的应用市场，占比超过 25%，化工、制药、金融、物流和交通等领域快速跟进。</p></div>
+  </div>
+  <div class="deck-footer"><span class="dim2">数据来源：QY Research, Fortune Business Insights, Meticulous Research</span><span class="slide-number" data-current="3" data-total="17"></span></div>
+  <div class="notes">市场规模数据来自三家权威研究机构的测算。QY Research 和 Fortune Business Insights 口径较为接近（2025 年约 15-16 亿美元），Meticulous Research 给出了更激进的远景预测（2036 年 864 亿美元）。北美以 54% 份额主导，硬件占比超过 82%，医疗是最大应用市场。</div>
+</section>
+
+<!-- ==================== SLIDE 4: FUNDING KPI GRID ==================== -->
+<section class="slide" data-title="投融资热度与区域竞争">
+  <p class="kicker">一、市场份额与产业总览 · 1.2—1.3</p>
+  <h2 class="h2">投融资热度创历史新高 · 区域竞争格局</h2>
+  <div class="grid g2 mt-m" style="align-items:start;">
+    <div>
+      <h4 style="color:var(--accent);">头部交易刷新行业估值预期</h4>
+      <div class="card card-accent mb-m"><p class="small" style="margin:0;"><b>2025 年全年量子科技融资总额接近 100 亿美元</b>，单季度 Q1 融资超过 12.5 亿美元，同比增幅 125%。15 家公司单笔融资超过 1 亿美元。</p></div>
+      <div class="grid g2" style="gap:10px;">
+        <div class="card card-soft"><p class="kpi-label">PsiQuantum</p><p class="kpi-val" style="font-size:32px;">10 亿美元</p><p class="kpi-sub">E 轮，贝莱德/淡马锡/Baillie Gifford 领投<br>投后估值达 70 亿美元 — 史上最大单轮融资</p></div>
+        <div class="card card-soft"><p class="kpi-label">Quantinuum</p><p class="kpi-val" style="font-size:32px;">6 亿美元</p><p class="kpi-sub">投前估值 100 亿美元<br>NVIDIA、富达投资、广达电脑参投</p></div>
+        <div class="card card-soft"><p class="kpi-label">IonQ</p><p class="kpi-val" style="font-size:32px;">约 25 亿美元</p><p class="kpi-sub">18 个月内多起收购：Oxford Ionics（10.75 亿）、ID Quantique、Vector Atomic</p></div>
+        <div class="card card-soft"><p class="kpi-label">IQM</p><p class="kpi-val" style="font-size:32px;">超 3 亿美元</p><p class="kpi-sub">B 轮融资，估值达 10 亿美元</p></div>
+      </div>
+    </div>
+    <div>
+      <h4 style="color:var(--accent);">区域竞争：北美领先，中美欧三方竞速</h4>
+      <div class="card card-soft mb-s"><p class="small" style="margin:0;"><b>北美：</b>约 54% 全球市场份额，IBM、谷歌、IonQ、PsiQuantum、Quantinuum 等头部企业 + CHIPS 法案全球最大政府投资。</p></div>
+      <div class="card card-soft mb-s"><p class="small" style="margin:0;"><b>亚太：</b>第二大市场。中国 2024 年量子科技市场规模约 80 亿美元，中国占比近 1/4；预计 2035 年全球突破 9000 亿美元，中国产业规模有望达 2600 亿美元（占近 30%）。</p></div>
+      <div class="card card-soft mb-s"><p class="small" style="margin:0;"><b>欧洲：</b>基础研究底蕴深厚，英国（Oxford Ionics、剑桥量子）、德国、荷兰等国多知名研究机构和初创企业，产业化速度不及北美。</p></div>
+      <div class="card card-soft"><p class="small" style="margin:0;"><b>日韩：</b>日本在里德堡原子量子计算有代表性布局，韩国加速量子信息技术投资。全球竞争仍以中美为主轴。</p></div>
+      <div class="hl-box mt-s"><p class="small" style="margin:0;"><b>趋势：</b>资本向头部企业集中 — 15 家融资超 1 亿美元的企业，平均后期轮次融资规模突破 1 亿美元，标志从种子期研究型投资向商业部署资本转变。</p></div>
+    </div>
+  </div>
+  <div class="deck-footer"><span class="dim2">数据来源：各公司公告、QY Research、公开投融资数据</span><span class="slide-number" data-current="4" data-total="17"></span></div>
+  <div class="notes">2025 年是量子计算投融资历史性高点，全年融资近 100 亿美元。头部交易中 PsiQuantum 的 10 亿美元 E 轮和 Quantinuum 的 100 亿美元投前估值尤为突出。区域方面，中美竞争是主轴，中国量子科技市场 2024 年约 80 亿美元，占全球近 1/4。</div>
+</section>
+
+<!-- ==================== SLIDE 5: SUPPLY CHAIN TWO-COLUMN ==================== -->
+<section class="slide" data-title="供应链结构与技术路线">
+  <p class="kicker">二、供应链分析与竞争格局 · 2.1—2.2</p>
+  <h2 class="h2">供应链结构：上游投入巨大，技术路线尚未收敛</h2>
+  <div class="grid g2 mt-m" style="align-items:start;">
+    <div class="card col-dense">
+      <h4>上游：核心硬件设备</h4>
+      <p>量子芯片（超导、光量子、离子阱等各类物理实现）、稀释制冷机（提供接近绝对零度的 mK 级极低温环境）、激光器与光学系统、控制电子学系统、真空系统等核心组件。</p>
+      <p><b>稀释制冷机成为供应链中"卡脖子"程度最高的设备之一。</b>欧美对稀释制冷机实施出口限制，国内相关设备国产化需求迫切，市场规模有望从 2024 年的约 20 亿美元增至 2035 年的约 2527 亿美元。</p>
+      <h4 style="margin-top:14px;">中游：量子计算机整机与云平台</h4>
+      <p>涵盖各类技术路线的整机制造商（超导、离子阱、光量子、中性原子、硅基自旋等）以及量子云平台服务商。云平台将成为量子算力向下游渗透的关键入口。</p>
+      <h4 style="margin-top:14px;">下游：应用场景与行业方案</h4>
+      <p>科研领域是目前主要的落地方向，金融、化工、制药是最具潜力的应用方向。下游应用市场目前规模仅约 2.7 亿美元，但到 2035 年有望增至约 2027 亿美元。</p>
+    </div>
+    <div class="card col-dense">
+      <h4>中信建投核心判断</h4>
+      <p>量子计算正处于含噪声的中等规模量子时代（NISQ），超导、离子阱、光量子和中性原子四大技术路线齐头并进，<b>主流路线尚未收敛</b>，产业链中上游是当前发展重点。</p>
+      <div class="hl-box mt-m"><p class="small" style="margin:0;">已形成覆盖<b>上游硬件设备 → 中游系统平台 → 下游场景应用</b>的完整产业链。</p></div>
+      <h4 style="margin-top:14px;">主要技术路线概览</h4>
+      <table class="mini-table" style="margin-top:6px;">
+        <thead><tr><th>路线</th><th>核心优势</th><th>主要挑战</th></tr></thead>
+        <tbody>
+          <tr><td><b>超导</b></td><td>工艺兼容、进展最快</td><td>极低温环境、体积庞大</td></tr>
+          <tr><td><b>离子阱</b></td><td>相干时间最长、门保真度最高</td><td>规模化难度大</td></tr>
+          <tr><td><b>光量子</b></td><td>室温运行、相干时间长</td><td>通用量子门实现难</td></tr>
+          <tr><td><b>中性原子</b></td><td>原子一致性高、3D 扩展</td><td>稳定性待验证</td></tr>
+          <tr><td><b>硅基自旋</b></td><td>与 CMOS 工艺高度兼容</td><td>相干时间相对较短</td></tr>
+          <tr><td><b>量子退火</b></td><td>优化求解率先商业化</td><td>通用性受限</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="deck-footer"><span class="dim2">中信建投 · 供应链分析</span><span class="slide-number" data-current="5" data-total="17"></span></div>
+  <div class="notes">量子计算已形成完整产业链。上游稀释制冷机是"卡脖子"环节，市场规模有望从 20 亿美元增至 2527 亿美元。下游应用市场目前仅 2.7 亿美元。中信建投指出主流路线尚未收敛，四大路线齐头并进。</div>
+</section>
+
+<!-- ==================== SLIDE 6: TECH ROUTES TWO-COLUMN ==================== -->
+<section class="slide" data-title="技术路线详解">
+  <p class="kicker">二、供应链分析与竞争格局 · 2.2</p>
+  <h2 class="h2">六大技术路线与代表企业</h2>
+  <div class="grid g2 mt-m" style="align-items:start;">
+    <div class="card col-dense">
+      <h4>1. 超导量子计算（Superconducting）</h4>
+      <p>进展最快、专利数量领先。采用人造微电路结构作为量子比特，通过微波脉冲进行测控，与现有集成电路工艺兼容、扩展性较好，但需要接近绝对零度的低温环境且体积庞大。</p>
+      <p><b>代表企业：</b>IBM（超导路线，Qiskit 生态）、谷歌（Willow 芯片，AI 驱动量子纠错）、Rigetti Computing（超导多芯片模块）、D-Wave（超导退火和门模型）、本源量子（中国超导路线）。</p>
+      <h4 style="margin-top:12px;">2. 离子阱（Trapped-ion）</h4>
+      <p>用激光冷却被困住的离子作为量子比特，相干时间最长、门保真度最高，但规模化难度较大。</p>
+      <p><b>代表企业：</b>IonQ（离子阱路线领先者，2026 年计划推出 256 量子比特第六代系统）、Quantinuum（离子阱+集成光子学，估值百亿美元）。</p>
+      <h4 style="margin-top:12px;">3. 光量子（Photonic）</h4>
+      <p>室温下运行，相干时间长，但做通用量子门的难度较大。</p>
+      <p><b>代表企业：</b>PsiQuantum（押注硅光子技术，利用 GlobalFoundries 的 Omega 芯片组走标准半导体制程，目标容错量子运算，芝加哥百万量子比特设施预计 2027 年启用）、Xanadu、玻色量子（中国光量子路线，"驭量·山海 1000"聚焦专用量子计算）。</p>
+    </div>
+    <div class="card col-dense">
+      <h4>4. 中性原子（Neutral-atom）</h4>
+      <p>近年来异军突起，原子天然具备高度一致性，易于在三维空间扩展阵列，被认为是实现大规模量子比特的潜力股。</p>
+      <p><b>代表企业：</b>Atom Computing、Infleqtion 以及中科酷原（2026 年 5 月发布全球首个双核中性原子量子计算机"汉原 2 号"，功耗低于 7 千瓦，可在普通环境部署）。</p>
+      <h4 style="margin-top:12px;">5. 硅基自旋/半导体量子点</h4>
+      <p>与现有半导体制造工艺高度兼容，具有利用成熟 IC 制造的潜力，但相干时间相对较短。</p>
+      <p><b>代表企业：</b>Intel、Diraq（CMOS 硅基自旋量子位阵列）、中国华翊量子等。</p>
+      <h4 style="margin-top:12px;">6. 量子退火（Quantum Annealing）</h4>
+      <p>D-Wave 走独特的量子退火路线，专注于优化求解领域。销售渠道增长近 1500%，2025 年收入同比增长 179%。</p>
+      <div class="hl-box mt-m"><p class="small" style="margin:0;"><b>关键判断：</b>超导路线企业数量最多（超过总量的三分之一），但技术路线尚未收敛。各路线均有顶级团队投入，产业化竞争仍在早期。</p></div>
+    </div>
+  </div>
+  <div class="deck-footer"><span class="dim2">各公司技术文档 · 公开资料整理</span><span class="slide-number" data-current="6" data-total="17"></span></div>
+  <div class="notes">六大技术路线各有优劣。超导进展最快（企业超 1/3），离子阱门保真度最高但规模化难，光量子可室温运行，中性原子 2026 年异军突起（中科酷原"汉原 2 号"功耗低于 7kW），硅基自旋与 CMOS 兼容，量子退火已率先商业化。</div>
+</section>
+
+<!-- ==================== SLIDE 7: COMPETITIVE LANDSCAPE TABLE ==================== -->
+<section class="slide" data-title="竞争格局">
+  <p class="kicker">二、供应链分析与竞争格局 · 2.3</p>
+  <h2 class="h2">头部企业竞争格局与关键动态</h2>
+  <div class="card mt-s" style="padding:6px 12px;">
+  <table class="t" style="font-size:12px;">
+    <thead><tr><th>企业</th><th>技术路线</th><th>主要特点</th><th>2026 年动态</th></tr></thead>
+    <tbody>
+      <tr><td><b>IBM</b></td><td>超导</td><td>生态系统完善，Qiskit 社区最大，盈利基础稳固</td><td>获美国政府 10 亿美元资助建设 300mm 量子晶圆厂；计划 2026 年底实现量子优势</td></tr>
+      <tr><td><b>谷歌</b></td><td>超导</td><td>AI 驱动纠错，Willow 芯片突破，破解椭圆曲线加密研究震惊行业</td><td>1,200 逻辑量子比特或可破解以太坊类型加密</td></tr>
+      <tr><td><b>IonQ</b></td><td>离子阱</td><td>门保真度极高，最积极并购整合</td><td>收购 SkyWater（18 亿美元）、营收同比 +755%，Q1 营收 6,470 万美元</td></tr>
+      <tr><td><b>PsiQuantum</b></td><td>光量子</td><td>硅光子路线，百万量子比特设施在建</td><td>获 CHIPS 资金 1 亿美元，芝加哥设施预计 2027 年启用</td></tr>
+      <tr><td><b>Quantinuum</b></td><td>离子阱+光子</td><td>投前估值 100 亿美元，NVIDIA 参投</td><td>获 CHIPS 资金 1 亿美元</td></tr>
+      <tr><td><b>D-Wave</b></td><td>量子退火</td><td>在优化求解领域率先商业化</td><td>获 CHIPS 资金 1 亿美元，销售渠道增长近 1,500%</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="small dim mt-s">全球量子计算市场前五大企业（D-Wave、IBM、谷歌、微软、Rigetti 等）合计占据约 48% 的市场份额。（数据来源：QY Research）</p>
+  <div class="grid g2 mt-m" style="align-items:start; gap:12px;">
+    <div class="card card-soft col-dense">
+      <h4>PsiQuantum × NVIDIA 深度合作</h4>
+      <p class="small">2025 年 9 月，PsiQuantum 完成 10 亿美元融资，由 NVIDIA 旗下 NVentures 领投，加上伊利诺伊州 8.5 亿美元税务优惠、5 亿美元州政府拨款等，公私协力投资总额超过 10 亿美元。芝加哥百万量子比特设施预计 2027 年启用、2028 年前后实现运营。NVIDIA CUDA-Q 平台已成为开发者构建跨经典超算和量子领域应用的标准，英伟达在混合计算时代扮演基础设施提供者角色。</p>
+    </div>
+    <div class="card card-soft col-dense">
+      <h4>IonQ 垂直整合野心</h4>
+      <p class="small">收购 SkyWater Technology 获得自有美国晶圆厂产能，从离子阱纯玩家转型为垂直集成的量子制造商。2026 年 Q1 收入 6,470 万美元（同比 +755%），剩余履约义务高达 4.7 亿美元（同比 +554%）。但空头指出约 86% 收入依赖政府专项拨款，估值受政策风险影响较大。</p>
+    </div>
+  </div>
+  <div class="deck-footer"><span class="dim2">QY Research · 各公司公告 · 2026 年 5 月</span><span class="slide-number" data-current="7" data-total="17"></span></div>
+  <div class="notes">头部六家企业的竞争格局：IBM 和谷歌在超导路线双雄对决；IonQ 通过并购实现垂直整合（Q1 营收+755%）；PsiQuantum 与 NVIDIA 深度合作。前五大企业占约 48% 市场份额。Quantinuum 为估值最高的私有量子公司。</div>
+</section>
+
+<!-- ==================== SLIDE 8: COMPETITION SUMMARY + CHIPS OVERVIEW ==================== -->
+<section class="slide" data-title="竞争格局总结与CHIPS法案">
+  <p class="kicker">二 · 竞争格局总结 & 三 · 美国政府量子投资</p>
+  <h2 class="h2">竞争格局总结 · 20 亿美元 CHIPS 法案定向投资</h2>
+  <div class="grid g2 mt-m" style="align-items:start;">
+    <div>
+      <h4 style="color:var(--accent);">2.4 竞争格局总结</h4>
+      <div class="card" style="padding:8px 14px;">
+      <table class="t" style="font-size:12px;">
+        <thead><tr><th>维度</th><th>特征</th></tr></thead>
+        <tbody>
+          <tr><td>市场集中度</td><td>前五大企业占据约 48% 市场份额</td></tr>
+          <tr><td>区域主导</td><td>北美约 54%，亚太是第二大市场（约 30%），欧洲次之</td></tr>
+          <tr><td>技术路线</td><td>超导进展最快（企业数量最多，超过总量的三分之一），离子阱、中性原子、光量子各具特色，路线尚未收敛</td></tr>
+          <tr><td>商业模式</td><td>硬件销售+云服务+企业合同，头部企业加速向上游制造环节垂直整合</td></tr>
+          <tr><td>竞争阶段</td><td>从实验室验证转向产业化前期，收购与整合加速</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+    <div>
+      <h4 style="color:var(--accent);">3.1 20 亿美元 CHIPS 法案定向投资</h4>
+      <div class="hl-box"><p class="small" style="margin:0;"><b>2026 年 5 月 21 日</b>，美国商务部联合 NIST 宣布，依据《芯片与科学法案》签署九份不具约束力的意向书，向九家美国本土量子计算企业提供总额 <b>20.13 亿美元</b>的联邦专项激励资金。这是全球迄今规模最大的政府量子计算专项投资计划。</p></div>
+      <div class="card card-soft mt-s col-dense">
+        <p class="small"><b>覆盖五大量子计算物理模态：</b>中性原子、硅基自旋、超导、光量子和离子阱，全面覆盖当前几乎所有主流技术路径。</p>
+        <p class="small"><b>保护性条件：</b>美国政府将通过该项投资获取每家受资企业的被动型少数非控股股权。特朗普政府近期在半导体、稀土等战略产业中已多次采用"政府入股"模式。</p>
+        <p class="small"><b>两个核心制造工厂（Foundry Track）：</b></p>
+        <ul class="small" style="margin:0; padding-left:16px;">
+          <li><b>IBM — 10 亿美元</b>：纽约州奥尔巴尼建设 Anderon（独立纯量子晶圆代工厂），300 毫米量子晶圆线，专攻超导布线、凸点和硅通孔（TSV）制造。IBM 同时追加 10 亿美元。</li>
+          <li><b>GlobalFoundries — 3.75 亿美元</b>：建设多模态安全量子晶圆厂，覆盖超导、离子阱、光量子、拓扑及硅基自旋等多种架构。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="deck-footer"><span class="dim2">QY Research · 美国商务部 · NIST 公告</span><span class="slide-number" data-current="8" data-total="17"></span></div>
+  <div class="notes">竞争格局五大维度总结。美国 20.13 亿美元 CHIPS 投资覆盖五大物理模态，含两个核心工厂（IBM 10 亿、GlobalFoundries 3.75 亿）和七个硬件开发商。美国政府获取被动型少数非控股股权——"政府入股"模式首次大规模应用于量子领域。</div>
+</section>
+
+<!-- ==================== SLIDE 9: CHIPS ALLOCATION TABLE ==================== -->
+<section class="slide" data-title="CHIPS资金分配方案">
+  <p class="kicker">三、美国政府量子投资 · 3.2</p>
+  <h2 class="h2">CHIPS 法案资金分配详表</h2>
+  <p class="small dim">七个硬件开发厂商（Hardware Track），各获约 1 亿美元或类似金额，覆盖各技术路线中的关键工程瓶颈：</p>
+  <div class="card mt-s" style="padding:6px 12px;">
+  <table class="t" style="font-size:12px;">
+    <thead><tr><th>企业</th><th>资金</th><th>技术方向 / 攻坚领域</th></tr></thead>
+    <tbody>
+      <tr><td><b>Atom Computing</b></td><td>1 亿美元</td><td>中性原子阵列规模化扩展</td></tr>
+      <tr><td><b>Diraq</b></td><td>3,800 万美元</td><td>CMOS 硅基自旋量子位阵列</td></tr>
+      <tr><td><b>D-Wave Quantum</b></td><td>1 亿美元</td><td>超导退火与门模型高级封装</td></tr>
+      <tr><td><b>Infleqtion</b></td><td>1 亿美元</td><td>大尺度中性原子阵列的高功率光学系统与实时纠错</td></tr>
+      <tr><td><b>PsiQuantum</b></td><td>1 亿美元</td><td>钛酸钡薄膜电光开关、低损耗互连及高温单光子探测器</td></tr>
+      <tr><td><b>Quantinuum</b></td><td>1 亿美元</td><td>低损耗集成光子学及离子阱专用光学组件</td></tr>
+      <tr><td><b>Rigetti</b></td><td>1 亿美元</td><td>读出电子学微型化及下一代低温恒温器架构</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="small dim mt-s">另：IBM（10 亿美元 Foundry Track）+ GlobalFoundries（3.75 亿美元 Foundry Track），九家企业合计 20.13 亿美元。美国首座"专用量子晶圆代工厂"标志着量子硬件从实验室手工制造走向工业化量产阶段。</p>
+  <div class="deck-footer"><span class="dim2">美国商务部 · NIST · 2026 年 5 月 21 日公告</span><span class="slide-number" data-current="9" data-total="17"></span></div>
+  <div class="notes">七家硬件开发商资金分配详表，覆盖中性原子、硅基自旋、超导退火、光量子、离子阱、低温恒温器等关键工程瓶颈。IBM 10 亿美元建 Anderon 量子晶圆厂是最大单笔投资。美国首座专用量子晶圆代工厂标志产业化新阶段。</div>
+</section>
+
+<!-- ==================== SLIDE 10: STRATEGIC INTENT TWO-COLUMN ==================== -->
+<section class="slide" data-title="战略意图分析">
+  <p class="kicker">三 · 3.3 战略意图分析 & 四 · 主要技术演进</p>
+  <h2 class="h2">美国 20 亿美元投资的战略逻辑 · 技术演进概览</h2>
+  <div class="grid g2 mt-m" style="align-items:start;">
+    <div class="card col-dense">
+      <h4>五重战略逻辑</h4>
+      <p><b>1. 构建本土供应链韧性。</b>通过本土量子晶圆代工厂实现"自主可控"，将量子生态系统与地缘政治微电子供应链脆弱性隔离开来，创造数千个高技术制造岗位。</p>
+      <p><b>2. 加速从实验室到数据中心的产业化。</b>将量子装配从实验室原型加速过渡到标准化、数据中心兼容的平台。多个硬件开发商直接与受资助的代工厂合作（如 Quantinuum 和 PsiQuantum 使用 GlobalFoundries 的低温 CMOS 和 3D 异构互连制造）。</p>
+      <p><b>3. "分散押注风险"。</b>美国商务部高级官员公开表示，政府之所以同时投资多家公司，是为了"分散押注风险"，并承认这些投资可能需要多年时间才能见效。</p>
+      <p><b>4. 国家安全考量。</b>DARPA 已启动"量子基准测试计划"（QBI），预计 2026 年底宣布第二阶段企业进入第三阶段名单。谷歌研究显示不到 50 万物理量子比特或可在数分钟内破解椭圆曲线加密——量子计算被提升至国家安全战略优先级。</p>
+      <p><b>5. 相比中国保持竞争领先。</b>美国政府与产业联盟体系正形成螺旋式正反馈。IBM CEO Arvind Krishna 将当前量子计算行业比作十年前的 AI 芯片产业，暗示爆发窗口可能比预期更早到来。</p>
+    </div>
+    <div class="card col-dense">
+      <h4>四、主要技术演进方向</h4>
+      <div class="hl-box mb-s"><p class="small" style="margin:0;">超导路线：当前技术成熟度最高、产业化进展最快。IBM 与谷歌"双雄对决"格局已成型。</p></div>
+      <p><b>AI 赋能量子计算：</b>AI 辅助量子纠错编码将通用量子计算机门槛从百万级物理比特降至两万级——从"这辈子看不见"变为"可及目标"。</p>
+      <p><b>光量子路线：</b>PsiQuantum 押注硅光子技术，利用 GlobalFoundries 标准半导体制程生产 Omega 芯片组，目标直指百万量子比特级别。芝加哥设施已竖起五百吨结构钢。</p>
+      <p><b>中性原子路线：</b>2026 年最大"意外变量"。中科酷原"汉原 2 号"功耗低于 7 千瓦，标准机柜设计，可在普通环境部署——首次可被塞进现有云计算数据中心。</p>
+      <p><b>容错量子计算：</b>郭光灿院士判断通用量子计算机需至少 1,000 个量子逻辑比特。破解比特币 ECDSA 需约 2,330 个逻辑量子比特。当前系统仅约 100 个物理量子比特。</p>
+      <p><b>中国布局：</b>2026 年 5 月 7—9 日三天内，三家国内公司相继发布最新整机：本源量子"悟空-180"（超导）、中科酷原"汉原 2 号"（中性原子）、玻色量子"驭量·山海 1000"（光量子）。</p>
+    </div>
+  </div>
+  <div class="deck-footer"><span class="dim2">美国商务部 · DARPA · 各公司公告</span><span class="slide-number" data-current="10" data-total="17"></span></div>
+  <div class="notes">美国 20 亿美元投资的五重战略逻辑：本土供应链、产业化加速、分散风险、国家安全、保持对华领先。技术演进方面，超导双雄对决、AI 降低门槛、中性原子异军突起。中国三天内发布三款新整机，展现"多路线并行"策略。</div>
+</section>
+
+<!-- ==================== SLIDE 11: SUPERCONDUCTING + AI + PHOTONIC ==================== -->
+<section class="slide" data-title="超导与AI赋能量子计算">
+  <p class="kicker">四、主要技术演进 · 4.1—4.3</p>
+  <h2 class="h2">超导双雄对决 · AI 赋能 · 光量子加速</h2>
+  <div class="grid g2 mt-m" style="align-items:start;">
+    <div class="card col-dense">
+      <h4>4.1 超导路线：IBM 与谷歌"双雄对决"</h4>
+      <p><b>IBM：</b>2025 年 11 月发布 120 量子位的 IBM Quantum Nighthawk，运行电路复杂度提升 30% 同时保持低错误率。计划 2026 年底实现"量子优势"，2029 年推出首台容错量子计算机。Qiskit 软件框架拥有全球最大开发者社区。</p>
+      <p><b>谷歌：</b>重心放在桥接噪声量子比特与可靠容错计算之间的鸿沟上。Willow 芯片通过集成 AI 驱动的量子纠错（AlphaQubit 解码器）大幅压制物理错误率，解决了行业最重要的逻辑量子比特瓶颈。</p>
+      <div class="hl-box mt-m"><p class="small" style="margin:0;"><b>震撼发现：</b>谷歌 AI 团队 2026 年 3 月报告指出 — 一台物理量子比特不足 50 万的量子计算机即可在数分钟内破解比特币、以太坊等加密系统，所需量子比特资源远少于先前预期。</p></div>
+      <h4 style="margin-top:12px;">4.2 AI 赋能量子计算：百万到两万</h4>
+      <p>过去认为通用容错量子计算机需约 100 万个物理量子比特才能产生约 1,000 个可靠的逻辑量子比特。但 AI 正在改变这一切。郭光灿院士指出：<b>"人工智能可以帮助科学家设计优化编码方案，最新研究认为大概只要 2 万个量子物理比特，就能够做出一台通用量子计算机了"。</b>从 100 万到 2 万，AI 将不可能的工程问题变成了可及的目标。</p>
+    </div>
+    <div class="card col-dense">
+      <h4>4.3 光量子路线：硅光子与百万比特设施</h4>
+      <p>PsiQuantum 选择押注硅光子技术，利用 GlobalFoundries 的标准半导体制造工艺生产 Omega 芯片组，目标直指百万量子比特级别。芝加哥量子设施已竖起五百吨结构钢，预计 2027 年启用。该公司明确以容错量子计算为目标 — 即使计算过程有错误，系统仍能正常运作。</p>
+      <div class="hl-box mt-m"><p class="small" style="margin:0;"><b>中国光量子进展 — 玻色量子"驭量·山海 1000"：</b>标准模式下支持 1,000 个计算量子比特，精准模式下支持 550 个，整机每日可用时长不少于 16 小时，连续稳定运行超 44 天。</p></div>
+      <h4 style="margin-top:12px;">关键数据对照</h4>
+      <table class="mini-table" style="margin-top:6px;">
+        <thead><tr><th>指标</th><th>IBM</th><th>谷歌</th><th>PsiQuantum</th><th>玻色量子</th></tr></thead>
+        <tbody>
+          <tr><td>路线</td><td>超导</td><td>超导</td><td>光量子</td><td>光量子</td></tr>
+          <tr><td>当前比特数</td><td>120</td><td>Willow（未公开）</td><td>百万级目标</td><td>1,000（标准）</td></tr>
+          <tr><td>关键节点</td><td>2026 量子优势<br>2029 容错</td><td>AI 纠错突破<br>加密破解研究</td><td>2027 设施启用<br>2028 运营</td><td>每日可用 ≥16h<br>连续稳定 44 天</td></tr>
+          <tr><td>生态</td><td>Qiskit 最大社区</td><td>AlphaQubit</td><td>GF 标准制程</td><td>PyTorch 生态</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="deck-footer"><span class="dim2">IBM · 谷歌 AI · PsiQuantum · 玻色量子 · 郭光灿院士</span><span class="slide-number" data-current="11" data-total="17"></span></div>
+  <div class="notes">超导路线 IBM 和谷歌双雄对决：IBM Nighthawk 120 量子位 + 2026 量子优势目标；谷歌 Willow 芯片 + AI 纠错 + 加密破解研究。AI 将容错量子比特门槛从 100 万降至 2 万。光量子 PsiQuantum 芝加哥百万比特设施 + 玻色量子 1,000 量子比特光量子专用机。</div>
+</section>
+
+<!-- ==================== SLIDE 12: NEUTRAL ATOM + Q-DAY + CHINA ==================== -->
+<section class="slide" data-title="中性原子与容错量子计算">
+  <p class="kicker">四、主要技术演进 · 4.4—4.6</p>
+  <h2 class="h2">中性原子突破 · 容错量子计算 · 中国布局</h2>
+  <div class="grid g2 mt-m" style="align-items:start;">
+    <div class="card col-dense">
+      <h4>4.4 中性原子路线：机房级部署能力</h4>
+      <p>中性原子路线在 2026 年成为量子计算领域最大的"意外变量"。传统量子计算机动辄需要庞大复杂的极低温制冷设备，而中科酷原的<b>"汉原 2 号"整体功耗低于 7 千瓦</b>，采用标准机柜设计，在普通室内环境即可直接部署。这标志着量子计算机首次可以被塞进现有的云计算数据中心中，与中国移动的云操作系统打通，扫清了物理环境的部署障碍。</p>
+      <p>美国政府资助的 Atom Computing 和 Infleqtion 同样在中性原子路线持续攻坚，预计未来几年将迎来该路线的大规模部署能力突破。</p>
+      <h4 style="margin-top:12px;">4.5 容错量子计算与 Q-Day</h4>
+      <p>通用量子计算机的核心瓶颈在于逻辑量子比特的容错实现。郭光灿院士的判断是：<b>"通用量子计算机需要至少 1,000 个量子逻辑比特"。</b></p>
+      <p>传统估算下约 1,000 个物理量子比特才能产生一个可靠的逻辑量子比特。破解比特币 ECDSA 签名方案大约需要 2,330 个逻辑量子比特，而当前系统只有约 100 个物理量子比特，且没有任何可靠的逻辑量子比特能用于密码学攻击。</p>
+      <p><b>通用量子计算机的大致时间表约在十年左右</b>，但从晶体管发明到集成电路普及也不过十几年，一旦跨过临界点，发展速度将是指数级的。</p>
+    </div>
+    <div class="card col-dense">
+      <h4>4.6 中国量子计算的技术布局</h4>
+      <p>与美国不同，中国的量子计算发展策略体现了典型的"多路线并行"思路。2026 年 5 月 7 日至 9 日短短三天内，三家国内量子计算公司相继发布最新一代整机：</p>
+      <table class="mini-table" style="margin-top:8px;">
+        <thead><tr><th>企业</th><th>路线</th><th>产品</th><th>关键参数</th></tr></thead>
+        <tbody>
+          <tr><td><b>本源量子</b></td><td>超导</td><td>"悟空-180"（第四代）</td><td>单核 180 计算比特，单比特门保真度 99.9%，双比特门保真度 99%，251 个耦合量子比特，全链条自主可控</td></tr>
+          <tr><td><b>中科酷原</b></td><td>中性原子</td><td>"汉原 2 号"（全球首个双核）</td><td>200 个中性原子（铷 85 + 铷 87 双同位素），双核各 100 原子阵列，可并行计算或分工为计算+实时纠错</td></tr>
+          <tr><td><b>玻色量子</b></td><td>光量子</td><td>"驭量·山海 1000"</td><td>标准模式 1,000 计算量子比特，精准模式 550 个，挂载经典算力旁的"超级物理加速卡"，已嵌入 PyTorch 生态</td></tr>
+        </tbody>
+      </table>
+      <div class="hl-box mt-m"><p class="small" style="margin:0;"><b>策略差异：</b>中国"多路线并行"（超导+中性原子+光量子同时推进）vs 美国"龙头企业+政府注资+供应链垂直整合"模式。中国在量子通信基础设施方面处于全球领先地位，专用网络和城域 QKD 网络规模远超其他区域。</p></div>
+    </div>
+  </div>
+  <div class="deck-footer"><span class="dim2">中科酷原 · 本源量子 · 玻色量子 · 郭光灿院士</span><span class="slide-number" data-current="12" data-total="17"></span></div>
+  <div class="notes">中性原子路线是 2026 年最大的意外变量——"汉原 2 号"功耗低于 7kW，可在普通环境部署。容错量子计算时间表约十年，Q-Day 尚未到来。中国三天内三家公司发布整机，展现"多路线并行"策略，量子通信基础设施全球领先。</div>
+</section>
+
+<!-- ==================== SLIDE 13: OPPORTUNITY WINDOWS ==================== -->
+<section class="slide" data-title="机会窗口">
+  <p class="kicker">五、机会窗口 · 5.1—5.3</p>
+  <h2 class="h2">政策红利 · AI 融合 · 早期商业化场景</h2>
+  <div class="grid g2 mt-m" style="align-items:start;">
+    <div class="card col-dense">
+      <h4>5.1 政策红利与战略投资窗口</h4>
+      <p>美国 20 亿美元 CHIPS 投资是最明确的政策信号。此前量子计算投资主要来自风险资本（2025 年融资总额近 100 亿美元），而美国政府的大规模入局标志着行业获得国家级战略背书。获得政府资金的企业不仅能缓解研发投入压力，还意味着在技术标准制定、国家安全采购、国际竞争等方面获得潜在优势。</p>
+      <p>DARPA 的 Quantum Benchmarking Initiative 对参与企业的筛选也将成为行业竞争态势的重要分水岭 — 预计 <b>2026 年底将宣布哪些第二阶段企业获邀进入第三阶段</b>，幸存者将获得持续的国家级支持。</p>
+      <h4 style="margin-top:12px;">5.2 AI 与量子计算的融合机遇</h4>
+      <p>量子计算与 AI 的融合被视为最重要的技术交汇点：</p>
+      <p><b>AI for Quantum：</b>AI 正在彻底改变量子计算机的实现路径。AI 辅助的量子纠错编码设计大幅降低了对物理量子比特数量的需求，将通用量子计算机的门槛从百万级降至两万级，技术时间表可能被大幅压缩。谷歌 AlphaQubit 解码器已成功将表面码纠错效率提升至前所未有水平。</p>
+      <p><b>Quantum for AI：</b>量子计算有望在训练大规模 AI 模型、解决组合优化问题等方面提供指数级加速。NVIDIA 的 CUDA-Q 平台已成为开发者跨经典 HPC 和量子领域构建应用的标准，基础设施层已基本成熟。</p>
+    </div>
+    <div class="card col-dense">
+      <h4>5.3 早期商业化场景的落地</h4>
+      <p>据 KB Securities 分析，量子计算行业在 2026 年已进入商业化轨道，<b>2029 年是关键的拐点年份</b>。2026 年预计将看到在量子化学和材料科学中令人信服的概念验证演示，特别是在经典方法难以处理的高耦合电子系统领域。</p>
+      <p>当前已初具规模的应用领域：</p>
+      <ul style="margin:4px 0; padding-left:16px;">
+        <li><b>药物研发与材料科学：</b>量子化学计算是离子阱路线最擅长的领域，IonQ 和 Quantinuum 在该领域有显著积累。</li>
+        <li><b>金融优化：</b>D-Wave 已获得 2,000 万美元的 Advantage2 系统销售合同，金融机构对量子优化的接受度在快速提升。</li>
+        <li><b>物流与供应链优化：</b>组合优化问题是量子退火路线和光量子专用机的天然应用场景。</li>
+        <li><b>加密安全升级：</b>Q-Day 尚未到来，但越接近那个时间点，现有加密体系的脆弱性就越明显，后量子密码学迁移将是巨大的市场机遇窗口。</li>
+      </ul>
+      <div class="hl-box mt-m"><p class="small" style="margin:0;"><b>KB Securities 判断：</b>"2026 年量子计算已进入商业化轨道，2029 年是关键的拐点"——这或许是最接近现实的判断。从实验室验证到特定场景的商业化应用已有初步进展，但真正的通用容错量子计算机仍需约十年时间。</p></div>
+    </div>
+  </div>
+  <div class="deck-footer"><span class="dim2">KB Securities · NVIDIA · DARPA · 各公司公告</span><span class="slide-number" data-current="13" data-total="17"></span></div>
+  <div class="notes">三大机会窗口：政策红利（美国 20 亿 + DARPA QBI 筛选）、AI 融合（AI for Quantum 降低门槛，Quantum for AI 指数加速）、早期商业化（2029 年关键拐点，药物/金融/物流/加密四大领域）。KB Securities 认为 2026 年已进入商业化轨道。</div>
+</section>
+
+<!-- ==================== SLIDE 14: SUPPLY CHAIN LOCALIZATION + RISKS ==================== -->
+<section class="slide" data-title="供应链国产化与风险">
+  <p class="kicker">五 · 5.4 供应链国产化 & 六 · 风险 6.1—6.2</p>
+  <h2 class="h2">供应链国产化与区域机遇 · 技术路线与商业化风险</h2>
+  <div class="grid g2 mt-m" style="align-items:start;">
+    <div class="card col-dense">
+      <h4>5.4 供应链国产化与区域机遇</h4>
+      <p><b>中国：</b>国产替代窗口显著扩大。在稀释制冷机等关键设备方面，欧美实施出口限制，国内相关设备国产化需求迫切，已为国产替代企业创造了明确的市场空间。同时，中国在量子通信基础设施方面处于全球领先地位，专用网络和城域 QKD 网络规模远超其他区域。</p>
+      <p><b>日本：</b>虽未形成规模化产业优势，但在超导材料和精密测量设备方面具备深厚的工业基础，有望在量子计算产业链上游设备环节扮演重要角色。</p>
+      <p><b>东南亚：</b>新加坡、马来西亚等国家正在积极吸引半导体和量子相关企业投资，但目前主要处于技术引进和人才培养的初期阶段，直接机会相对有限。</p>
+    </div>
+    <div class="card col-dense">
+      <h4>6.1 技术路线风险</h4>
+      <p>量子计算目前仍处于"技术路线竞赛"阶段，尚未形成像半导体行业中 CMOS 那样的统一技术标准。中信建投指出，<b>"主流路线尚未收敛"是当前行业的核心特征之一。</b></p>
+      <p>各路线瓶颈：超导需极低温环境，规模扩展和低温恒温器瓶颈突出；离子阱规模化困难较大；光量子通用量子门实现存在根本性瓶颈；中性原子稳定性待验证。对于押注单一技术路线的投资者而言，<b>技术路线被其他路径超越或淘汰的风险不容忽视。</b></p>
+      <h4 style="margin-top:12px;">6.2 商业化周期风险：产业界 vs 学术界共识偏差</h4>
+      <p>产业界乐观预期与学界审慎判断之间存在明显温差。一方面，科技巨头和资本市场将 2026 年视为"量子优势"实现之年；另一方面，郭光灿院士评估：量子精密测量还需 3—5 年，量子保密通信还需 5—10 年，量子计算则需要<b>约 10 年</b>才能实现大规模商用。</p>
+      <div class="hl-box hl-box-warn mt-s"><p class="small" style="margin:0;">郭院士直言："现在电子计算机攻破不了的公开密钥，量子计算机也还不能攻破。"学术界审慎与产业界激进之间的落差，意味着量子计算可能存在比 AI 浪潮更长的变现周期。</p></div>
+    </div>
+  </div>
+  <div class="deck-footer"><span class="dim2">中信建投 · 郭光灿院士 · 各区域政策分析</span><span class="slide-number" data-current="14" data-total="17"></span></div>
+  <div class="notes">中国国产替代窗口因出口限制而扩大。日本在上游材料设备有优势。东南亚处于初期阶段。技术路线尚未收敛是核心风险。商业化周期有产业界和学术界共识偏差——郭光灿院士认为量子计算需约 10 年才能大规模商用，可能比 AI 浪潮有更长的变现周期。</div>
+</section>
+
+<!-- ==================== SLIDE 15: VALUATION + GEOPOLITICAL + TALENT KPI ==================== -->
+<section class="slide" data-title="估值与地缘政治风险">
+  <p class="kicker">六、风险 · 6.3—6.5</p>
+  <h2 class="h2">估值风险与泡沫隐忧 · 地缘政治 · 人才供给</h2>
+  <div class="grid g3 mt-m" style="align-items:start;">
+    <div class="card card-accent">
+      <p class="kpi-label">6.3 估值风险与泡沫隐忧</p>
+      <p class="small"><b>2025 年"暴涨之年"：</b>Rigetti Computing 和 D-Wave Quantum 股价涨幅超过 600%，谷歌母公司 Alphabet 上涨近 90%。2026 年 5 月 CHIPS 拨款消息公布后板块再次集体飙升 — IBM 和 GlobalFoundries 涨约 7%，Rigetti 涨超 15%，D-Wave Quantum 涨超 17%，IONQ 涨超 8%。</p>
+      <div class="hl-box hl-box-warn mt-s"><p class="small" style="margin:0;"><b>空头压力：</b>IonQ 被空头指控约 86% 收入来自政府专项拨款，收入结构高度脆弱。D-Wave、Rigetti 等企业市销率动辄数百倍，一旦商业化进展不及预期，估值修正风险极高。</p></div>
+      <p class="small mt-s">量子计算企业普遍处于收入极低、亏损严重的高投入阶段。</p>
+    </div>
+    <div class="card card-accent">
+      <p class="kpi-label">6.4 地缘政治风险</p>
+      <p class="small">量子计算与量子通信已成为中美战略科技竞争的关键领域。美国持续推动出口管制和技术封锁，中国则加速量子科技自主可控。两地缘大国在量子领域的政策摩擦可能进一步加剧，尤其在量子密码破解能力被视为国家安全威胁的背景下，量子计算的<b>军备竞赛性质日益凸显</b>。</p>
+      <p class="small">美国 20 亿美元 CHIPS 投资本身就带有明确的地缘政治色彩 — 通过本土化制造"隔离国内量子生态系统免受地缘政治微电子脆弱性的影响"。</p>
+      <p class="small"><b>双重效应：</b>一方面为中国上游设备和材料国产替代创造机遇窗口；另一方面中美脱钩增加全球产业链协调成本。Q-Day 的临近本身就是一种地缘政治紧张因素。</p>
+    </div>
+    <div class="card card-accent">
+      <p class="kpi-label">6.5 人才与基础科学供给风险</p>
+      <p class="small">量子计算是多学科交叉的高精尖领域，需要物理学、材料学、电子工程、计算机科学等多个领域的顶尖人才协同。</p>
+      <div class="hl-box mt-s"><p class="small" style="margin:0;">全球量子计算人才供给高度紧张，欧美顶尖研究型大学培养的博士难以满足产业快速扩张的人才需求。招聘和争夺量子人才的竞争已进入白热化阶段，<b>人才短缺可能成为产业链发展的最大软性瓶颈。</b></p></div>
+    </div>
+  </div>
+  <div class="deck-footer"><span class="dim2">各公司财报 · 做空报告 · 地缘政治分析</span><span class="slide-number" data-current="15" data-total="17"></span></div>
+  <div class="notes">三大风险维度：估值风险 — 量子股 2025 年暴涨后估值高企（Rigetti/D-Wave +600%），空头压力增加（IonQ 86% 收入依赖政府拨款）。地缘政治 — 中美军备竞赛性质凸显，CHIPS 投资带明确脱钩意图。人才 — 全球供给高度紧张，可能成为最大瓶颈。</div>
+</section>
+
+<!-- ==================== SLIDE 16: SUPPLY CHAIN CONCENTRATION + CONCLUSION ==================== -->
+<section class="slide" data-title="供应链集中度与结语">
+  <p class="kicker">六 · 6.6 供应链集中度 & 结语</p>
+  <h2 class="h2">供应链集中度与材料风险 · 分水岭已至</h2>
+  <div class="grid g2 mt-m" style="align-items:start;">
+    <div class="card col-dense">
+      <h4>6.6 供应链集中度与材料风险</h4>
+      <p>产业链上游的稀释制冷机、单光子探测器等关键器件供应商高度集中，且呈现明显的区域集群特征。欧美对中国实施稀释制冷机出口限制，可能导致国内量子计算研发进度受影响，同时也倒逼国产替代加速。日本在超导材料和精密光学部件方面的全球竞争力意味着量子计算上游材料对日企仍有相当程度的依赖。</p>
+      <p>在量子芯片制造方面，全球量子芯片的先进工艺能力集中在美国（GlobalFoundries、SkyWater）和欧洲（部分化合物半导体产线），地域分布不均匀，<b>一旦出现地缘冲突或供应链中断，将影响全球量子硬件研发进度。</b></p>
+      <div class="hl-box hl-box-warn mt-m"><p class="small" style="margin:0;"><b>关键依赖：</b>稀释制冷机 → 欧美主导（出口限制）→ 日本超导材料/精密光学 → 美国/欧洲芯片制造（GlobalFoundries, SkyWater）</p></div>
+    </div>
+    <div class="card col-dense">
+      <h4>结语：分水岭已至，商业应用仍需耐心</h4>
+      <p>2025 年是量子计算发展的关键元年 — 诺贝尔物理学奖授予超导量子计算领域先驱，标志着量子技术彻底告别实验室探索阶段。2026 年则承载了更多期待：从美国政府 20 亿美元的战略投资，到 IBM/谷歌/本源量子等头部企业量子比特数量的快速跃升，到 AI 驱动的量子纠错技术突破，再到中性原子和光量子路线各自交出引人注目的成绩单 — <b>量子计算在多个维度上同时加速。</b></p>
+      <p>然而，2026 年的核心命题不是"量子计算机何时到来"，而是在<b>"NISQ 时代如何生存与胜出"</b>。含噪声的中等规模量子时代仍将延续数年。</p>
+      <p><b>关键策略选择：</b>追高估值已大幅膨胀的初创企业，还是选择如 IBM 这般具备稳定盈利基础和技术积累的"稳健型"巨头？是押注单一技术路线，还是通过指数工具分散布局？IonQ 董事长、CEO 等内部人士近期已发生两次最大规模的内部股票出售活动（分别高达 1.431 亿美元和 1.572 亿美元），<b>这一信号值得关注。</b></p>
+    </div>
+  </div>
+  <div class="deck-footer"><span class="dim2">供应链分析 · KB Securities · 各公司公告</span><span class="slide-number" data-current="16" data-total="17"></span></div>
+  <div class="notes">供应链高度集中在美欧日。结语：2025 年是关键元年（诺贝尔奖），2026 年多维度加速。核心命题是"NISQ 时代如何生存与胜出"。投资者面临追高估值初创 vs 稳健巨头、押注单一路线 vs 分散布局的策略选择。IonQ 内部人士大额减持信号值得警惕。</div>
+</section>
+
+<!-- ==================== SLIDE 17: SUMMARY & OUTLOOK ==================== -->
+<section class="slide center tc" data-title="总结与展望">
+  <div>
+    <p class="kicker">Summary & Outlook · 投资策略展望</p>
+    <h1 class="h1 anim-rise-in" data-anim="rise-in" style="font-size:56px;">
+      <span class="gradient-text">最大的确定性</span><br>恰恰来自不确定性本身
+    </h1>
+    <p class="lede" style="margin:16px auto; max-width:64ch; font-size:18px;">全球量子计算的角逐正从实验室走向市场。美国通过 20 亿美元 CHIPS 投资试图在产业化进程上取得领先，中国通过多路线并行推进争取局部超越，而欧洲和日韩则在基础研究和专用设备方面伺机切入。</p>
+    <div class="grid g3 mt-l" style="max-width:960px; margin:0 auto; text-align:left;">
+      <div class="card card-outline"><h4 style="font-size:15px;">短期（2026—2028）</h4><p class="small dim">关注 CHIPS 资金落地效应、DARPA QBI 第三阶段入选者、量子化学概念验证。NISQ 时代应用场景探索。</p></div>
+      <div class="card card-outline"><h4 style="font-size:15px;">中期（2029—2032）</h4><p class="small dim">KB Securities 判断的拐点年份。首个容错量子计算机可能出现。早期商业化规模落地。</p></div>
+      <div class="card card-outline"><h4 style="font-size:15px;">长期（2032+）</h4><p class="small dim">通用容错量子计算机 ~10 年。市场规模向 126—864 亿美元区间靠拢。后量子密码学迁移大潮。</p></div>
+    </div>
+    <p class="dim mt-l" style="font-size:14px;">报告完整版本请参见各章节详述 · 数据截至 2026 年 5 月</p>
+    <p style="font-size:12px; color:var(--text-3); margin-top:8px;">键盘：← → 翻页 · T 切主题 · F 全屏 · O 概览 · S 演讲者模式</p>
+  </div>
+  <div class="deck-footer"><span class="dim2">Slidehttp · 量子计算产业研究组 · 2026 年 5 月</span><span class="slide-number" data-current="17" data-total="17"></span></div>
+  <div class="notes">总结展望：量子计算领域留给创新者和投资者的想象空间才刚刚打开。短期关注 CHIPS 资金落地和 DARPA 筛选，中期关注 2029 拐点，长期等待通用容错量子计算机。在技术路线尚未收敛的今天，最大的确定性恰恰来自不确定性本身。建议战略投资部持续跟踪头部企业进展，关注 IonQ 内部减持等风险信号，审慎配置。</div>
+</section>
+
+</div>
+<script>
+/* html-ppt :: runtime.js
+ * Keyboard-driven deck runtime. Zero dependencies.
+ *
+ * Features:
+ *   ← → / space / PgUp PgDn / Home End  navigation
+ *   F  fullscreen
+ *   S  presenter mode (opens a NEW WINDOW with current/next slide preview + notes + timer)
+ *       The original window stays as audience view, synced via BroadcastChannel.
+ *       Slide previews use CSS transform:scale() at design resolution for pixel-perfect layout.
+ *   N  quick notes overlay (bottom drawer)
+ *   O  slide overview grid
+ *   T  cycle themes (reads data-themes on <html> or <body>)
+ *   A  cycle demo animation on current slide
+ *   URL hash #/N  deep-link to slide N (1-based)
+ *   Progress bar auto-managed
+ */
+(function () {
+  'use strict';
+
+  const ANIMS = ['fade-up','fade-down','fade-left','fade-right','rise-in','drop-in',
+    'zoom-pop','blur-in','glitch-in','typewriter','neon-glow','shimmer-sweep',
+    'gradient-flow','stagger-list','counter-up','path-draw','parallax-tilt',
+    'card-flip-3d','cube-rotate-3d','page-turn-3d','perspective-zoom',
+    'marquee-scroll','kenburns','confetti-burst','spotlight','morph-shape','ripple-reveal'];
+
+  function ready(fn){ if(document.readyState!='loading')fn(); else document.addEventListener('DOMContentLoaded',fn);}
+
+  /* ========== Parse URL for preview-only mode ==========
+   * When loaded as iframe.src = "index.html?preview=3", runtime enters a
+   * locked single-slide mode: only slide N is visible, no chrome, no keys,
+   * no hash updates. This is how the presenter window shows pixel-perfect
+   * previews — by loading the actual deck file in an iframe and telling it
+   * to display only a specific slide.
+   */
+  function getPreviewIdx() {
+    const m = /[?&]preview=(\d+)/.exec(location.search || '');
+    return m ? parseInt(m[1], 10) - 1 : -1;
+  }
+
+  ready(function () {
+    const deck = document.querySelector('.deck');
+    if (!deck) return;
+    const slides = Array.from(deck.querySelectorAll('.slide'));
+    if (!slides.length) return;
+
+    const previewOnlyIdx = getPreviewIdx();
+    const isPreviewMode = previewOnlyIdx >= 0 && previewOnlyIdx < slides.length;
+
+    /* ===== Preview-only mode: show one slide, hide everything else ===== */
+    if (isPreviewMode) {
+      function showSlide(i) {
+        slides.forEach((s, j) => {
+          const active = (j === i);
+          s.classList.toggle('is-active', active);
+          s.style.display = active ? '' : 'none';
+          if (active) {
+            s.style.opacity = '1';
+            s.style.transform = 'none';
+            s.style.pointerEvents = 'auto';
+          }
+        });
+      }
+      showSlide(previewOnlyIdx);
+      /* Hide chrome that the presenter shouldn't see in preview */
+      const hideSel = '.progress-bar, .notes-overlay, .overview, .notes, aside.notes, .speaker-notes';
+      document.querySelectorAll(hideSel).forEach(el => { el.style.display = 'none'; });
+      document.documentElement.setAttribute('data-preview', '1');
+      document.body.setAttribute('data-preview', '1');
+      /* Auto-detect theme base path for theme switching in preview mode */
+      function getPreviewThemeBase() {
+        const base = document.documentElement.getAttribute('data-theme-base');
+        if (base) return base;
+        const tl = document.getElementById('theme-link');
+        if (tl) {
+          const raw = tl.getAttribute('href') || '';
+          const ls = raw.lastIndexOf('/');
+          if (ls >= 0) return raw.substring(0, ls + 1);
+        }
+        return 'assets/themes/';
+      }
+      const previewThemeBase = getPreviewThemeBase();
+
+      /* Listen for postMessage from parent presenter window:
+       *  - preview-goto: switch visible slide WITHOUT reloading
+       *  - preview-theme: switch theme CSS link to match audience window */
+      window.addEventListener('message', function(e) {
+        if (!e.data) return;
+        if (e.data.type === 'preview-goto') {
+          const n = parseInt(e.data.idx, 10);
+          if (n >= 0 && n < slides.length) showSlide(n);
+        } else if (e.data.type === 'preview-theme' && e.data.name) {
+          document.querySelectorAll('style[data-theme]').forEach(function(s){s.disabled=true});
+          var t = document.querySelector('style[data-theme="'+e.data.name+'"]');
+          if (t) t.disabled = false;
+          document.documentElement.setAttribute('data-theme', e.data.name);
+        }
+      });
+      /* Signal to parent that preview iframe is ready */
+      try { window.parent && window.parent.postMessage({ type: 'preview-ready' }, '*'); } catch(e) {}
+      return;
+    }
+
+    let idx = 0;
+    const total = slides.length;
+
+    /* ===== BroadcastChannel for presenter sync ===== */
+    const CHANNEL_NAME = 'html-ppt-presenter-' + location.pathname;
+    let bc;
+    try { bc = new BroadcastChannel(CHANNEL_NAME); } catch(e) { bc = null; }
+
+    // Are we running inside the presenter popup? (legacy flag, now unused)
+    const isPresenterWindow = false;
+
+    /* ===== progress bar ===== */
+    let bar = document.querySelector('.progress-bar');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.className = 'progress-bar';
+      bar.innerHTML = '<span></span>';
+      document.body.appendChild(bar);
+    }
+    const barFill = bar.querySelector('span');
+
+    /* ===== notes overlay (N key) ===== */
+    let notes = document.querySelector('.notes-overlay');
+    if (!notes) {
+      notes = document.createElement('div');
+      notes.className = 'notes-overlay';
+      document.body.appendChild(notes);
+    }
+
+    /* ===== overview grid (O key) ===== */
+    let overview = document.querySelector('.overview');
+    if (!overview) {
+      overview = document.createElement('div');
+      overview.className = 'overview';
+      slides.forEach((s, i) => {
+        const t = document.createElement('div');
+        t.className = 'thumb';
+        // Force 16:9 aspect ratio robustly
+        t.style.padding = '0 0 56.25% 0';
+        t.style.height = '0';
+        t.style.position = 'relative';
+        t.style.overflow = 'hidden';
+
+        const title = s.getAttribute('data-title') ||
+          (s.querySelector('h1,h2,h3')||{}).textContent || ('Slide '+(i+1));
+        
+        // Create a container for the mini-slide
+        const mini = document.createElement('div');
+        mini.className = 'mini-slide';
+        mini.style.position = 'absolute';
+        mini.style.top = '0';
+        mini.style.left = '0';
+        mini.style.width = '1920px';
+        mini.style.height = '1080px';
+        mini.style.transformOrigin = 'top left';
+        mini.style.pointerEvents = 'none';
+        mini.style.background = 'var(--bg)';
+        
+        // Clone the slide content
+        const clone = s.cloneNode(true);
+        clone.className = 'slide is-active'; // force active styles
+        clone.style.position = 'absolute';
+        clone.style.inset = '0';
+        clone.style.transform = 'none';
+        clone.style.opacity = '1';
+        clone.style.padding = '72px 96px'; // ensure padding is kept
+        
+        mini.appendChild(clone);
+        t.appendChild(mini);
+
+        // Add the number and title overlay
+        const overlay = document.createElement('div');
+        overlay.style.position = 'absolute';
+        overlay.style.inset = '0';
+        overlay.style.background = 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, transparent 40%, transparent 60%, rgba(0,0,0,0.8) 100%)';
+        overlay.style.color = '#fff';
+        overlay.style.zIndex = '10';
+        overlay.style.pointerEvents = 'none';
+        
+        const n = document.createElement('div');
+        n.className = 'n';
+        n.textContent = i + 1;
+        n.style.position = 'absolute';
+        n.style.top = '12px';
+        n.style.left = '16px';
+        n.style.fontWeight = '700';
+        n.style.fontSize = '16px';
+        n.style.color = '#fff';
+        n.style.textShadow = '0 1px 4px rgba(0,0,0,0.8)';
+        
+        const text = document.createElement('div');
+        text.className = 't';
+        text.textContent = title.trim().slice(0,80);
+        text.style.position = 'absolute';
+        text.style.bottom = '12px';
+        text.style.left = '16px';
+        text.style.right = '16px';
+        text.style.fontWeight = '600';
+        text.style.fontSize = '14px';
+        text.style.color = '#fff';
+        text.style.textShadow = '0 1px 4px rgba(0,0,0,0.8)';
+        
+        overlay.appendChild(n);
+        overlay.appendChild(text);
+        t.appendChild(overlay);
+
+        t.addEventListener('click', () => { go(i); toggleOverview(false); });
+        overview.appendChild(t);
+      });
+      document.body.appendChild(overview);
+    }
+
+    /* ===== navigation ===== */
+    function go(n, fromRemote){
+      n = Math.max(0, Math.min(total-1, n));
+      slides.forEach((s,i) => {
+        s.classList.toggle('is-active', i===n);
+        s.classList.toggle('is-prev', i<n);
+      });
+      idx = n;
+      barFill.style.width = ((n+1)/total*100)+'%';
+      const numEl = document.querySelector('.slide-number');
+      if (numEl) { numEl.setAttribute('data-current', n+1); numEl.setAttribute('data-total', total); }
+
+      // notes (bottom overlay)
+      const note = slides[n].querySelector('.notes, aside.notes, .speaker-notes');
+      notes.innerHTML = note ? note.innerHTML : '';
+
+      // hash
+      const hashTarget = '#/'+(n+1);
+      if (location.hash !== hashTarget && !isPresenterWindow) {
+        history.replaceState(null,'', hashTarget);
+      }
+
+      // re-trigger entry animations
+      slides[n].querySelectorAll('[data-anim]').forEach(el => {
+        const a = el.getAttribute('data-anim');
+        el.classList.remove('anim-'+a);
+        void el.offsetWidth;
+        el.classList.add('anim-'+a);
+      });
+
+      // counter-up
+      slides[n].querySelectorAll('.counter').forEach(el => {
+        const target = parseFloat(el.getAttribute('data-to')||el.textContent);
+        const dur = parseInt(el.getAttribute('data-dur')||'1200',10);
+        const start = performance.now();
+        const from = 0;
+        function tick(now){
+          const t = Math.min(1,(now-start)/dur);
+          const v = from + (target-from)*(1-Math.pow(1-t,3));
+          el.textContent = (target % 1 === 0) ? Math.round(v) : v.toFixed(1);
+          if (t<1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      });
+
+      // Broadcast to other window (audience ↔ presenter)
+      if (!fromRemote && bc) {
+        bc.postMessage({ type: 'go', idx: n });
+      }
+    }
+
+    /* ===== listen for remote navigation / theme changes ===== */
+    if (bc) {
+      bc.onmessage = function(e) {
+        if (!e.data) return;
+        if (e.data.type === 'go' && typeof e.data.idx === 'number') {
+          go(e.data.idx, true);
+        } else if (e.data.type === 'theme' && e.data.name) {
+          /* Sync theme across windows */
+          const i = themes.indexOf(e.data.name);
+          if (i >= 0) themeIdx = i;
+          applyTheme(e.data.name);
+        }
+      };
+    }
+
+    function toggleNotes(force){ notes.classList.toggle('open', force!==undefined?force:!notes.classList.contains('open')); }
+    function toggleOverview(force){
+      const isOpen = force!==undefined ? force : !overview.classList.contains('open');
+      overview.classList.toggle('open', isOpen);
+      if (isOpen) {
+        requestAnimationFrame(() => {
+          const thumbs = overview.querySelectorAll('.thumb');
+          if (thumbs.length) {
+            const scale = thumbs[0].clientWidth / 1920;
+            overview.querySelectorAll('.mini-slide').forEach(m => {
+              m.style.transform = 'scale(' + scale + ')';
+            });
+          }
+        });
+      }
+    }
+
+    /* ========== PRESENTER MODE — Magnetic-card popup window ========== */
+    /* Opens a new window with 4 draggable, resizable cards:
+     *   CURRENT  — iframe(?preview=N)   pixel-perfect preview of current slide
+     *   NEXT     — iframe(?preview=N+1) pixel-perfect preview of next slide
+     *   SCRIPT   — large speaker notes (逐字稿)
+     *   TIMER    — elapsed timer + page counter + controls
+     * Cards remember position/size in localStorage.
+     * Two windows sync via BroadcastChannel.
+     */
+    let presenterWin = null;
+
+    function openPresenterWindow() {
+      if (presenterWin && !presenterWin.closed) {
+        presenterWin.focus();
+        return;
+      }
+
+      // Build absolute URL of THIS deck file (without hash/query)
+      const deckUrl = location.protocol + '//' + location.host + location.pathname;
+
+      // Collect slide titles + notes (HTML strings)
+      const slideMeta = slides.map((s, i) => {
+        const note = s.querySelector('.notes, aside.notes, .speaker-notes');
+        return {
+          title: s.getAttribute('data-title') ||
+            (s.querySelector('h1,h2,h3')||{}).textContent || ('Slide '+(i+1)),
+          notes: note ? note.innerHTML : ''
+        };
+      });
+
+      /* Capture current theme so presenter previews match the audience */
+      const currentTheme = root.getAttribute('data-theme') || (themes[themeIdx] || '');
+      const presenterHTML = buildPresenterHTML(deckUrl, slideMeta, total, idx, CHANNEL_NAME, currentTheme);
+
+      presenterWin = window.open('', 'html-ppt-presenter', 'width=1280,height=820,menubar=no,toolbar=no');
+      if (!presenterWin) {
+        alert('请允许弹出窗口以使用演讲者视图');
+        return;
+      }
+      presenterWin.document.open();
+      presenterWin.document.write(presenterHTML);
+      presenterWin.document.close();
+    }
+
+    function buildPresenterHTML(deckUrl, slideMeta, total, startIdx, channelName, currentTheme) {
+      const metaJSON = JSON.stringify(slideMeta);
+      const deckUrlJSON = JSON.stringify(deckUrl);
+      const channelJSON = JSON.stringify(channelName);
+      const themeJSON = JSON.stringify(currentTheme || '');
+      const storageKey = 'html-ppt-presenter:' + location.pathname;
+
+      // Build the document as a single template string for clarity
+      return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Presenter View</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: #1a1d24;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(88,166,255,.04), transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(188,140,255,.04), transparent 50%);
+    color: #e6edf3;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif;
+  }
+  /* Stage: positioned area where cards live */
+  #stage { position: absolute; inset: 0; overflow: hidden; }
+
+  /* Magnetic card */
+  .pcard {
+    position: absolute;
+    background: #0d1117;
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.02);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    min-width: 180px; min-height: 100px;
+    transition: box-shadow .2s, border-color .2s;
+  }
+  .pcard.dragging { box-shadow: 0 16px 48px rgba(0,0,0,.6), 0 0 0 2px rgba(88,166,255,.5); border-color: #58a6ff; transition: none; z-index: 9999; }
+  .pcard.resizing { box-shadow: 0 16px 48px rgba(0,0,0,.6), 0 0 0 2px rgba(63,185,80,.5); border-color: #3fb950; transition: none; z-index: 9999; }
+  .pcard:hover { border-color: rgba(88,166,255,.3); }
+
+  /* Card header (drag handle) */
+  .pcard-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px;
+    background: rgba(255,255,255,.04);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    cursor: move;
+    user-select: none;
+    flex-shrink: 0;
+  }
+  .pcard-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dot-color, #58a6ff); flex-shrink: 0; }
+  .pcard-title {
+    font-size: 11px; letter-spacing: .15em; text-transform: uppercase;
+    font-weight: 700; color: #8b949e; flex: 1;
+  }
+  .pcard-meta { font-size: 11px; color: #6e7681; }
+
+  /* Card body */
+  .pcard-body { flex: 1; position: relative; overflow: hidden; min-height: 0; }
+
+  /* Preview cards (CURRENT/NEXT) — iframe-based pixel-perfect render */
+  .pcard-preview .pcard-body { background: #000; }
+  .pcard-preview iframe {
+    position: absolute; top: 0; left: 0;
+    width: 1920px; height: 1080px;
+    border: none;
+    transform-origin: top left;
+    pointer-events: none;
+    background: transparent;
+  }
+  .pcard-preview .preview-end {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #484f58; font-size: 14px; letter-spacing: .12em;
+  }
+
+  /* Notes card */
+  .pcard-notes .pcard-body {
+    padding: 14px 18px;
+    overflow-y: auto;
+    font-size: 18px; line-height: 1.75;
+    color: #d0d7de;
+    font-family: "Noto Sans SC", -apple-system, sans-serif;
+  }
+  .pcard-notes .pcard-body p { margin: 0 0 .7em 0; }
+  .pcard-notes .pcard-body strong { color: #f0883e; }
+  .pcard-notes .pcard-body em { color: #58a6ff; font-style: normal; }
+  .pcard-notes .pcard-body code {
+    font-family: "SF Mono", monospace; font-size: .9em;
+    background: rgba(255,255,255,.08); padding: 1px 6px; border-radius: 4px;
+  }
+  .pcard-notes .empty { color: #484f58; font-style: italic; }
+
+  /* Timer card */
+  .pcard-timer .pcard-body {
+    display: flex; flex-direction: column; gap: 14px;
+    padding: 18px 20px; justify-content: center;
+  }
+  .timer-display {
+    font-family: "SF Mono", "JetBrains Mono", monospace;
+    font-size: 42px; font-weight: 700;
+    color: #3fb950;
+    letter-spacing: .04em;
+    line-height: 1;
+  }
+  .timer-row {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 14px; color: #8b949e;
+  }
+  .timer-row .label { font-size: 10px; letter-spacing: .15em; text-transform: uppercase; color: #6e7681; }
+  .timer-row .val { color: #e6edf3; font-weight: 600; font-family: "SF Mono", monospace; }
+  .timer-controls { display: flex; gap: 8px; flex-wrap: wrap; }
+  .timer-btn {
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    color: #e6edf3;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .timer-btn:hover { background: rgba(88,166,255,.15); border-color: #58a6ff; }
+  .timer-btn:active { transform: translateY(1px); }
+
+  /* Resize handle */
+  .pcard-resize {
+    position: absolute; right: 0; bottom: 0;
+    width: 18px; height: 18px;
+    cursor: nwse-resize;
+    background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,.25) 50%, rgba(255,255,255,.25) 60%, transparent 60%, transparent 70%, rgba(255,255,255,.25) 70%, rgba(255,255,255,.25) 80%, transparent 80%);
+    z-index: 5;
+  }
+  .pcard-resize:hover { background: linear-gradient(135deg, transparent 50%, #58a6ff 50%, #58a6ff 60%, transparent 60%, transparent 70%, #58a6ff 70%, #58a6ff 80%, transparent 80%); }
+
+  /* Bottom hint bar */
+  .hint-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,.6);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255,255,255,.08);
+    padding: 6px 16px;
+    font-size: 11px; color: #8b949e;
+    display: flex; gap: 18px; align-items: center;
+    z-index: 1000;
+  }
+  .hint-bar kbd {
+    background: rgba(255,255,255,.08);
+    padding: 1px 6px; border-radius: 3px;
+    font-family: "SF Mono", monospace;
+    font-size: 10px;
+    border: 1px solid rgba(255,255,255,.1);
+    color: #e6edf3;
+  }
+  .hint-bar .reset-layout {
+    margin-left: auto;
+    background: transparent; border: 1px solid rgba(255,255,255,.15);
+    color: #8b949e; padding: 3px 10px; border-radius: 4px;
+    font-size: 11px; cursor: pointer; font-family: inherit;
+  }
+  .hint-bar .reset-layout:hover { background: rgba(248,81,73,.15); border-color: #f85149; color: #f85149; }
+
+  body.is-dragging-card * { user-select: none !important; }
+  body.is-dragging-card iframe { pointer-events: none !important; }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <div class="pcard pcard-preview" id="card-cur" style="--dot-color:#58a6ff">
+    <div class="pcard-head" data-drag>
+      <span class="pcard-dot"></span>
+      <span class="pcard-title">CURRENT</span>
+      <span class="pcard-meta" id="cur-meta">—</span>
+    </div>
+    <div class="pcard-body"><iframe id="iframe-cur"></iframe></div>
+    <div class="pcard-resize" data-resize></div>
+  </div>
+
+  <div class="pcard pcard-preview" id="card-nxt" style="--dot-color:#bc8cff">
+    <div class="pcard-head" data-drag>
+      <span class="pcard-dot"></span>
+      <span class="pcard-title">NEXT</span>
+      <span class="pcard-meta" id="nxt-meta">—</span>
+    </div>
+    <div class="pcard-body"><iframe id="iframe-nxt"></iframe></div>
+    <div class="pcard-resize" data-resize></div>
+  </div>
+
+  <div class="pcard pcard-notes" id="card-notes" style="--dot-color:#f0883e">
+    <div class="pcard-head" data-drag>
+      <span class="pcard-dot"></span>
+      <span class="pcard-title">SPEAKER SCRIPT · 逐字稿</span>
+    </div>
+    <div class="pcard-body" id="notes-body"></div>
+    <div class="pcard-resize" data-resize></div>
+  </div>
+
+  <div class="pcard pcard-timer" id="card-timer" style="--dot-color:#3fb950">
+    <div class="pcard-head" data-drag>
+      <span class="pcard-dot"></span>
+      <span class="pcard-title">TIMER</span>
+    </div>
+    <div class="pcard-body">
+      <div class="timer-display" id="timer-display">00:00</div>
+      <div class="timer-row">
+        <span class="label">Slide</span>
+        <span class="val" id="timer-count">1 / ${total}</span>
+      </div>
+      <div class="timer-controls">
+        <button class="timer-btn" id="btn-prev">← Prev</button>
+        <button class="timer-btn" id="btn-next">Next →</button>
+        <button class="timer-btn" id="btn-reset">⏱ Reset</button>
+      </div>
+    </div>
+    <div class="pcard-resize" data-resize></div>
+  </div>
+</div>
+
+<div class="hint-bar">
+  <span><kbd>← →</kbd> 翻页</span>
+  <span><kbd>R</kbd> 重置计时</span>
+  <span><kbd>Esc</kbd> 关闭</span>
+  <span style="color:#6e7681">拖动卡片头部移动 · 拖动右下角调整大小</span>
+  <button class="reset-layout" id="reset-layout">重置布局</button>
+</div>
+
+<script>
+(function(){
+  var slideMeta = ${metaJSON};
+  var total = ${total};
+  var idx = ${startIdx};
+  var deckUrl = ${deckUrlJSON};
+  var STORAGE_KEY = ${JSON.stringify(storageKey)};
+  var bc;
+  try { bc = new BroadcastChannel(${channelJSON}); } catch(e) {}
+
+  var iframeCur = document.getElementById('iframe-cur');
+  var iframeNxt = document.getElementById('iframe-nxt');
+  var notesBody = document.getElementById('notes-body');
+  var curMeta = document.getElementById('cur-meta');
+  var nxtMeta = document.getElementById('nxt-meta');
+  var timerDisplay = document.getElementById('timer-display');
+  var timerCount = document.getElementById('timer-count');
+
+  /* ===== Default card layout ===== */
+  function defaultLayout() {
+    var w = window.innerWidth;
+    var h = window.innerHeight - 36; /* leave room for hint bar */
+    return {
+      'card-cur':   { x: 16,        y: 16,            w: Math.round(w*0.55) - 24, h: Math.round(h*0.62) - 16 },
+      'card-nxt':   { x: Math.round(w*0.55) + 8, y: 16, w: w - Math.round(w*0.55) - 24, h: Math.round(h*0.42) - 16 },
+      'card-notes': { x: Math.round(w*0.55) + 8, y: Math.round(h*0.42) + 8, w: w - Math.round(w*0.55) - 24, h: h - Math.round(h*0.42) - 16 },
+      'card-timer': { x: 16,        y: Math.round(h*0.62) + 8, w: Math.round(w*0.55) - 24, h: h - Math.round(h*0.62) - 16 }
+    };
+  }
+
+  /* ===== Apply / save / restore layout ===== */
+  function applyLayout(layout) {
+    Object.keys(layout).forEach(function(id){
+      var el = document.getElementById(id);
+      var l = layout[id];
+      if (el && l) {
+        el.style.left = l.x + 'px';
+        el.style.top = l.y + 'px';
+        el.style.width = l.w + 'px';
+        el.style.height = l.h + 'px';
+      }
+    });
+    rescaleAll();
+  }
+  function readLayout() {
+    try {
+      var saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    return defaultLayout();
+  }
+  function saveLayout() {
+    var layout = {};
+    ['card-cur','card-nxt','card-notes','card-timer'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) {
+        layout[id] = {
+          x: parseInt(el.style.left,10) || 0,
+          y: parseInt(el.style.top,10) || 0,
+          w: parseInt(el.style.width,10) || 300,
+          h: parseInt(el.style.height,10) || 200
+        };
+      }
+    });
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(layout)); } catch(e) {}
+  }
+
+  /* ===== iframe rescale to fit card body ===== */
+  function rescaleIframe(iframe) {
+    if (!iframe || iframe.style.display === 'none') return;
+    var body = iframe.parentElement;
+    var cw = body.clientWidth, ch = body.clientHeight;
+    if (!cw || !ch) return;
+    var s = Math.min(cw / 1920, ch / 1080);
+    iframe.style.transform = 'scale(' + s + ')';
+    /* Center the scaled iframe in the body */
+    var sw = 1920 * s, sh = 1080 * s;
+    iframe.style.left = Math.max(0, (cw - sw) / 2) + 'px';
+    iframe.style.top = Math.max(0, (ch - sh) / 2) + 'px';
+  }
+  function rescaleAll() {
+    rescaleIframe(iframeCur);
+    rescaleIframe(iframeNxt);
+  }
+  window.addEventListener('resize', rescaleAll);
+
+  /* ===== Drag (move card by header) ===== */
+  document.querySelectorAll('[data-drag]').forEach(function(handle){
+    handle.addEventListener('mousedown', function(e){
+      if (e.button !== 0) return;
+      var card = handle.closest('.pcard');
+      if (!card) return;
+      e.preventDefault();
+      card.classList.add('dragging');
+      document.body.classList.add('is-dragging-card');
+      var startX = e.clientX, startY = e.clientY;
+      var startL = parseInt(card.style.left,10) || 0;
+      var startT = parseInt(card.style.top,10)  || 0;
+      function onMove(ev){
+        var nx = Math.max(0, Math.min(window.innerWidth - 100, startL + ev.clientX - startX));
+        var ny = Math.max(0, Math.min(window.innerHeight - 50, startT + ev.clientY - startY));
+        card.style.left = nx + 'px';
+        card.style.top = ny + 'px';
+      }
+      function onUp(){
+        card.classList.remove('dragging');
+        document.body.classList.remove('is-dragging-card');
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        saveLayout();
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  });
+
+  /* ===== Resize (drag bottom-right corner) ===== */
+  document.querySelectorAll('[data-resize]').forEach(function(handle){
+    handle.addEventListener('mousedown', function(e){
+      if (e.button !== 0) return;
+      var card = handle.closest('.pcard');
+      if (!card) return;
+      e.preventDefault(); e.stopPropagation();
+      card.classList.add('resizing');
+      document.body.classList.add('is-dragging-card');
+      var startX = e.clientX, startY = e.clientY;
+      var startW = parseInt(card.style.width,10)  || card.offsetWidth;
+      var startH = parseInt(card.style.height,10) || card.offsetHeight;
+      function onMove(ev){
+        var nw = Math.max(180, startW + ev.clientX - startX);
+        var nh = Math.max(100, startH + ev.clientY - startY);
+        card.style.width = nw + 'px';
+        card.style.height = nh + 'px';
+        if (card.querySelector('iframe')) rescaleIframe(card.querySelector('iframe'));
+      }
+      function onUp(){
+        card.classList.remove('resizing');
+        document.body.classList.remove('is-dragging-card');
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        rescaleAll();
+        saveLayout();
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  });
+
+  /* ===== Preview iframe ready tracking =====
+   * Each iframe loads the deck ONCE with ?preview=1 on init. Subsequent
+   * slide changes are sent via postMessage('preview-goto') so the iframe
+   * just toggles visibility of a different .slide — no reload, no flicker.
+   */
+  var iframeReady = { cur: false, nxt: false };
+  var currentTheme = ${themeJSON};
+  window.addEventListener('message', function(e) {
+    if (!e.data || e.data.type !== 'preview-ready') return;
+    var iframe = null;
+    if (e.source === iframeCur.contentWindow) {
+      iframeReady.cur = true;
+      iframe = iframeCur;
+      postPreviewGoto(iframeCur, idx);
+    } else if (e.source === iframeNxt.contentWindow) {
+      iframeReady.nxt = true;
+      iframe = iframeNxt;
+      postPreviewGoto(iframeNxt, idx + 1 < total ? idx + 1 : idx);
+    }
+    /* Sync current theme to the iframe */
+    if (iframe && currentTheme) {
+      try { iframe.contentWindow.postMessage({ type: 'preview-theme', name: currentTheme }, '*'); } catch(err) {}
+    }
+    if (iframe) rescaleIframe(iframe);
+  });
+
+  function postPreviewGoto(iframe, n) {
+    try {
+      iframe.contentWindow.postMessage({ type: 'preview-goto', idx: n }, '*');
+    } catch(e) {}
+  }
+
+  /* ===== Update content =====
+   * Smooth (no-reload) navigation: send postMessage to iframes instead of
+   * resetting src. Iframes stay loaded, just switch visible .slide.
+   */
+  function update(n) {
+    n = Math.max(0, Math.min(total - 1, n));
+    idx = n;
+
+    /* Current preview — postMessage (smooth) */
+    if (iframeReady.cur) postPreviewGoto(iframeCur, n);
+    curMeta.textContent = (n + 1) + '/' + total;
+
+    /* Next preview */
+    if (n + 1 < total) {
+      iframeNxt.style.display = '';
+      var endEl = document.querySelector('#card-nxt .preview-end');
+      if (endEl) endEl.remove();
+      if (iframeReady.nxt) postPreviewGoto(iframeNxt, n + 1);
+      nxtMeta.textContent = (n + 2) + '/' + total;
+    } else {
+      iframeNxt.style.display = 'none';
+      var body = document.querySelector('#card-nxt .pcard-body');
+      if (body && !body.querySelector('.preview-end')) {
+        var end = document.createElement('div');
+        end.className = 'preview-end';
+        end.textContent = '— END OF DECK —';
+        body.appendChild(end);
+      }
+      nxtMeta.textContent = 'END';
+    }
+
+    /* Notes */
+    var note = slideMeta[n].notes;
+    notesBody.innerHTML = note || '<span class="empty">（这一页还没有逐字稿）</span>';
+
+    /* Timer count */
+    timerCount.textContent = (n + 1) + ' / ' + total;
+  }
+
+  /* ===== Timer ===== */
+  var tStart = Date.now();
+  setInterval(function(){
+    var s = Math.floor((Date.now() - tStart) / 1000);
+    var mm = String(Math.floor(s/60)).padStart(2,'0');
+    var ss = String(s%60).padStart(2,'0');
+    timerDisplay.textContent = mm + ':' + ss;
+  }, 1000);
+  function resetTimer(){ tStart = Date.now(); timerDisplay.textContent = '00:00'; }
+
+  /* ===== BroadcastChannel sync ===== */
+  if (bc) {
+    bc.onmessage = function(e){
+      if (!e.data) return;
+      if (e.data.type === 'go') update(e.data.idx);
+      else if (e.data.type === 'theme' && e.data.name) {
+        currentTheme = e.data.name;
+        /* Forward theme change to preview iframes */
+        [iframeCur, iframeNxt].forEach(function(iframe){
+          try {
+            iframe.contentWindow.postMessage({ type: 'preview-theme', name: e.data.name }, '*');
+          } catch(err) {}
+        });
+      }
+    };
+  }
+  function go(n) {
+    update(n);
+    if (bc) bc.postMessage({ type: 'go', idx: idx });
+  }
+
+  /* ===== Buttons ===== */
+  document.getElementById('btn-prev').addEventListener('click', function(){ go(idx - 1); });
+  document.getElementById('btn-next').addEventListener('click', function(){ go(idx + 1); });
+  document.getElementById('btn-reset').addEventListener('click', resetTimer);
+  document.getElementById('reset-layout').addEventListener('click', function(){
+    if (confirm('恢复默认卡片布局？')) {
+      try { localStorage.removeItem(STORAGE_KEY); } catch(e){}
+      applyLayout(defaultLayout());
+    }
+  });
+
+  /* ===== Keyboard ===== */
+  document.addEventListener('keydown', function(e){
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    switch(e.key) {
+      case 'ArrowRight': case ' ': case 'PageDown': go(idx + 1); e.preventDefault(); break;
+      case 'ArrowLeft':  case 'PageUp':   go(idx - 1); e.preventDefault(); break;
+      case 'Home': go(0); break;
+      case 'End':  go(total - 1); break;
+      case 'r': case 'R': resetTimer(); break;
+      case 'Escape': window.close(); break;
+    }
+  });
+
+  /* ===== Iframe load → rescale (catches initial size) ===== */
+  iframeCur.addEventListener('load', function(){ rescaleIframe(iframeCur); });
+  iframeNxt.addEventListener('load', function(){ rescaleIframe(iframeNxt); });
+
+  /* ===== Init =====
+   * Load each iframe ONCE with the deck file. After they post
+   * 'preview-ready', all subsequent navigation is via postMessage
+   * (smooth, no reload, no flicker).
+   */
+  applyLayout(readLayout());
+  iframeCur.src = deckUrl + '?preview=' + (idx + 1);
+  if (idx + 1 < total) iframeNxt.src = deckUrl + '?preview=' + (idx + 2);
+  /* Initialize notes/timer/count without touching iframes */
+  notesBody.innerHTML = slideMeta[idx].notes || '<span class="empty">（这一页还没有逐字稿）</span>';
+  curMeta.textContent = (idx + 1) + '/' + total;
+  nxtMeta.textContent = (idx + 2) + '/' + total;
+  timerCount.textContent = (idx + 1) + ' / ' + total;
+})();
+</` + `script>
+</body></html>`;
+    }
+
+    function fullscreen(){ const el=document.documentElement;
+      if (!document.fullscreenElement) el.requestFullscreen&&el.requestFullscreen();
+      else document.exitFullscreen&&document.exitFullscreen();
+    }
+
+    // theme cycling
+    const root = document.documentElement;
+    const themesAttr = root.getAttribute('data-themes') || document.body.getAttribute('data-themes');
+    const themes = themesAttr ? themesAttr.split(',').map(s=>s.trim()).filter(Boolean) : [];
+    let themeIdx = 0;
+
+    // Auto-detect theme base path from existing <link id="theme-link">
+    let themeBase = root.getAttribute('data-theme-base');
+    if (!themeBase) {
+      const existingLink = document.getElementById('theme-link');
+      if (existingLink) {
+        // el.getAttribute('href') gives the raw relative path written in HTML
+        const rawHref = existingLink.getAttribute('href') || '';
+        const lastSlash = rawHref.lastIndexOf('/');
+        themeBase = lastSlash >= 0 ? rawHref.substring(0, lastSlash + 1) : 'assets/themes/';
+      } else {
+        themeBase = 'assets/themes/';
+      }
+    }
+
+    function applyTheme(name) {
+      document.querySelectorAll('style[data-theme]').forEach(function(s){s.disabled=true});
+      var t = document.querySelector('style[data-theme="'+name+'"]');
+      if (t) t.disabled = false;
+      root.setAttribute('data-theme', name);
+      var ind = document.querySelector('.theme-indicator');
+      if (ind) ind.textContent = name;
+    }
+    function cycleTheme(fromRemote){
+      if (!themes.length) return;
+      themeIdx = (themeIdx+1) % themes.length;
+      const name = themes[themeIdx];
+      applyTheme(name);
+      /* Broadcast to other window (audience ↔ presenter) */
+      if (!fromRemote && bc) bc.postMessage({ type: 'theme', name: name });
+    }
+
+    // animation cycling on current slide
+    let animIdx = 0;
+    function cycleAnim(){
+      animIdx = (animIdx+1) % ANIMS.length;
+      const a = ANIMS[animIdx];
+      const target = slides[idx].querySelector('[data-anim-target]') || slides[idx];
+      ANIMS.forEach(x => target.classList.remove('anim-'+x));
+      void target.offsetWidth;
+      target.classList.add('anim-'+a);
+      target.setAttribute('data-anim', a);
+      const ind = document.querySelector('.anim-indicator');
+      if (ind) ind.textContent = a;
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.metaKey||e.ctrlKey||e.altKey) return;
+      switch (e.key) {
+        case 'ArrowRight': case ' ': case 'PageDown': case 'Enter': go(idx+1); e.preventDefault(); break;
+        case 'ArrowLeft': case 'PageUp': case 'Backspace': go(idx-1); e.preventDefault(); break;
+        case 'Home': go(0); break;
+        case 'End': go(total-1); break;
+        case 'f': case 'F': fullscreen(); break;
+        case 's': case 'S': openPresenterWindow(); break;
+        case 'n': case 'N': toggleNotes(); break;
+        case 'o': case 'O': toggleOverview(); break;
+        case 't': case 'T': cycleTheme(); break;
+        case 'a': case 'A': cycleAnim(); break;
+        case 'Escape': toggleOverview(false); toggleNotes(false); break;
+      }
+    });
+
+    // hash deep-link
+    function fromHash(){
+      const m = /^#\/(\d+)/.exec(location.hash||'');
+      if (m) go(Math.max(0, parseInt(m[1],10)-1));
+    }
+    window.addEventListener('hashchange', fromHash);
+    fromHash();
+    go(idx);
+  });
+})();
+
+</script>
+</body>
+</html>

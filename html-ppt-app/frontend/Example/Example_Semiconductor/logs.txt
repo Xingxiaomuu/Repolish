@@ -1,0 +1,18 @@
+Command: powershell -Command ...  (prompt piped from prompt.txt)
+
+Working directory (cwd): C:\Users\User\OneDrive\Documents\GitHub\My-projects\Slidehttp
+Output directory: C:\Users\User\OneDrive\Documents\GitHub\My-projects\Slidehttp\html-ppt-app\backend\outputs\20260523_084504_337276
+Timeout: 1800s
+
+=== STDOUT / STDERR ===
+
+
+Exit code: 0
+
+=== STDOUT ===
+
+{"type":"result","subtype":"success","is_error":false,"api_error_status":null,"duration_ms":335634,"duration_api_ms":345640,"ttft_ms":3072,"num_turns":17,"result":"The presentation has been written to:\n\n`html-ppt-app\\backend\\outputs\\20260523_084504_337276\\index.html` (37.8 KB)\n\n**12 slides covering the full semiconductor industry analysis:**\n\n| # | Slide | Layout Style |\n|---|-------|-------------|\n| 1 | 封面 — 全球半导体产业深度分析 2025-2026 | Cover with gradient title + pills |\n| 2 | 目录 — 六大主题概览 | 3×2 card grid with hover |\n| 3 | 全球半导体市场概况 — 7,009亿 → 7,607亿 | KPI cards + bar chart + bullet list |\n| 4 | 产业链全景 — EDA/IP·设备·材料·制造·封测 | 3-column + 2-card bottom row |\n| 5 | 各地区发展态势 — 中韩日台对比 | Data table + summary bar |\n| 6 | 晶圆代工与IDM格局 — Foundry 2.0 | Horizontal bar chart + bullet cards |\n| 7 | 2nm技术竞赛 — TSMC vs 三星 vs Rapidus vs Intel | 2-column comparison cards |\n| 8 | Chiplet与先进封装 — CoWoS·Foveros·HBM4 | 2-column with stat highlight |\n| 9 | AI驱动半导体需求 — $200亿→$500亿→$3,600亿 | 3 KPI cards + 3-point breakdown |\n| 10 | 设备投资与产能扩张 — 全球补贴竞赛 | 2-column with table + bar indicators |\n| 11 | 地缘政治风险 — MATCH法案·关税·双供应链 | 2×2 card grid (risks + opportunities) |\n| 12 | 总结与展望 — 三大趋势 + 核心判断 | CTA-style closer with 3 cards |\n\n**Features included:**\n- **Keyboard navigation** — ← → Space PgUp PgDn Home End (via runtime.js)\n- **Theme switching** — Press `T` to cycle through 7 themes (tokyo-night, catppuccin-mocha, nord, dracula, corporate-clean, editorial-serif, minimal-white)\n- **Speaker notes** — Press `S` for presenter mode, `N` for quick notes drawer (every slide has Chinese 逐字稿)\n- **Animations** — rise-in, fade-up, fade-left/right, stagger-list across slides\n- **Fullscreen** — Press `F`; **Overview** — Press `O`","stop_reason":"end_turn","session_id":"8d60f8d8-da86-44eb-9b30-8781b6e0709b","total_cost_usd":1.026509,"usage":{"input_tokens":57867,"cache_creation_input_tokens":0,"cache_read_input_tokens":555008,"output_tokens":17327,"server_tool_use":{"web_search_requests":0,"web_fetch_requests":0},"service_tier":"standard","cache_creation":{"ephemeral_1h_input_tokens":0,"ephemeral_5m_input_tokens":0},"inference_geo":"","iterations":[],"speed":"standard"},"modelUsage":{"DeepSeek-V4-Pro":{"inputTokens":60651,"outputTokens":17830,"cacheReadInputTokens":555008,"cacheCreationInputTokens":0,"webSearchRequests":0,"costUSD":1.026509,"contextWindow":200000,"maxOutputTokens":32000}},"permission_denials":[],"terminal_reason":"completed","fast_mode_state":"off","uuid":"83a8b214-7b98-46fc-a269-8b0014a70c91"}
+
+
+=== STDERR ===
+

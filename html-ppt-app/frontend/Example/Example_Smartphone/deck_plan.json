@@ -1,0 +1,163 @@
+{
+  "target_slide_count": 10,
+  "deck_type": "reading deck",
+  "audience": "Consumer",
+  "language": "English",
+  "content_sections_total": 10,
+  "content_chars_total": 10802,
+  "slides": [
+    {
+      "slide_no": 1,
+      "slide_title": "2026 Flagship Smartphone Comparison: iPhone 17 Pro Max vs Samsung S26 Ultra vs Huawei Mate 80 Pro",
+      "slide_goal": "Present the report title, date, and key highlights to set context.",
+      "source_sections": [],
+      "key_points": [],
+      "preferred_layout": "cover",
+      "speaker_notes_direction": "Introduce the report topic and scope."
+    },
+    {
+      "slide_no": 2,
+      "slide_title": "Table of Contents",
+      "slide_goal": "Provide an overview of the report structure.",
+      "source_sections": [],
+      "key_points": [
+        "2026 Flagship Smartphone Comparison: iPhone 17 Pro Max vs Samsung S26 Ultra vs Huawei Mate 80 Pro",
+        "Performance analysis:",
+        "Hardware analysis:",
+        "User experience summary:",
+        "Special features analysis:",
+        "Price analysis:",
+        "✅ Choose iPhone 17 Pro Max if you:",
+        "✅ Choose Samsung Galaxy S26 Ultra if you:",
+        "✅ Choose Huawei Mate 80 Pro / Pro Max if you:",
+        "One‑line buying guide:"
+      ],
+      "preferred_layout": "toc",
+      "speaker_notes_direction": "Walk through the report structure."
+    },
+    {
+      "slide_no": 3,
+      "slide_title": "2026 Flagship Smartphone Comparison: iPhone 17 Pro Max vs Samsung S26 Ultra vs Huawei Mate 80 Pro",
+      "slide_goal": "Cover multiple related sections. Keep original data, company names, and metrics intact.",
+      "source_sections": [
+        "S1"
+      ],
+      "key_points": [
+        "2026 Flagship Smartphone Comparison: iPhone 17 Pro Max vs Samsung S26 Ultra vs Huawei Mate 80 Pro\nI.",
+        "Core Performance Comparison\nAspect\tApple iPhone 17 Pro Max\tSamsung Galaxy S26 Ultra\tHuawei Mate 80 Pro / Pro Max\nProcessor\tApple A19 Pro (3nm)\tSnapdragon 8 Gen 5 for Galaxy (2nm)\tKirin 9030 / 9030 Pro\nCPU Architecture\tHexa-core (2x 4.26GHz + 4x efficiency)\tOcta-core (2x 4.74GHz Prime + 6x 3.62GHz performance)\tOcta-core (exact clocks undisclosed)\nGPU\tA19 Pro GPU\tAdreno 840\tKirin Maleoon architecture\nRAM\t12GB LPDDR5X\t12GB / 16GB (512GB/1TB models)\t12GB / 16GB\nAnTuTu V10\t~2,319,000\t>3,720,000\t~940,000 (HarmonyOS 6 environment)\nGeekbench 6 (single)\tNot disclosed\t~3,818\t~1,706 (effective ~1,774 after scaling)\nGeekbench 6 (multi)\tNot disclosed\t~11,214\t~5,479 (effective ~7,122 after scaling)\nManufacturing process\t3nm\t2nm\tNot disclosed"
+      ],
+      "preferred_layout": "two-column",
+      "speaker_notes_direction": "Cover the combined topics: 2026 Flagship Smartphone Comparison: iPhone 17 Pro Max vs Samsung S26 Ultra vs Huawei Mate 80 Pro. Preserve original data."
+    },
+    {
+      "slide_no": 4,
+      "slide_title": "Performance analysis:",
+      "slide_goal": "Cover multiple related sections. Keep original data, company names, and metrics intact.",
+      "source_sections": [
+        "S2"
+      ],
+      "key_points": [
+        "Performance analysis:\n\nSamsung S26 Ultra has the highest raw benchmark scores – thanks to its 2nm custom Snapdragon chip and aggressive high-frequency scheduling, it exceeds 3.72 million on AnTuTu.",
+        "Its GPU short‑term burst performance is 5–12% faster than rivals, but after 4 minutes of high load it throttles.",
+        "Apple A19 Pro offers steady, refined performance – around 2.32 million on AnTuTu, strong single‑core performance as usual, and with the first‑ever VC vapor chamber, game frame stability has improved.",
+        "Huawei Kirin 9030 Pro still lags in raw performance – despite a significant generational boost (~7,122 multi‑core effective), it remains noticeably behind Apple and Samsung."
+      ],
+      "preferred_layout": "kpi-grid",
+      "speaker_notes_direction": "Cover the combined topics: Performance analysis:. Preserve original data."
+    },
+    {
+      "slide_no": 5,
+      "slide_title": "Hardware analysis:",
+      "slide_goal": "Cover multiple related sections. Keep original data, company names, and metrics intact.",
+      "source_sections": [
+        "S3"
+      ],
+      "key_points": [
+        "Hardware analysis:\n\nDisplay: All three have top‑tier 120Hz LTPO OLED panels.",
+        "Samsung has a slight resolution edge, while Apple and Huawei both reach 3000 nits outdoor brightness – daily use is indistinguishable.",
+        "Camera system: Samsung offers the most complete focal length coverage (200MP main + dual tele).",
+        "Apple achieves uniform 48MP across all three lenses and remains the video benchmark."
+      ],
+      "preferred_layout": "kpi-grid",
+      "speaker_notes_direction": "Cover the combined topics: Hardware analysis:. Preserve original data."
+    },
+    {
+      "slide_no": 6,
+      "slide_title": "User experience summary:",
+      "slide_goal": "Cover multiple related sections. Keep original data, company names, and metrics intact.",
+      "source_sections": [
+        "S4"
+      ],
+      "key_points": [
+        "User experience summary:\n\nGamers: Apple offers the most reliable frame stability and best‑ever iPhone thermals.",
+        "Huawei’s Pro Max Wind Speed edition uses active cooling to excel in sustained high‑load gaming.",
+        "Samsung has the highest burst performance but throttles after ~4 minutes.",
+        "Smoothness & OS: All three are extremely smooth in daily use."
+      ],
+      "preferred_layout": "two-column",
+      "speaker_notes_direction": "Cover the combined topics: User experience summary:. Preserve original data."
+    },
+    {
+      "slide_no": 7,
+      "slide_title": "Special features analysis: & Price analysis:",
+      "slide_goal": "Cover multiple related sections. Keep original data, company names, and metrics intact.",
+      "source_sections": [
+        "S5",
+        "S6"
+      ],
+      "key_points": [
+        "Special features analysis:\n\nSatellite communication: Huawei Mate 80 Pro Max offers the most complete dual‑mode solution (BeiDou messaging + Tiantong calling), with ~30 free BeiDou messages per month.",
+        "Samsung has also added Tiantong satellite calling.",
+        "iPhone does not support satellite communication yet.",
+        "AI capabilities: All three deeply integrate AI but with different focuses: Apple emphasises on‑device privacy, Huawei uses a hybrid cloud/on‑device model, and Samsung promotes Galaxy AI for cross‑scenario intelligence."
+      ],
+      "preferred_layout": "two-column",
+      "speaker_notes_direction": "Cover the combined topics: Special features analysis:, Price analysis:. Preserve original data."
+    },
+    {
+      "slide_no": 8,
+      "slide_title": "✅ Choose iPhone 17 Pro Max if you: & ✅ Choose Samsung Galaxy S26 Ultra if you: & ✅ Choose Huawei Mate 80 Pro / Pro Max if you:",
+      "slide_goal": "Cover multiple related sections. Keep original data, company names, and metrics intact.",
+      "source_sections": [
+        "S7",
+        "S8",
+        "S9"
+      ],
+      "key_points": [
+        "✅ Choose iPhone 17 Pro Max if you:\n\nAre deeply invested in the Apple ecosystem (Mac, iPad, AirPods) and want seamless integration\n\nPrioritise industry‑leading video recording and post‑production (content creator / vlogger)\n\nSeek extreme long‑term smoothness and high resale value\n\nDemand maximum privacy for AI (Apple Intelligence runs fully on‑device)\n\nDon’t mind 40W charging or the lack of satellite calling\n\n✅ Choose Samsung Galaxy S26 Ultra if you:\n\nAre a heavy mobile gamer who values GPU burst power (accepting throttling after a few minutes)\n\nWant the absolute best display – Samsung’s calibration and sharpness are widely praised\n\nNeed the S Pen for note‑taking, drawing, or office work\n\nPrefer Samsung/Windows ecosystem synergy and value 7 years of OS updates\n\nDon’t care about charging speed (45W) or 5000mAh battery endurance\n\n✅ Choose Huawei Mate 80 Pro / Pro Max if you:\n\nHave a genuine need for satellite communication (outdoor workers, adventurers) – get the Pro Max Wind Speed edition\n\nAre a business user who values excellent signal quality and HarmonyOS synergy with domestic office devices\n\nDemand long battery life and fast charging (5750mAh + 100W is among the best in flagships)\n\nHave a tighter budget but still want a flagship experience (current price advantage is huge)\n\nPrefer pure HarmonyOS and want a locally‑optimised software and AI experience\n\nSummary\nDimension\tWinner\tReason\nRaw benchmark performance\tSamsung S26 Ultra\t3.72M AnTuTu + 2nm chip – strongest short‑term burst\nGaming stability\tApple iPhone 17 Pro Max\t≥59 fps + 41°C – most reliable real‑world gaming experience\nBattery & charging\tHuawei Mate 80 Pro\t5750/6000 mAh + 100W – clear leader in specs and real‑life endurance\nVideo (imaging)\tApple iPhone 17 Pro Max\tUniform 48MP + 4K 120fps – still the industry benchmark for video\nPhoto (versatility)\tSamsung / Huawei tie\tSamsung best focal coverage; Huawei unique variable aperture & color\nLongest OS update support\tSamsung S26 Ultra\t7 years of OS & security updates – longest among flagships\nBest value for money now\tHuawei Mate 80 Pro\tActual price as low as ¥4699 – far cheaper than the other two\nSatellite communication\tHuawei Mate 80 Pro Max\tSupports both BeiDou messaging + Tiantong two‑way satellite calling"
+      ],
+      "preferred_layout": "kpi-grid",
+      "speaker_notes_direction": "Cover the combined topics: ✅ Choose iPhone 17 Pro Max if you:, ✅ Choose Samsung Galaxy S26 Ultra if you:, ✅ Choose Huawei Mate 80 Pro / Pro Max if you:. Preserve original data."
+    },
+    {
+      "slide_no": 9,
+      "slide_title": "One‑line buying guide:",
+      "slide_goal": "Cover multiple related sections. Keep original data, company names, and metrics intact.",
+      "source_sections": [
+        "S10"
+      ],
+      "key_points": [
+        "One‑line buying guide:\n\nDeep in Apple ecosystem?",
+        "Take iPhone 17 Pro Max.",
+        "Crave extreme specs and burst performance?",
+        "Samsung S26 Ultra."
+      ],
+      "preferred_layout": "two-column",
+      "speaker_notes_direction": "Cover the combined topics: One‑line buying guide:. Preserve original data."
+    },
+    {
+      "slide_no": 10,
+      "slide_title": "Summary & Outlook",
+      "slide_goal": "Summarize key findings and provide forward-looking statements.",
+      "source_sections": [
+        "S9",
+        "S10"
+      ],
+      "key_points": [
+        "Key regions: Chinese, China"
+      ],
+      "preferred_layout": "two-column",
+      "speaker_notes_direction": "Summarize main conclusions and next steps."
+    }
+  ]
+}

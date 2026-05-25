@@ -1,0 +1,97 @@
+{
+  "checks": [
+    {
+      "name": "index_html_exists",
+      "result": "PASS",
+      "message": "index.html found (25,696 bytes)."
+    },
+    {
+      "name": "standalone_html_exists",
+      "result": "PASS",
+      "message": "standalone.html found (84,260 bytes)."
+    },
+    {
+      "name": "zip_exists",
+      "result": "PASS",
+      "message": "zip bundle found (38,261 bytes)."
+    },
+    {
+      "name": "logs_exist",
+      "result": "PASS",
+      "message": "logs.txt found (3,019 bytes)."
+    },
+    {
+      "name": "file_size_minimum",
+      "result": "PASS",
+      "message": "index.html is 25,696 bytes."
+    },
+    {
+      "name": "slide_count",
+      "result": "PASS",
+      "message": "Slide count: 8."
+    },
+    {
+      "name": "slide_elements",
+      "result": "PASS",
+      "message": "8 <section class=\"slide\"> elements found."
+    },
+    {
+      "name": "data_title_attributes",
+      "result": "PASS",
+      "message": "8/8 slides have data-title."
+    },
+    {
+      "name": "speaker_notes",
+      "result": "PASS",
+      "message": "Speaker notes detected (8 occurrences)."
+    },
+    {
+      "name": "deck_container",
+      "result": "PASS",
+      "message": "Deck container (.deck) found."
+    },
+    {
+      "name": "runtime_present",
+      "result": "PASS",
+      "message": "Runtime (js or inline) detected."
+    },
+    {
+      "name": "theme_switching",
+      "result": "PASS",
+      "message": "Theme switching mechanism detected."
+    },
+    {
+      "name": "keyboard_navigation",
+      "result": "WARN",
+      "message": "No keyboard navigation detected."
+    },
+    {
+      "name": "placeholders_clean",
+      "result": "PASS",
+      "message": "No placeholder text detected."
+    },
+    {
+      "name": "empty_slides",
+      "result": "PASS",
+      "message": "All 8 slides have content."
+    },
+    {
+      "name": "standalone_integrity",
+      "result": "PASS",
+      "message": "Standalone is self-contained (82.3 KB, no local asset refs)."
+    }
+  ],
+  "warnings": [
+    {
+      "name": "keyboard_navigation",
+      "result": "WARN",
+      "message": "No keyboard navigation detected."
+    }
+  ],
+  "errors": [],
+  "passed": 15,
+  "warning_count": 1,
+  "failed": 0,
+  "score": 97,
+  "status": "pass"
+}

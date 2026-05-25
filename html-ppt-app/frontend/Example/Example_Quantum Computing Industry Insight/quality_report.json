@@ -1,0 +1,117 @@
+{
+  "checks": [
+    {
+      "name": "index_html_exists",
+      "result": "PASS",
+      "message": "index.html found (58,587 bytes)."
+    },
+    {
+      "name": "standalone_html_exists",
+      "result": "PASS",
+      "message": "standalone.html found (117,235 bytes)."
+    },
+    {
+      "name": "zip_exists",
+      "result": "PASS",
+      "message": "zip bundle found (149,008 bytes)."
+    },
+    {
+      "name": "logs_exist",
+      "result": "PASS",
+      "message": "logs.txt found (3,838 bytes)."
+    },
+    {
+      "name": "file_size_minimum",
+      "result": "PASS",
+      "message": "index.html is 58,587 bytes."
+    },
+    {
+      "name": "slide_count",
+      "result": "PASS",
+      "message": "Slide count: 17 (target: 17)."
+    },
+    {
+      "name": "slide_elements",
+      "result": "PASS",
+      "message": "17 <section class=\"slide\"> elements found."
+    },
+    {
+      "name": "data_title_attributes",
+      "result": "PASS",
+      "message": "17/17 slides have data-title."
+    },
+    {
+      "name": "speaker_notes",
+      "result": "PASS",
+      "message": "Speaker notes detected (17 occurrences)."
+    },
+    {
+      "name": "deck_container",
+      "result": "PASS",
+      "message": "Deck container (.deck) found."
+    },
+    {
+      "name": "runtime_present",
+      "result": "PASS",
+      "message": "Runtime (js or inline) detected."
+    },
+    {
+      "name": "theme_switching",
+      "result": "PASS",
+      "message": "Theme switching mechanism detected."
+    },
+    {
+      "name": "keyboard_navigation",
+      "result": "WARN",
+      "message": "No keyboard navigation detected."
+    },
+    {
+      "name": "placeholders_clean",
+      "result": "PASS",
+      "message": "No placeholder text detected."
+    },
+    {
+      "name": "empty_slides",
+      "result": "PASS",
+      "message": "All 17 slides have content."
+    },
+    {
+      "name": "entity_retention",
+      "result": "PASS",
+      "message": "Entity retention: 100% (2/2 key entities found)."
+    },
+    {
+      "name": "data_retention",
+      "result": "PASS",
+      "message": "Data retention: 303% numeric density (822/271 numbers)."
+    },
+    {
+      "name": "source_correspondence",
+      "result": "WARN",
+      "message": "Slide-source match: 44% (7/16). 6 slides may have lost source content."
+    },
+    {
+      "name": "standalone_integrity",
+      "result": "PASS",
+      "message": "Standalone is self-contained (114.5 KB, no local asset refs)."
+    }
+  ],
+  "warnings": [
+    {
+      "name": "keyboard_navigation",
+      "result": "WARN",
+      "message": "No keyboard navigation detected."
+    },
+    {
+      "name": "source_correspondence",
+      "result": "WARN",
+      "message": "Slide-source match: 44% (7/16). 6 slides may have lost source content."
+    }
+  ],
+  "errors": [],
+  "passed": 17,
+  "warning_count": 2,
+  "failed": 0,
+  "score": 95,
+  "status": "pass"
+}
