@@ -104,7 +104,7 @@ def run(base: str, token: str | None = None):
     if code == 200:
         checks = health.get("checks", {})
         for name, status in sorted(checks.items()):
-            icon = "✓" if ("ok" in str(status).lower() or "found" in str(status).lower() or "connected" in str(status).lower() or "writable" in str(status).lower() or "exists" in str(status).lower()) else "✗"
+            icon = "[OK]" if ("ok" in str(status).lower() or "found" in str(status).lower() or "connected" in str(status).lower() or "writable" in str(status).lower() or "exists" in str(status).lower()) else "[FAIL]"
             print(f"  {icon} {name}: {status}")
     else:
         print(f"  Health check failed: {health}")
@@ -169,10 +169,10 @@ def run(base: str, token: str | None = None):
         print(f"\r  [{elapsed:6.1f}s] Status: {status:<10} {'.' * dots}   ", end="")
 
         if status == "success":
-            print(f"\n  ✓ Job completed successfully!")
+            print(f"\n  [OK] Job completed successfully!")
             break
         elif status == "failed":
-            print(f"\n  ✗ Job FAILED: {j.get('error_message', 'No error message')}")
+            print(f"\n  [FAIL] Job FAILED: {j.get('error_message', 'No error message')}")
             sys.exit(1)
 
         time.sleep(POLL_INTERVAL)
@@ -190,7 +190,7 @@ def run(base: str, token: str | None = None):
     all_ok = True
     for label, url_path in urls_to_check:
         code, _ = make_request(api_url(url_path, base))
-        icon = "✓" if code == 200 else "✗"
+        icon = "[OK]" if code == 200 else "[FAIL]"
         if code != 200:
             all_ok = False
         print(f"  {icon} {label}: HTTP {code}")
@@ -203,11 +203,11 @@ def run(base: str, token: str | None = None):
         arts = artifacts.get("artifacts", [])
         qr = [a for a in arts if a["filename"] == "quality_report.json"]
         if qr:
-            print(f"  ✓ quality_report.json: {qr[0]['size']} bytes")
+            print(f"  [OK] quality_report.json: {qr[0]['size']} bytes")
         else:
-            print(f"  ⚠ quality_report.json not found")
+            print(f"  [WARN] quality_report.json not found")
     else:
-        print(f"  ⚠ artifacts endpoint: HTTP {code}")
+        print(f"  [WARN] artifacts endpoint: HTTP {code}")
 
     # ── Step 5: Summary ───────────────────────────────────────────────
     print("\n" + "=" * 60)
