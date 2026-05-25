@@ -14,7 +14,7 @@ from rq import Queue, Worker
 from sqlalchemy.orm import Session
 from sqlalchemy import func, text
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 
 from database import init_db, get_db
 from models import (
@@ -34,7 +34,11 @@ BASE_DIR = Path(__file__).resolve().parent
 OUTPUTS_DIR = BASE_DIR / "outputs"
 
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+def _hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+def _verify_password(password: str, hashed: str) -> bool:
+    return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
 _bearer = HTTPBearer(auto_error=False)
 
 
@@ -192,7 +196,7 @@ def auth_register(req: RegisterRequest, db: Session = Depends(get_db)):
         # Phase 4F legacy user without password → allow completing registration
         if not existing.password_hash:
             existing.name = name
-            existing.password_hash = _pwd_context.hash(req.password)
+            existing.password_hash = _hash_password(req.password)
             db.commit()
             return {"message": "Registration complete. Please login with your new password."}
         raise HTTPException(status_code=400, detail="Email already registered.")
@@ -200,7 +204,7 @@ def auth_register(req: RegisterRequest, db: Session = Depends(get_db)):
     user = User(
         name=name,
         email=email,
-        password_hash=_pwd_context.hash(req.password),
+        password_hash=_hash_password(req.password),
         created_at=datetime.now(timezone.utc),
     )
     db.add(user)
@@ -225,7 +229,7 @@ def auth_login(req: LoginRequest, db: Session = Depends(get_db)):
             detail="This account was created before password support. Please register again with the same email to set a password.",
         )
 
-    if not _pwd_context.verify(req.password, user.password_hash):
+    if not _verify_password(req.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password.")
 
     user.last_login_at = datetime.now(timezone.utc)
