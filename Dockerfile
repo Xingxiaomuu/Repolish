@@ -9,6 +9,9 @@
 
 FROM python:3.12-slim-bookworm
 
+# Force Docker layer rebuild — increment number to bust cache
+ARG CACHEBUST=1
+
 # ── System dependencies ──────────────────────────────────────────────
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
