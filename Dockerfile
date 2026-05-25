@@ -9,18 +9,20 @@
 
 FROM python:3.12-slim-bookworm
 
-# Force Docker layer rebuild — increment number to bust cache
-ARG CACHEBUST=1
+# Bump CACHEBUST to force full rebuild (e.g. change to 2, 3, ...)
+ARG CACHEBUST=2
 
 # ── System dependencies ──────────────────────────────────────────────
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN echo "Cache bust: ${CACHEBUST}" && \
+    apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
     git \
     && rm -rf /var/lib/apt/lists/*
 
 # ── Node.js 18.x LTS (required by Claude Code CLI) ───────────────────
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+RUN echo "Cache bust: ${CACHEBUST}" && \
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
@@ -40,8 +42,8 @@ ENV PATH="/usr/local/lib/python3.12/site-packages/bin:/usr/local/bin:$PATH"
 WORKDIR /app/html-ppt-app/backend
 
 COPY html-ppt-app/backend/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir --force-reinstall bcrypt==4.0.1
+RUN echo "Cache bust: ${CACHEBUST}" && \
+    pip install --no-cache-dir -r requirements.txt
 
 # ── Copy application code ────────────────────────────────────────────
 # Project root files (CLAUDE.md, .gitignore, etc.)
@@ -62,7 +64,8 @@ COPY html-ppt-app/backend/ /app/html-ppt-app/backend/
 
 # ── Create data directories ──────────────────────────────────────────
 # /data is the recommended Railway volume mount point
-RUN mkdir -p /data/outputs && chmod 777 /data
+RUN echo "Cache bust: ${CACHEBUST}" && \
+    mkdir -p /data/outputs && chmod 777 /data
 
 # ── Environment defaults ─────────────────────────────────────────────
 ENV PYTHONUNBUFFERED=1
