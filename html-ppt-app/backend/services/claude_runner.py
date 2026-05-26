@@ -171,10 +171,12 @@ def run_claude(job_dir: Path, logs_path: Path) -> int:
         f.write(f"Command: {' '.join(cmd)}  (prompt via stdin pipe)\n\n")
         f.write(f"Working directory (cwd): {PROJECT_ROOT}\n")
         f.write(f"Output directory: {job_dir}\n")
-        f.write(f"Timeout: {settings.claude_timeout}s\n\n")
+        f.write(f"Timeout: {settings.claude_timeout}s\n")
+        f.write(f"ANTHROPIC_API_KEY set: {'Yes' if os.environ.get('ANTHROPIC_API_KEY') else 'No'}\n\n")
         f.write("=== STDOUT / STDERR ===\n\n")
 
     try:
+        # Explicitly pass env to ensure ANTHROPIC_API_KEY is inherited
         result = subprocess.run(
             cmd,
             input=prompt,
@@ -183,6 +185,7 @@ def run_claude(job_dir: Path, logs_path: Path) -> int:
             timeout=settings.claude_timeout,
             encoding="utf-8",
             errors="replace",
+            env={**os.environ},
         )
 
         with open(logs_path, "a", encoding="utf-8") as f:
