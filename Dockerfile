@@ -14,7 +14,7 @@
 FROM python:3.12-slim-bookworm
 
 # Bump CACHEBUST to force full rebuild (e.g. change to 2, 3, ...)
-ARG CACHEBUST=3
+ARG CACHEBUST=4
 
 # ── System dependencies ──────────────────────────────────────────────
 RUN echo "Cache bust: ${CACHEBUST}" && \
