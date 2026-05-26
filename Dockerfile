@@ -86,6 +86,11 @@ ENV WORKER_COUNT=2
 # REDIS_URL is set by Railway Redis plugin
 # S3_BUCKET, S3_ENDPOINT, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY — set on Railway
 
+# ── Non-root user (required by Claude Code — --dangerously-skip-permissions blocked for root) ──
+RUN useradd -m appuser && \
+    chown -R appuser:appuser /app /tmp/htmlppt-jobs
+USER appuser
+
 # ── Expose port ──────────────────────────────────────────────────────
 EXPOSE 8000
 
