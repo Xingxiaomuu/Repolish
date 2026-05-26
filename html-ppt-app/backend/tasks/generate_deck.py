@@ -177,7 +177,7 @@ def generate_deck(job_id: str):
                 f.write(f"\n=== Standalone inliner warning ===\n{e}\n")
 
         # ── Create zip ─────────────────────────────────────────────────
-        zip_path = file_manager.create_zip(job_id)
+        zip_path = file_manager.create_zip(job_id, job_dir=job_dir)
         job_obj.zip_path = str(zip_path)
 
         # ── Quality check ───────────────────────────────────────────────

@@ -48,9 +48,10 @@ def check_standalone_exists(job_id: str) -> bool:
     return get_standalone_html_path(job_id).is_file()
 
 
-def create_zip(job_id: str) -> Path:
-    job_dir = get_job_dir(job_id)
-    zip_path = OUTPUTS_DIR / f"{job_id}.zip"
+def create_zip(job_id: str, job_dir: Path | None = None) -> Path:
+    if job_dir is None:
+        job_dir = get_job_dir(job_id)
+    zip_path = job_dir.parent / f"{job_id}.zip"
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
         for root, _, files in os.walk(job_dir):
             for file in files:
