@@ -1,5 +1,7 @@
 import json
 import os
+import shutil
+import tempfile
 import traceback
 from datetime import datetime, timezone
 from pathlib import Path
@@ -10,6 +12,7 @@ from models import Job
 from services import file_manager
 from services.claude_runner import run_claude
 from services.html_inliner import inline_html
+from services.storage import get_storage_client
 from settings import settings
 
 
@@ -17,41 +20,91 @@ from settings import settings
 PIPELINE_MIN_CONTENT_CHARS = 1000
 
 
+def _resolve_job_dir(job_id: str) -> Path:
+    """Return the working directory for job generation."""
+    if settings.storage_provider == "s3":
+        tmp = Path(tempfile.gettempdir()) / "htmlppt-jobs" / job_id
+        tmp.mkdir(parents=True, exist_ok=True)
+        return tmp
+    else:
+        return file_manager.create_job_dir(job_id)
+
+
+def _upload_outputs(job: Job, job_dir: Path) -> None:
+    """Upload all generated outputs to object storage and write storage keys to DB."""
+    storage = get_storage_client()
+    jid = job.id
+
+    files_to_upload = {
+        "index_html_key": ("index.html", "text/html; charset=utf-8"),
+        "standalone_html_key": ("standalone.html", "text/html; charset=utf-8"),
+        "zip_key": (f"{jid}.zip", "application/zip"),
+        "logs_key": ("logs.txt", "text/plain; charset=utf-8"),
+        "quality_report_key": ("quality_report.json", "application/json"),
+        "deck_plan_key": ("deck_plan.json", "application/json"),
+        "packed_context_key": ("packed_context.json", "application/json"),
+        "input_cleaned_key": ("input_cleaned.json", "application/json"),
+        "generation_prompt_key": ("generation_prompt.txt", "text/plain; charset=utf-8"),
+    }
+
+    for attr, (filename, _content_type) in files_to_upload.items():
+        local_path = job_dir / filename
+        if local_path.is_file():
+            key = f"jobs/{jid}/{filename}"
+            storage.upload_file(local_path, key)
+            setattr(job, attr, key)
+
+    # Zip lives in parent dir (alongside job dir), not inside it
+    zip_at_parent = job_dir.parent / f"{jid}.zip"
+    if zip_at_parent.is_file() and not job.zip_key:
+        key = f"jobs/{jid}/{jid}.zip"
+        storage.upload_file(zip_at_parent, key)
+        job.zip_key = key
+
+
+def _setup_request(job: Job) -> SimpleNamespace:
+    return SimpleNamespace(
+        language=job.language or "English",
+        topic=job.topic or "Untitled Presentation",
+        content=job.content or "",
+        style=job.style or "professional",
+        audience=job.audience or "general audience",
+        extra_requirements=job.extra_requirements or "",
+        slide_count=job.slide_count or 10,
+        search_level=job.search_level or "none",
+    )
+
+
 def generate_deck(job_id: str):
     """RQ task: generate an HTML PPT deck for the given job_id."""
     db = SessionLocal()
+    job_obj = None
     job_dir = None
     logs_path = None
+    is_s3 = settings.storage_provider == "s3"
+
     try:
-        job = db.query(Job).filter(Job.id == job_id).first()
-        if not job:
+        job_obj = db.query(Job).filter(Job.id == job_id).first()
+        if not job_obj:
             return
 
         # ── Mark running ──────────────────────────────────────────────
-        job.status = "running"
-        job.started_at = datetime.now(timezone.utc)
-        job.worker_name = os.environ.get("WORKER_NAME", None)
+        job_obj.status = "running"
+        job_obj.started_at = datetime.now(timezone.utc)
+        job_obj.worker_name = os.environ.get("WORKER_NAME", None)
         db.commit()
 
-        # ── Set up output directory ────────────────────────────────────
-        job_dir = file_manager.create_job_dir(job_id)
-        job.output_dir = str(job_dir)
-        logs_path = file_manager.get_logs_path(job_id)
-        job.logs_path = str(logs_path)
+        # ── Set up working directory ───────────────────────────────────
+        job_dir = _resolve_job_dir(job_id)
+        logs_path = job_dir / "logs.txt"
+
+        # Still store paths on DB for local mode (backward compat)
+        job_obj.output_dir = str(job_dir)
+        job_obj.logs_path = str(logs_path)
         db.commit()
 
-        request = SimpleNamespace(
-            language=job.language or "English",
-            topic=job.topic or "Untitled Presentation",
-            content=job.content or "",
-            style=job.style or "professional",
-            audience=job.audience or "general audience",
-            extra_requirements=job.extra_requirements or "",
-            slide_count=job.slide_count or 10,
-            search_level=job.search_level or "none",
-        )
-
-        content = job.content or ""
+        request = _setup_request(job_obj)
+        content = job_obj.content or ""
         use_pipeline = len(content.strip()) >= PIPELINE_MIN_CONTENT_CHARS
 
         if use_pipeline:
@@ -65,62 +118,66 @@ def generate_deck(job_id: str):
             prompt_file.write_text(prompt, encoding="utf-8")
 
         # Store prompt char count for token estimation
-        job.generation_prompt_chars = len(prompt)
-        job.model_name = "claude-code"
+        job_obj.generation_prompt_chars = len(prompt)
+        job_obj.model_name = "claude-code"
         db.commit()
 
         # ── Run Claude Code ────────────────────────────────────────────
+        if is_s3:
+            # In S3 mode, set cwd to job_dir so Claude writes there
+            old_cwd = os.getcwd()
+            os.chdir(str(job_dir))
         exit_code = run_claude(job_dir, logs_path)
+        if is_s3:
+            os.chdir(old_cwd)
 
         if exit_code == -2:
-            _fail_job(db, job,
+            _fail_job(db, job_obj,
                 "Claude Code CLI not found. Install Claude Code CLI or set CLAUDE_CODE_COMMAND.",
-                logs_path)
+                logs_path, job_dir)
             return
 
         if exit_code == -1:
-            _fail_job(db, job,
+            _fail_job(db, job_obj,
                 f"Generation timed out after {settings.claude_timeout} seconds.",
-                logs_path)
+                logs_path, job_dir)
             return
 
         # ── Verify output ──────────────────────────────────────────────
         index_html = job_dir / "index.html"
         if not index_html.is_file():
             if exit_code != 0:
-                _fail_job(db, job,
-                    f"Claude Code exited with code {exit_code}. Check logs.", logs_path)
+                _fail_job(db, job_obj,
+                    f"Claude Code exited with code {exit_code}. Check logs.", logs_path, job_dir)
             else:
-                _fail_job(db, job,
+                _fail_job(db, job_obj,
                     "Claude Code completed but index.html was not generated. "
-                    "The html-ppt-skill may not be installed.", logs_path)
+                    "The html-ppt-skill may not be installed.", logs_path, job_dir)
             return
 
         # ── Run inliner → standalone.html ──────────────────────────────
         try:
             inline_html(job_dir)
-            job.standalone_html_path = str(job_dir / "standalone.html")
         except Exception as e:
             with open(logs_path, "a", encoding="utf-8") as f:
                 f.write(f"\n=== Standalone inliner warning ===\n{e}\n")
 
         # ── Create zip ─────────────────────────────────────────────────
         zip_path = file_manager.create_zip(job_id)
-        job.zip_path = str(zip_path)
+        job_obj.zip_path = str(zip_path)
 
         # ── Quality check ───────────────────────────────────────────────
         quality_report = _run_quality_check(job_dir, logs_path, use_pipeline=use_pipeline)
         if quality_report:
-            job.quality_status = quality_report.get("status")
-            job.quality_score = quality_report.get("score")
-            job.quality_warnings_count = quality_report.get("warning_count")
-            job.quality_errors_count = quality_report.get("failed")
+            job_obj.quality_status = quality_report.get("status")
+            job_obj.quality_score = quality_report.get("score")
+            job_obj.quality_warnings_count = quality_report.get("warning_count")
+            job_obj.quality_errors_count = quality_report.get("failed")
             db.commit()
 
         # ── Token estimation ────────────────────────────────────────────
         from services.token_estimator import estimate_tokens
 
-        # Re-read the full prompt for accurate estimation
         gen_prompt_file = job_dir / "generation_prompt.txt"
         simple_prompt_file = job_dir / "prompt.txt"
         prompt_text = ""
@@ -130,21 +187,29 @@ def generate_deck(job_id: str):
             prompt_text = simple_prompt_file.read_text(encoding="utf-8")
 
         html_text = index_html.read_text(encoding="utf-8")
-        job.generated_html_chars = len(html_text)
-        job.estimated_input_tokens = estimate_tokens(prompt_text)
-        job.estimated_output_tokens = estimate_tokens(html_text)
+        job_obj.generated_html_chars = len(html_text)
+        job_obj.estimated_input_tokens = estimate_tokens(prompt_text)
+        job_obj.estimated_output_tokens = estimate_tokens(html_text)
         db.commit()
 
+        # ── Upload to storage (S3 mode) ─────────────────────────────────
+        if is_s3:
+            _upload_outputs(job_obj, job_dir)
+
         # ── Mark success ───────────────────────────────────────────────
-        job.status = "success"
-        job.index_html_path = str(index_html)
-        job.finished_at = datetime.now(timezone.utc)
+        job_obj.status = "success"
+        job_obj.index_html_path = str(index_html)
+        job_obj.standalone_html_path = str(job_dir / "standalone.html")
+        job_obj.finished_at = datetime.now(timezone.utc)
         db.commit()
 
     except Exception:
         tb = traceback.format_exc()
-        _fail_job(db, job, f"Internal error:\n{tb}", logs_path)
+        _fail_job(db, job_obj, f"Internal error:\n{tb}", logs_path, job_dir)
     finally:
+        # Clean up temp dir in S3 mode
+        if is_s3 and job_dir and job_dir.exists():
+            shutil.rmtree(job_dir, ignore_errors=True)
         db.close()
 
 
@@ -248,7 +313,7 @@ def _run_quality_check(job_dir: Path, logs_path: Path, use_pipeline: bool = Fals
         f"Warnings: {report.get('warning_count', 0)}, "
         f"Failed: {report.get('failed', 0)}")
     for c in report.get("checks", []):
-        icon = {"PASS": "✓", "WARN": "⚠", "FAIL": "✗"}.get(c.get("result", ""), "?")
+        icon = {"PASS": "[OK]", "WARN": "[WARN]", "FAIL": "[FAIL]"}.get(c.get("result", ""), "?")
         log(f"     [{icon}] {c['name']}: {c.get('message', '')}")
     log("")
 
@@ -266,10 +331,19 @@ def _log_writer(logs_path: Path):
     return write
 
 
-def _fail_job(db, job: Job, error_message: str, logs_path):
+def _fail_job(db, job: Job | None, error_message: str, logs_path: Path | None, job_dir: Path | None = None):
+    """Mark job as failed, write error to log, and upload logs in S3 mode."""
+    if job is None:
+        try:
+            db.commit()
+        except Exception:
+            pass
+        return
+
     job.status = "failed"
     job.error_message = error_message
     job.finished_at = datetime.now(timezone.utc)
+
     if logs_path:
         job.logs_path = str(logs_path)
         try:
@@ -277,4 +351,18 @@ def _fail_job(db, job: Job, error_message: str, logs_path):
                 f.write(f"\n=== ERROR ===\n{error_message}\n")
         except Exception:
             pass
-    db.commit()
+
+        # In S3 mode, upload logs so admin can inspect
+        if settings.storage_provider == "s3":
+            try:
+                storage = get_storage_client()
+                key = f"jobs/{job.id}/logs.txt"
+                storage.upload_file(logs_path, key)
+                job.logs_key = key
+            except Exception:
+                pass
+
+    try:
+        db.commit()
+    except Exception:
+        pass

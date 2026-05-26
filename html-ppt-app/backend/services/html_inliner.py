@@ -18,8 +18,21 @@ Strategy:
 import re
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
-SKILL_DIR = PROJECT_ROOT / ".agents" / "skills" / "html-ppt"
+
+def _find_skill_dir() -> Path:
+    """Walk up from this file's location (or cwd) until we find .agents/skills/html-ppt/."""
+    candidate = Path(__file__).resolve().parent.parent.parent.parent
+    skill = candidate / ".agents" / "skills" / "html-ppt"
+    if skill.is_dir():
+        return skill
+    for p in [Path.cwd(), *Path.cwd().parents]:
+        skill = p / ".agents" / "skills" / "html-ppt"
+        if skill.is_dir():
+            return skill
+    return candidate / ".agents" / "skills" / "html-ppt"  # fallback
+
+
+SKILL_DIR = _find_skill_dir()
 ASSETS_DIR = SKILL_DIR / "assets"
 FX_DIR = ASSETS_DIR / "animations" / "fx"
 

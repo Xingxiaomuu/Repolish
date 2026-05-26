@@ -8,7 +8,7 @@ import redis
 from fastapi import FastAPI, HTTPException, Depends, Query, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from rq import Queue, Worker
 from sqlalchemy.orm import Session
@@ -34,6 +34,11 @@ BASE_DIR = Path(__file__).resolve().parent
 OUTPUTS_DIR = BASE_DIR / "outputs"
 
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+def _can_access_job(current_user: User, job: Job) -> bool:
+    """User can access a job if they own it or are admin."""
+    return bool(current_user.is_admin) or job.user_id == current_user.id
+
 def _hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
@@ -96,17 +101,25 @@ def health_check(db: Session = Depends(get_db)):
     except Exception as e:
         checks["redis"] = f"error: {e}"
 
-    # 4. Output directory
-    from services import file_manager
-    output_dir = file_manager.OUTPUTS_DIR
-    try:
-        file_manager.ensure_outputs_dir()
-        test_file = output_dir / ".health_check"
-        test_file.write_text("ok")
-        test_file.unlink()
-        checks["output_dir"] = f"writable ({output_dir})"
-    except Exception as e:
-        checks["output_dir"] = f"error: {e}"
+    # 4. Output directory / Storage
+    if settings.storage_provider == "s3":
+        from services.storage import get_storage_client
+        try:
+            storage_ok, storage_msg = get_storage_client().health_check()
+            checks["storage"] = storage_msg
+        except Exception as e:
+            checks["storage"] = f"error: {e}"
+    else:
+        from services import file_manager
+        output_dir = file_manager.OUTPUTS_DIR
+        try:
+            file_manager.ensure_outputs_dir()
+            test_file = output_dir / ".health_check"
+            test_file.write_text("ok")
+            test_file.unlink()
+            checks["output_dir"] = f"writable ({output_dir})"
+        except Exception as e:
+            checks["output_dir"] = f"error: {e}"
 
     # 5. Claude Code CLI
     claude_cmd = settings.claude_code_command
@@ -399,7 +412,7 @@ def my_jobs(
         }
         if j.status == "success":
             item.update({
-                "preview_url": f"/outputs/{j.id}/index.html",
+                "preview_url": f"/api/preview/{j.id}",
                 "download_html_url": f"/api/download/{j.id}/html",
                 "download_standalone_url": f"/api/download/{j.id}/standalone",
                 "download_zip_url": f"/api/download/{j.id}/zip",
@@ -608,14 +621,27 @@ def admin_job_detail(job_id: str, db: Session = Depends(get_db), _=Depends(verif
 
     if j.status == "success":
         detail.update({
-            "preview_url": f"/outputs/{j.id}/index.html",
-            "preview_standalone_url": f"/outputs/{j.id}/standalone.html",
+            "preview_url": f"/api/preview/{j.id}",
+            "preview_standalone_url": f"/api/preview/{j.id}?type=standalone",
             "download_html_url": f"/api/download/{j.id}/html",
             "download_standalone_url": f"/api/download/{j.id}/standalone",
             "download_zip_url": f"/api/download/{j.id}/zip",
         })
-    if j.logs_path:
-        detail["logs_url"] = f"/outputs/{j.id}/logs.txt"
+    if j.logs_path or j.logs_key:
+        detail["logs_url"] = f"/api/admin/jobs/{j.id}/logs"
+
+    # Storage keys (Phase 5B)
+    detail.update({
+        "index_html_key": j.index_html_key,
+        "standalone_html_key": j.standalone_html_key,
+        "zip_key": j.zip_key,
+        "logs_key": j.logs_key,
+        "quality_report_key": j.quality_report_key,
+        "deck_plan_key": j.deck_plan_key,
+        "packed_context_key": j.packed_context_key,
+        "input_cleaned_key": j.input_cleaned_key,
+        "generation_prompt_key": j.generation_prompt_key,
+    })
 
     return detail
 
@@ -796,36 +822,85 @@ _PIPELINE_ARTIFACTS = [
 
 
 @app.get("/api/jobs/{job_id}/artifacts")
-def list_artifacts(job_id: str):
-    """List available pipeline artifacts for a job."""
-    job_dir = file_manager.get_job_dir(job_id)
-    if not job_dir.exists():
+def list_artifacts(
+    job_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """List available pipeline artifacts for a job (auth required)."""
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
         raise HTTPException(status_code=404, detail="Job not found")
+    if not _can_access_job(current_user, job):
+        raise HTTPException(status_code=403, detail="Access denied")
 
     available = []
+    is_s3 = settings.storage_provider == "s3"
+
     for name in _PIPELINE_ARTIFACTS:
-        fpath = job_dir / name
-        if fpath.is_file():
-            available.append({
-                "filename": name,
-                "size": fpath.stat().st_size,
-                "url": f"/outputs/{job_id}/{name}",
-            })
+        key_attr = _artifact_key_attr(name)
+        if is_s3:
+            key = getattr(job, key_attr, None)
+            if key:
+                available.append({
+                    "filename": name,
+                    "size": None,  # S3: size not easily known without HEAD
+                    "url": f"/api/jobs/{job_id}/artifacts/{name}",
+                })
+        else:
+            fpath = file_manager.get_job_dir(job_id) / name
+            if fpath.is_file():
+                available.append({
+                    "filename": name,
+                    "size": fpath.stat().st_size,
+                    "url": f"/outputs/{job_id}/{name}",
+                })
 
     return {"job_id": job_id, "artifacts": available}
 
 
-@app.get("/api/jobs/{job_id}/artifacts/{filename:path}")
-def get_artifact(job_id: str, filename: str):
-    """Download/view a specific pipeline artifact."""
-    job_dir = file_manager.get_job_dir(job_id)
-    file_path = job_dir / filename
+def _artifact_key_attr(filename: str) -> str:
+    """Map artifact filename to Job storage key attribute."""
+    mapping = {
+        "input_cleaned.json": "input_cleaned_key",
+        "deck_plan.json": "deck_plan_key",
+        "packed_context.json": "packed_context_key",
+        "generation_prompt.txt": "generation_prompt_key",
+        "quality_report.json": "quality_report_key",
+        "prompt.txt": "generation_prompt_key",
+    }
+    return mapping.get(filename, "")
 
-    # Security: only serve allowed artifact names + logs
+
+@app.get("/api/jobs/{job_id}/artifacts/{filename:path}")
+def get_artifact(
+    job_id: str,
+    filename: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Download/view a specific pipeline artifact (auth required)."""
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if not _can_access_job(current_user, job):
+        raise HTTPException(status_code=403, detail="Access denied")
+
     allowed = set(_PIPELINE_ARTIFACTS) | {"logs.txt"}
     if filename not in allowed:
         raise HTTPException(status_code=403, detail="File not accessible as artifact")
 
+    is_s3 = settings.storage_provider == "s3"
+    if is_s3:
+        from services.storage import get_storage_client
+        storage = get_storage_client()
+        key = f"jobs/{job_id}/{filename}"
+        if not storage.object_exists(key):
+            raise HTTPException(status_code=404, detail="Artifact not found")
+        url = storage.generate_presigned_url(key)
+        return RedirectResponse(url=url, status_code=302)
+
+    file_path = file_manager.get_job_dir(job_id) / filename
     if not file_path.is_file():
         raise HTTPException(status_code=404, detail="Artifact not found")
 
@@ -833,39 +908,138 @@ def get_artifact(job_id: str, filename: str):
     return FileResponse(path=str(file_path), filename=filename, media_type=media_type)
 
 
-# ── Download endpoints ────────────────────────────────────────────────
+# ── Download endpoints (Phase 5B: auth + storage-aware) ────────────────
 
 @app.get("/api/download/{job_id}/html")
-def download_html(job_id: str):
-    html_path = file_manager.get_index_html_path(job_id)
-    if not html_path.is_file():
-        raise HTTPException(status_code=404, detail="index.html not found")
-    return FileResponse(path=str(html_path), filename="index.html", media_type="text/html")
+def download_html(
+    job_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job or job.status != "success":
+        raise HTTPException(status_code=404, detail="Job not found")
+    if not _can_access_job(current_user, job):
+        raise HTTPException(status_code=403, detail="Access denied")
+    return _download_or_redirect(job, "index_html_key", "index.html", "text/html")
 
 
 @app.get("/api/download/{job_id}/standalone")
-def download_standalone(job_id: str):
-    standalone_path = file_manager.get_standalone_html_path(job_id)
-    if not standalone_path.is_file():
-        raise HTTPException(status_code=404, detail="standalone.html not found")
-    return FileResponse(path=str(standalone_path), filename="standalone.html", media_type="text/html")
+def download_standalone(
+    job_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job or job.status != "success":
+        raise HTTPException(status_code=404, detail="Job not found")
+    if not _can_access_job(current_user, job):
+        raise HTTPException(status_code=403, detail="Access denied")
+    return _download_or_redirect(job, "standalone_html_key", "standalone.html", "text/html")
 
 
 @app.get("/api/download/{job_id}/zip")
-def download_zip(job_id: str):
-    zip_path = file_manager.get_zip_path(job_id)
-    if not zip_path.is_file():
-        job_dir = file_manager.get_job_dir(job_id)
-        if job_dir.exists():
-            zip_path = file_manager.create_zip(job_id)
-        else:
-            raise HTTPException(status_code=404, detail="Job not found")
-    return FileResponse(path=str(zip_path), filename=f"{job_id}.zip", media_type="application/zip")
+def download_zip(
+    job_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job or job.status != "success":
+        raise HTTPException(status_code=404, detail="Job not found")
+    if not _can_access_job(current_user, job):
+        raise HTTPException(status_code=403, detail="Access denied")
+    return _download_or_redirect(job, "zip_key", f"{job_id}.zip", "application/zip")
+
+
+def _download_or_redirect(job: Job, key_attr: str, filename: str, media_type: str):
+    """Return a download response — presigned URL redirect for S3, FileResponse for local."""
+    if settings.storage_provider == "s3":
+        from services.storage import get_storage_client
+        storage = get_storage_client()
+        key = getattr(job, key_attr, None) or f"jobs/{job.id}/{filename}"
+        if not storage.object_exists(key):
+            raise HTTPException(status_code=404, detail="File not available")
+        url = storage.generate_presigned_url(key)
+        return RedirectResponse(url=url, status_code=302)
+
+    # Local mode
+    from services import file_manager
+    local_path = file_manager.get_job_dir(job.id) / filename
+    if local_path.is_file():
+        return FileResponse(path=str(local_path), filename=filename, media_type=media_type)
+    raise HTTPException(status_code=404, detail="File not found")
+
+
+# ── Preview endpoint (Phase 5B) ───────────────────────────────────────
+
+@app.get("/api/preview/{job_id}")
+def preview_job(
+    job_id: str,
+    type: str = Query("index", description="index or standalone"),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Serve index.html or standalone.html for preview (auth required)."""
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job or job.status != "success":
+        raise HTTPException(status_code=404, detail="Job not found")
+    if not _can_access_job(current_user, job):
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    if type == "standalone":
+        key_attr = "standalone_html_key"
+        filename = "standalone.html"
+    else:
+        key_attr = "index_html_key"
+        filename = "index.html"
+
+    if settings.storage_provider == "s3":
+        from services.storage import get_storage_client
+        storage = get_storage_client()
+        key = getattr(job, key_attr, None) or f"jobs/{job_id}/{filename}"
+        if not storage.object_exists(key):
+            raise HTTPException(status_code=404, detail="Preview not available")
+        url = storage.generate_presigned_url(key)
+        return RedirectResponse(url=url, status_code=302)
+
+    local_path = file_manager.get_job_dir(job_id) / filename
+    if local_path.is_file():
+        return FileResponse(path=str(local_path), media_type="text/html")
+    raise HTTPException(status_code=404, detail="Preview not available")
+
+
+# ── Admin file access (Phase 5B) ──────────────────────────────────────
+
+@app.get("/api/admin/jobs/{job_id}/logs")
+def admin_download_logs(
+    job_id: str,
+    db: Session = Depends(get_db),
+    _=Depends(verify_admin_password),
+):
+    """Admin: download logs.txt for a job."""
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    if settings.storage_provider == "s3" and job.logs_key:
+        from services.storage import get_storage_client
+        storage = get_storage_client()
+        url = storage.generate_presigned_url(job.logs_key)
+        return RedirectResponse(url=url, status_code=302)
+
+    if job.logs_path:
+        logs_path = Path(job.logs_path)
+        if logs_path.is_file():
+            return FileResponse(path=str(logs_path), filename="logs.txt", media_type="text/plain")
+
+    raise HTTPException(status_code=404, detail="Logs not available")
 
 
 # ── Static file serving (outputs & examples) — must be last ────────────
 
-if OUTPUTS_DIR.exists():
+# Only mount static /outputs in local mode; S3 mode uses presigned URLs
+if settings.storage_provider != "s3" and OUTPUTS_DIR.exists():
     app.mount("/outputs", StaticFiles(directory=str(OUTPUTS_DIR), html=True), name="outputs")
 
 # Phase 4G: Serve example standalone.html files

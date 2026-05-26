@@ -1,7 +1,11 @@
-# ── Phase 5A: Railway deployment Dockerfile ──────────────────────────
-# Single image, two services:
+# ── Phase 5B: Railway separation-of-concerns Dockerfile ──────────────
+# Single image, two services (deployed separately on Railway):
 #   Backend API: CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 #   Worker:      CMD ["python", "worker_supervisor.py"]
+#
+# Two deployment modes, controlled by STORAGE_PROVIDER env var:
+#   "local" (default): SQLite + shared Volume (/data) — pure Railway, no external services
+#   "s3":              PostgreSQL + S3/R2 object storage — no Volume needed
 #
 # Build:  docker build -t slidehttp .
 # Run API: docker run -p 8000:8000 --env-file .env slidehttp
@@ -10,7 +14,7 @@
 FROM python:3.12-slim-bookworm
 
 # Bump CACHEBUST to force full rebuild (e.g. change to 2, 3, ...)
-ARG CACHEBUST=2
+ARG CACHEBUST=3
 
 # ── System dependencies ──────────────────────────────────────────────
 RUN echo "Cache bust: ${CACHEBUST}" && \
@@ -62,10 +66,11 @@ COPY html-ppt-app/backend/ /app/html-ppt-app/backend/
 # Frontend (optional — served by backend static files if needed)
 # COPY html-ppt-app/frontend/dist/ /app/html-ppt-app/frontend/dist/
 
-# ── Create data directories ──────────────────────────────────────────
-# /data is the recommended Railway volume mount point
+# ── Temp job + shared output directories ────────────────────────────
+# /tmp/htmlppt-jobs/ — S3 mode: isolated temp dirs, cleaned up after upload
+# /data/outputs/     — local mode: shared Volume for SQLite DB + outputs
 RUN echo "Cache bust: ${CACHEBUST}" && \
-    mkdir -p /data/outputs && chmod 777 /data
+    mkdir -p /tmp/htmlppt-jobs /data/outputs && chmod 777 /tmp /data
 
 # ── Environment defaults ─────────────────────────────────────────────
 ENV PYTHONUNBUFFERED=1
@@ -74,9 +79,12 @@ ENV CLAUDE_CODE_COMMAND=claude
 ENV CLAUDE_TIMEOUT=1800
 ENV HOST=0.0.0.0
 ENV PORT=8000
-ENV OUTPUT_DIR=/data/outputs
-ENV DATABASE_URL=sqlite:////data/app.db
+ENV STORAGE_PROVIDER=s3
+ENV S3_REGION=auto
 ENV WORKER_COUNT=2
+# DATABASE_URL is set by Railway PostgreSQL plugin
+# REDIS_URL is set by Railway Redis plugin
+# S3_BUCKET, S3_ENDPOINT, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY — set on Railway
 
 # ── Expose port ──────────────────────────────────────────────────────
 EXPOSE 8000

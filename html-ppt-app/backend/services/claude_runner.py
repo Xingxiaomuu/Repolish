@@ -4,7 +4,21 @@ from pathlib import Path
 
 from settings import settings
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+
+def _find_project_root() -> Path:
+    """Walk up from this file's location (or cwd) until we find .agents/skills/html-ppt/."""
+    # Start from this file's location
+    candidate = Path(__file__).resolve().parent.parent.parent.parent
+    if (candidate / ".agents" / "skills" / "html-ppt").is_dir():
+        return candidate
+    # Try cwd and its parents (Docker WORKDIR may differ)
+    for p in [Path.cwd(), *Path.cwd().parents]:
+        if (p / ".agents" / "skills" / "html-ppt").is_dir():
+            return p
+    return candidate  # fallback
+
+
+PROJECT_ROOT = _find_project_root()
 
 
 def build_prompt(request, job_dir: Path) -> str:

@@ -1,32 +1,42 @@
-# Slidehttp — Railway Deployment Guide (Phase 5A)
+# Slidehttp — Railway Deployment Guide (Phase 5B)
 
-Minimal public deployment for small-scale testing. Single Docker image, two Railway services
-(API + worker), shared Redis plugin, persistent volume for SQLite and outputs.
+Separation-of-concerns deployment with PostgreSQL, Redis, Backend (API-only), Worker, and S3-compatible object storage. No shared volume needed.
 
 ## Architecture
 
 ```
-                    ┌─────────────────────────────────────┐
-  Internet          │  Railway Project "slidehttp"        │
-                    │                                     │
-  User ──► Frontend │  Service: backend (API)             │
-  (Vercel/static)   │    uvicorn main:app :8000           │
-                    │    └─ reads/writes /data/app.db     │
-                    │    └─ enqueues to Redis "generation" │
-                    │                                     │
-                    │  Service: worker                    │
-                    │    python worker_supervisor.py      │
-                    │    └─ dequeues from Redis            │
-                    │    └─ spawns Claude Code CLI         │
-                    │    └─ writes to /data/outputs/       │
-                    │                                     │
-                    │  Plugin: Redis                      │
-                    │    queue + RQ state                  │
-                    │                                     │
-                    │  Volume: /data (shared mount)       │
-                    │    ├── app.db                       │
-                    │    └── outputs/{job_id}/            │
-                    └─────────────────────────────────────┘
+                         ┌──────────────────────────────────────────┐
+  Internet               │  Railway Project "slidehttp"             │
+                         │                                          │
+  User ───► Frontend     │  Service: backend (API)                  │
+  (Vercel/static)        │    uvicorn main:app :8000                │
+                         │    ├─ Auth (JWT + bcrypt)                │
+                         │    ├─ Job CRUD, rate limiting            │
+                         │    ├─ Download → presigned S3 URLs       │
+                         │    └─ Admin API                          │
+                         │                                          │
+                         │  Service: worker                         │
+                         │    python worker_supervisor.py           │
+                         │    ├─ Dequeues from Redis "generation"   │
+                         │    ├─ Creates in /tmp/htmlppt-jobs/      │
+                         │    ├─ Spawns Claude Code + html-ppt-skill│
+                         │    └─ Uploads outputs to S3/R2           │
+                         │                                          │
+                         │  Plugin: PostgreSQL                      │
+                         │    users, jobs, usage_records, settings  │
+                         │    (shared by backend + worker)          │
+                         │                                          │
+                         │  Plugin: Redis                           │
+                         │    RQ queue "generation"                 │
+                         │    (shared by backend + worker)          │
+                         │                                          │
+                         │  External: Cloudflare R2 (or S3)         │
+                         │    jobs/{job_id}/index.html              │
+                         │    jobs/{job_id}/standalone.html         │
+                         │    jobs/{job_id}/{job_id}.zip            │
+                         │    jobs/{job_id}/logs.txt                │
+                         │    jobs/{job_id}/quality_report.json     │
+                         └──────────────────────────────────────────┘
 ```
 
 ---
@@ -34,104 +44,92 @@ Minimal public deployment for small-scale testing. Single Docker image, two Rail
 ## Step 1: Prerequisites
 
 1. A [Railway](https://railway.app) account
-2. Your project pushed to a **GitHub repository** (public or private)
+2. Your project pushed to a **GitHub repository**
 3. An [Anthropic API key](https://console.anthropic.com/) (Claude Code needs this)
-4. Claude Code CLI usable locally: `npm install -g @anthropic-ai/claude-code` (already in Dockerfile)
+4. A [Cloudflare R2](https://developers.cloudflare.com/r2/) bucket (or any S3-compatible storage)
+   - Create a bucket (e.g., `slidehttp-outputs`)
+   - Generate an Access Key ID and Secret Access Key
+   - Note the endpoint URL (`https://<account>.r2.cloudflarestorage.com`)
 
 ---
 
 ## Step 2: Connect GitHub to Railway
 
-1. Go to [railway.app/dashboard](https://railway.app/dashboard) and click **New Project**
+1. Go to [railway.app/dashboard](https://railway.app/dashboard) → **New Project**
 2. Select **Deploy from GitHub repo**
-3. Click **Configure GitHub App** if you haven't already — grant Railway access to your account or specific repos
-4. Select the repository `Slidehttp` (or whatever you named it)
-5. Railway will detect the `Dockerfile` at the repo root
-
-> Railway initially creates one service from the Dockerfile. We'll split into two services in Step 3.
+3. Configure GitHub App access if needed
+4. Select your Slidehttp repository
+5. Railway detects the `Dockerfile` at repo root
 
 ---
 
-## Step 3: Create the Backend API Service
+## Step 3: Add PostgreSQL
 
-1. In your project dashboard, you'll see one service (named after your repo or Dockerfile)
-2. Click on it → **Settings** → rename it to **`backend`**
-3. Under **Deploy**, make sure:
-   - **Source**: GitHub repo (auto-deploy on push: **enabled**)
-   - **Root directory**: `/` (repository root)
-   - **Start command**: leave as default (the Dockerfile `CMD` already runs uvicorn)
-4. Click **Deploy** to trigger the first build
-
-> The default `CMD` in Dockerfile is `uvicorn main:app --host 0.0.0.0 --port 8000`, so the API service works out of the box.
+1. In your project dashboard, click **New** → **Database** → **PostgreSQL**
+2. Railway auto-provisions PostgreSQL and adds `DATABASE_URL` as a **shared variable**
+3. Tables (`users`, `jobs`, `usage_records`, `system_settings`) are auto-created on first startup by `init_db()`
 
 ---
 
 ## Step 4: Add Redis
 
-1. In your project dashboard, click **New** → **Database** → **Redis**
-2. Railway automatically provisions Redis and adds `REDIS_URL` (with the actual connection string) as a **shared variable** visible to all services in this project
-3. No manual configuration needed — `REDIS_URL` in the provided `.env.production.example` maps directly to what Railway provides
-4. Both `backend` and `worker` services will auto-connect via this shared variable
+1. Click **New** → **Database** → **Redis**
+2. Railway auto-provisions Redis and adds `REDIS_URL` as a shared variable
 
 ---
 
-## Step 5: Add a Persistent Volume
+## Step 5: Configure the Backend Service
 
-1. In your project dashboard, click on the **backend** service
-2. Go to **Settings** → **Volumes** → **Add Volume**
-3. Configure:
-   - **Mount path**: `/data`
-   - **Volume name**: `data` (or any name you prefer)
-4. Click **Add Volume**
-5. This volume is where SQLite (`/data/app.db`) and generated outputs (`/data/outputs/`) live
-
-> **IMPORTANT**: If you don't add a volume, the database and all generated files will be lost on every deploy. The volume persists across deploys. Both services need to share the same volume — Railway currently supports this by attaching the same named volume to multiple services in the project.
+1. Railway creates an initial service from your Dockerfile. Click it → **Settings** → rename to **`backend`**
+2. Under **Deploy**:
+   - **Start command**: leave default (Dockerfile CMD runs `uvicorn main:app --host 0.0.0.0 --port 8000`)
+   - **Root directory**: `/` (repository root)
+3. Under **Networking**, ensure a public domain is generated (for API access)
+4. Add **service-specific** or **shared** variables (see Step 7)
 
 ---
 
 ## Step 6: Create the Worker Service
 
-1. In your project dashboard, click **New** → **Service** → **Deploy from GitHub repo**
-2. Select the **same repository**
-3. Click on this new service → **Settings** → rename it to **`worker`**
-4. Under **Deploy** → **Start command**, override with:
-   ```
-   python worker_supervisor.py
-   ```
-5. Under **Volumes**, attach the same volume as Step 5:
-   - **Mount path**: `/data`
-   - **Volume name**: `data` (same name as above)
-6. This service:
-   - Does **NOT** need a public domain (no HTTP port needed)
-   - Only needs the Redis connection + volume mount + Anthropic API key
-   - Will pull from the same "generation" queue
-
-> The worker service doesn't expose a port. Railway will show it as "healthy" based on the process running (not crashing). There's no HTTP health check for the worker.
+1. Click **New** → **Service** → **Deploy from GitHub repo** (same repo)
+2. Rename it to **`worker`**
+3. Under **Deploy**:
+   - **Start command**: `python worker_supervisor.py`
+   - **Root directory**: `/`
+4. The worker does **NOT** need a public domain (no HTTP port exposed)
+5. The worker needs the same `DATABASE_URL`, `REDIS_URL`, and S3 variables as the backend
 
 ---
 
 ## Step 7: Configure Environment Variables
 
-Go to the project **Variables** tab (shared across all services). Add these:
+### Shared Variables (set in project **Variables** tab)
 
 | Variable | Value | Notes |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | `sk-ant-...` | **REQUIRED** — get from console.anthropic.com |
-| `DATABASE_URL` | `sqlite:////data/app.db` | Points to the volume mount |
-| `REDIS_URL` | (auto-set by Railway Redis plugin) | Do NOT override manually |
-| `JWT_SECRET` | *generate a random 32+ char string* | Used for login tokens |
-| `JWT_EXPIRE_DAYS` | `7` | Token lifetime |
-| `ADMIN_PASSWORD` | *your admin password* | For the /admin page |
-| `OUTPUT_DIR` | `/data/outputs` | Generated PPT files |
-| `PUBLIC_BACKEND_URL` | `https://backend-xxx.railway.app` | Set AFTER first deploy (see domain in backend service) |
-| `FRONTEND_URL` | `https://your-frontend.vercel.app` | Or `*` if testing with localhost |
-| `CORS_ORIGINS` | `https://your-frontend.vercel.app,http://localhost:5173` | Comma-separated allowed origins |
-| `FREE_GENERATIONS_PER_MONTH` | `3` | Monthly free limit per user |
-| `WORKER_COUNT` | `2` | Number of RQ workers in the worker service |
-| `CLAUDE_CODE_COMMAND` | `claude` | CLI command (npm global install) |
-| `CLAUDE_TIMEOUT` | `1800` | Max seconds per generation (30 min) |
+| `DATABASE_URL` | (auto-set by PostgreSQL plugin) | Do NOT override |
+| `REDIS_URL` | (auto-set by Redis plugin) | Do NOT override |
+| `ANTHROPIC_API_KEY` | `sk-ant-...` | **REQUIRED** — Claude Code API key |
+| `JWT_SECRET` | *32+ char random string* | For JWT token signing |
+| `ADMIN_PASSWORD` | *your admin password* | Admin panel access |
+| `FREE_GENERATIONS_PER_MONTH` | `3` | Rate limit per user |
+| `CLAUDE_TIMEOUT` | `1800` | Max seconds per generation |
+| `WORKER_COUNT` | `2` | Worker processes in worker service |
+| `STORAGE_PROVIDER` | `s3` | "s3" for R2, "local" for local dev |
+| `S3_BUCKET` | `slidehttp-outputs` | Your R2 bucket name |
+| `S3_ENDPOINT` | `https://<account>.r2.cloudflarestorage.com` | R2 endpoint |
+| `S3_ACCESS_KEY_ID` | *R2 access key ID* | From Cloudflare dashboard |
+| `S3_SECRET_ACCESS_KEY` | *R2 secret key* | From Cloudflare dashboard |
+| `S3_REGION` | `auto` | Use "auto" for R2 |
+| `S3_PUBLIC_BASE_URL` | `https://pub-<hash>.r2.dev` | (Optional) R2 public URL |
 
-> **Service-specific variables**: You can also set variables only on the `backend` or `worker` service if they differ, but shared variables are simpler.
+### Backend-Specific Variables
+
+| Variable | Value | Notes |
+|---|---|---|
+| `PUBLIC_BACKEND_URL` | `https://backend-xxx.up.railway.app` | Set after first deploy |
+| `FRONTEND_URL` | `https://your-frontend.vercel.app` | For CORS |
+| `CORS_ORIGINS` | `https://your-frontend.vercel.app,http://localhost:5173` | Comma-separated |
 
 ---
 
@@ -139,15 +137,11 @@ Go to the project **Variables** tab (shared across all services). Add these:
 
 ### 8a. Health Check
 
-Once the backend deploys, Railway assigns it a public domain like:
-`https://backend-production-xxxx.up.railway.app`
-
-Check health:
 ```bash
 curl https://YOUR_BACKEND_URL/api/health
 ```
 
-Expected response:
+Expected:
 ```json
 {
   "status": "pass",
@@ -155,7 +149,7 @@ Expected response:
     "api": "ok",
     "database": "connected",
     "redis": "connected",
-    "output_dir": "writable (/data/outputs)",
+    "storage": "s3://slidehttp-outputs",
     "claude_command": "found (/usr/local/bin/claude)",
     "html_ppt_skill": "exists (/app/.agents/skills/html-ppt/SKILL.md)",
     "python_version": "3.12.x",
@@ -164,86 +158,51 @@ Expected response:
 }
 ```
 
-If any check shows `"error"` or `"NOT FOUND"`, check the logs (Step 9).
+### 8b. Worker Health Check
 
-### 8b. Smoke Test
+```bash
+# SSH into worker or run from deploy logs:
+python scripts/worker_health_check.py
+```
 
-Run the smoke test script from your local machine:
+### 8c. Smoke Test
+
+From your local machine:
 
 ```bash
 cd html-ppt-app/backend
-pip install requests  # if not already installed
+pip install boto3 psycopg2-binary
 
-python scripts/smoke_generate.py --base-url https://YOUR_BACKEND_URL
+python scripts/smoke_test_remote.py --base-url https://YOUR_BACKEND_URL
 ```
 
-This script:
-1. Hits `/api/health` to verify all services
-2. Registers a test user (or logs in if already exists)
-3. Creates a minimal 3-slide job via `POST /api/jobs`
-4. Polls `GET /api/jobs/{job_id}` until success or timeout (10 min)
-5. Verifies all download URLs return HTTP 200
-6. Checks that `quality_report.json` is present
-
-Expected output ends with:
-```
-============================================================
-SMOKE TEST PASSED — All outputs generated successfully.
-Job ID: abc123...
-Preview: https://YOUR_BACKEND_URL/outputs/abc123.../index.html
-============================================================
-```
-
-> **Note**: The first run may take 5-10 minutes as Claude Code generates the deck. Subsequent runs are often faster.
+This verifies the full pipeline: register → create job → poll → download via presigned URLs → auth enforcement.
 
 ---
 
-## Step 9: View Logs
+## Step 9: Deploy Frontend (Separate)
 
-### Railway Dashboard (Web)
+### Vercel (recommended)
 
-1. Go to your project dashboard
-2. Click on the **backend** or **worker** service
-3. Click the **Deployments** tab
-4. Click on any deployment to see build + runtime logs
-5. Use the **Log Explorer** for real-time streaming logs
+1. Import your GitHub repo into Vercel
+2. **Root Directory**: `html-ppt-app/frontend`
+3. **Build Command**: `npm run build`
+4. **Output Directory**: `dist`
+5. Environment variable: `VITE_API_BASE_URL` = `https://YOUR_BACKEND_URL`
 
-### Railway CLI
+---
+
+## Step 10: View Logs
 
 ```bash
-# Install Railway CLI
-npm install -g @railway/cli
-
-# Login
+# Railway CLI
 railway login
-
-# Link to your project
 railway link
-
-# Stream logs from backend
 railway logs --service backend
-
-# Stream logs from worker
 railway logs --service worker
 ```
 
----
-
-## Step 10: Deploy Frontend (Separate)
-
-The frontend is a static React SPA. Recommended hosting:
-
-### Option A: Vercel (simplest)
-
-1. Import your GitHub repo into Vercel
-2. Set **Root Directory** to `html-ppt-app/frontend`
-3. Set **Build Command**: `npm run build`
-4. Set **Output Directory**: `dist`
-5. Add environment variable: `VITE_API_BASE_URL` = `https://YOUR_BACKEND_URL`
-
-### Option B: Railway static serve
-
-You can add a third Railway service that serves the built frontend. However, Vercel is better optimized for static SPAs.
+Or use the Railway dashboard → Deployments → Log Explorer.
 
 ---
 
@@ -251,32 +210,40 @@ You can add a third Railway service that serves the built frontend. However, Ver
 
 | Symptom | Likely Cause | Fix |
 |---|---|---|
-| Health: `database: error` | Volume not mounted or path wrong | Check `/data` volume mount exists in service settings |
-| Health: `redis: error` | Redis plugin not added or `REDIS_URL` missing | Add Redis plugin in project; check shared variables |
-| Health: `claude_command: NOT FOUND` | Claude Code CLI not installed | Check Dockerfile build logs; `npm install -g @anthropic-ai/claude-code` may have failed |
-| Health: `html_ppt_skill: NOT FOUND` | `.agents/` directory not copied into image | Check that `COPY .agents/ /app/.agents/` ran in Dockerfile |
-| Job stuck in `queued` forever | Worker service not running or Redis not connected | Check worker logs: `railway logs --service worker` |
-| Job `failed` with timeout | Claude Code took >30 min | Increase `CLAUDE_TIMEOUT` env var |
-| `ANTHROPIC_API_KEY` error | Key not set or invalid | Verify key in project Variables; check for typos |
-| Build fails: out of memory | Docker build OOM | In Railway settings, bump service memory to 2+ GB |
-| "Email already registered" on smoke test | User from previous smoke test exists | Smoke test handles this (400 → login instead) |
+| Health: `database: error` | PostgreSQL plugin not added | Add PostgreSQL in project |
+| Health: `redis: error` | Redis plugin not added | Add Redis in project |
+| Health: `storage: error` | S3 credentials wrong | Check S3_* variables |
+| Health: `claude_command: NOT FOUND` | Claude Code CLI install failed | Check Docker build logs |
+| Health: `html_ppt_skill: NOT FOUND` | `.agents/` not copied | Check `COPY .agents/` in Dockerfile |
+| Job stuck in `queued` | Worker not running | Check worker logs |
+| Job `failed` with timeout | Claude Code took >30 min | Increase `CLAUDE_TIMEOUT` |
+| Download returns 401 | Auth required (new in 5B) | Include JWT Bearer token |
+| Download returns 403 | Wrong user accessing job | Only job owner or admin can download |
+| S3 upload fails | Worker can't reach R2 | Check network, S3_ENDPOINT, credentials |
+| Smoke test register 500 | Database migration issue | Check backend logs |
 
 ---
 
-## Cleanup
+## Architecture Changes from Phase 5A
 
-To tear down everything:
-1. Railway dashboard → Project Settings → **Delete Project**
-2. This removes all services, the Redis instance, and the volume
-3. Your GitHub repo is unaffected
+| Aspect | Phase 5A (old) | Phase 5B (new) |
+|---|---|---|
+| Database | SQLite on shared Volume | PostgreSQL plugin |
+| File storage | `/data/outputs` on Volume | S3/R2 object storage |
+| Backend-Worker sharing | Shared Volume mount | PostgreSQL + Redis + S3 |
+| Download auth | None (public) | JWT required |
+| Preview | Static `/outputs/` mount | `/api/preview/{id}` (auth) |
+| Volume needed | Yes | No |
+| Backend reads worker files | Yes (shared volume) | No (via S3 presigned URLs) |
 
 ---
 
 ## Cost Notes (May 2026)
 
-- Railway **Hobby plan** ($5/month credit): ~$5-10/month total for all 3 services + Redis
-- Backend API service: ~512 MB RAM, 0.1-0.5 vCPU → $2-4/month
-- Worker service: ~1-2 GB RAM (Claude Code needs memory), 0.5-1 vCPU → $3-5/month
-- Redis plugin: included in usage cost or separate small charge
-- Volume (1 GB): usually free tier or minimal cost
-- Anthropic API: Claude Code uses your API key, cost depends on usage
+- Railway **Hobby plan** ($5/month credit): covers small setups
+- Backend API: ~512 MB RAM, 0.1-0.5 vCPU
+- Worker: ~1-2 GB RAM (Claude Code), 0.5-1 vCPU
+- PostgreSQL plugin: included in Railway usage
+- Redis plugin: included in Railway usage
+- Cloudflare R2: free tier (10 GB storage, 10M Class A ops/month)
+- Anthropic API: pay-per-use, depends on generation volume

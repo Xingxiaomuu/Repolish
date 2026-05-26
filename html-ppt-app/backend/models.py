@@ -84,6 +84,17 @@ class Job(Base):
     quality_warnings_count: Optional[int] = Column(Integer, nullable=True)
     quality_errors_count: Optional[int] = Column(Integer, nullable=True)
 
+    # Storage keys (Phase 5B) — S3 object keys under s3://bucket/jobs/{job_id}/
+    index_html_key: Optional[str] = Column(String, nullable=True)
+    standalone_html_key: Optional[str] = Column(String, nullable=True)
+    zip_key: Optional[str] = Column(String, nullable=True)
+    logs_key: Optional[str] = Column(String, nullable=True)
+    quality_report_key: Optional[str] = Column(String, nullable=True)
+    deck_plan_key: Optional[str] = Column(String, nullable=True)
+    packed_context_key: Optional[str] = Column(String, nullable=True)
+    input_cleaned_key: Optional[str] = Column(String, nullable=True)
+    generation_prompt_key: Optional[str] = Column(String, nullable=True)
+
 
 # ── System settings table (Phase 4C) ────────────────────────────────────
 
@@ -156,8 +167,8 @@ class JobResponse(BaseModel):
         if job.status == "success":
             job_id = job.id
             data.update({
-                "preview_url": f"/outputs/{job_id}/index.html",
-                "preview_standalone_url": f"/outputs/{job_id}/standalone.html",
+                "preview_url": f"/api/preview/{job_id}",
+                "preview_standalone_url": f"/api/preview/{job_id}?type=standalone",
                 "download_html_url": f"/api/download/{job_id}/html",
                 "download_standalone_url": f"/api/download/{job_id}/standalone",
                 "download_zip_url": f"/api/download/{job_id}/zip",
@@ -315,6 +326,16 @@ class AdminJobDetail(BaseModel):
     download_standalone_url: Optional[str] = None
     download_zip_url: Optional[str] = None
     logs_url: Optional[str] = None
+    # Storage keys (Phase 5B)
+    index_html_key: Optional[str] = None
+    standalone_html_key: Optional[str] = None
+    zip_key: Optional[str] = None
+    logs_key: Optional[str] = None
+    quality_report_key: Optional[str] = None
+    deck_plan_key: Optional[str] = None
+    packed_context_key: Optional[str] = None
+    input_cleaned_key: Optional[str] = None
+    generation_prompt_key: Optional[str] = None
 
 
 class SettingUpdate(BaseModel):

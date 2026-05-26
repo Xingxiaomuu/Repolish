@@ -37,6 +37,15 @@ class Settings(BaseSettings):
     public_backend_url: str = ""  # e.g. https://api.example.com
     frontend_url: str = ""  # e.g. https://example.com
 
+    # Storage (Phase 5B) — "local" or "s3"
+    storage_provider: str = "local"  # "local" = filesystem, "s3" = S3-compatible (R2)
+    s3_bucket: str = ""
+    s3_endpoint: str = ""  # e.g. https://<account>.r2.cloudflarestorage.com
+    s3_access_key_id: str = ""
+    s3_secret_access_key: str = ""
+    s3_region: str = "auto"  # "auto" for Cloudflare R2
+    s3_public_base_url: str = ""  # e.g. https://pub-<hash>.r2.dev (fallback)
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

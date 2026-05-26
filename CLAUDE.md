@@ -26,6 +26,7 @@ API 表
 | Phase 4F | 局域网小范围测试（用户+限流+LAN 访问）✅ |
 | Phase 4G | 前端升级、登录注册、移动端适配、模板卡片 ✅ |
 | Phase 5A | Railway 公网部署（Dockerfile + 双服务 + Redis + Volume + Smoke Test）✅ |
+| Phase 5B | Railway 分离式部署（PostgreSQL + Redis + S3/R2 对象存储、无共享 Volume）✅ |
 
 ---
 
@@ -36,7 +37,8 @@ API 表
 后端 = Prompt 编排 + 文件管理 + 调用 Claude Code（Python FastAPI）
 Claude Code + html-ppt-skill = 真正生成 HTML PPT
 Redis + RQ = 异步任务队列
-SQLite (WAL) = 任务持久化
+本地: SQLite (WAL) = 任务持久化
+Railway: PostgreSQL + S3/R2 = 共享状态 + 对象存储
 ```
 
 ---
@@ -67,7 +69,8 @@ Frontend (已登录) → POST /api/jobs (topic, content... + Bearer token)
       → html_inliner → standalone.html
       → zip 打包
       → Step 6: quality_checker → 质量报告（A-H 8 类检查）
-      → SQLite: UPDATE job (status=success/failed, quality_*)
+      → S3 模式: 上传所有产物到对象存储，写入 storage_key 到 DB
+      → DB: UPDATE job (status=success/failed, quality_*, *_key)
   ← Frontend 每 2s 轮询 GET /api/jobs/{job_id}
 ```
 
@@ -99,15 +102,20 @@ backend/
     file_manager.py    输出目录 + zip 管理
     html_inliner.py    index.html → standalone.html
     token_estimator.py CJK 感知的 token 估算（ASCII/4, 中日韩/1.5）
+    storage/
+      __init__.py         存储模块导出
+      storage_client.py    抽象 StorageClient + LocalStorageClient + S3StorageClient
     pipeline/
       input_cleaner.py     Step 1：输入清洗（纯正则，无 LLM）
       deck_planner.py      Step 2：页面规划（规则引擎）
       context_packer.py    Step 3：上下文打包
       prompt_builder.py    Step 4：生成 Prompt 构建
       quality_checker.py   Step 6：质量检查
-  outputs/{job_id}/    每个任务独立输出目录
+  outputs/{job_id}/    每个任务独立输出目录（local 模式）
   scripts/
-    smoke_generate.py   Phase 5A 冒烟测试（注册→创建→轮询→验证输出）
+    smoke_generate.py         Phase 5A 冒烟测试（注册→创建→轮询→验证输出）
+    smoke_test_remote.py      Phase 5B 远程冒烟测试（S3 模式全链路）
+    worker_health_check.py    Phase 5B Worker 健康检查
 
 frontend/
   src/
@@ -136,19 +144,23 @@ frontend/
 - **Token 用量估算**：CJK 感知估算（ASCII ~4 chars/token, 中日韩 ~1.5 chars/token），精度优于简单 chars/4；未来接入真实 API 返回值时新增字段，不覆盖估算
 - **Admin 认证**：通过 `X-Admin-Password` header + `ADMIN_PASSWORD` 环境变量；未配置时无密码保护
 - **质量检查**：生成后自动运行 8 类检查（A 文件、B HTML 结构、C Placeholder、D 空页面、E 实体保留、F 数据保留、G 页源对应、H Standalone 完整性）；结果持久化到 DB + quality_report.json；有 pipeline 数据时运行全量检查，否则仅运行结构/文件/占位符检查
-- **用户认证**：JWT (python-jose) + bcrypt (passlib) 密码哈希；`JWT_SECRET` 和 `JWT_EXPIRE_DAYS` 环境变量控制；token 存前端 localStorage，每次请求带 `Authorization: Bearer <token>` header
+- **用户认证**：JWT (python-jose) + bcrypt 原生 API 密码哈希（无 passlib）；`JWT_SECRET` 和 `JWT_EXPIRE_DAYS` 环境变量控制；token 存前端 localStorage，每次请求带 `Authorization: Bearer <token>` header
 - **用户与限流**：注册用户按月统计用量；`FREE_GENERATIONS_PER_MONTH` 环境变量控制每月每用户免费次数（默认 3）；超出返回 429；失败任务暂不自动退回，admin 页面可手动审查
 - **前端布局**：ChatGPT 式侧边栏 + 主工作区；侧边栏在移动端变为抽屉式；所有生成输入在一个页面内呈现；两套模板卡片点击即可自动填充表单
 - **国际化**：中/英切换按钮在侧边栏底部，通过 `lang` state 控制各组件文案
 - **Admin 与普通用户分离**：Admin 仍用 `X-Admin-Password` header 验证，与 JWT 用户登录互不影响
+- **双模式存储（Phase 5B）**：`STORAGE_PROVIDER` 环境变量控制 — `local` 走本地文件 + FileResponse（本地开发），`s3` 走 S3/R2 对象存储 + presigned URL 重定向（Railway 生产）、下载路由需 JWT 认证 + 任务归属校验、Worker 生成后在 /tmp 临时目录处理再上传 S3
 
 ---
 
 ## 数据库
 
-- SQLite 文件：`backend/app.db`，首次启动自动创建
+- 本地 (`STORAGE_PROVIDER=local`)：SQLite 文件 `backend/app.db`，首次启动自动创建
+- Railway (`STORAGE_PROVIDER=s3`)：PostgreSQL，Railway plugin 自动提供 `DATABASE_URL`
+- Dialect 自动检测：代码根据 `DATABASE_URL` 前缀自动配置 SQLite PRAGMA 或 PostgreSQL 连接池
 - 表 `jobs`：存储所有请求参数、输出路径、worker 信息、时间戳、状态、token 估算、质量检查结果
-  - 字段：`user_id`（Phase 4F 关联）、`worker_name`、`queue_position`、`retry_count`、`estimated_input_tokens`、`estimated_output_tokens`、`model_name`、`generation_prompt_chars`、`generated_html_chars`、`quality_status`、`quality_score`、`quality_warnings_count`、`quality_errors_count`
+  - 字段：`user_id`、`worker_name`、`queue_position`、`retry_count`、`estimated_input_tokens`、`estimated_output_tokens`、`model_name`、`generation_prompt_chars`、`generated_html_chars`、`quality_status`、`quality_score`、`quality_warnings_count`、`quality_errors_count`
+  - Phase 5B 新增：`index_html_key`、`standalone_html_key`、`zip_key`、`logs_key`、`quality_report_key`、`deck_plan_key`、`packed_context_key`、`input_cleaned_key`、`generation_prompt_key`（S3 对象存储 key）
 - 表 `users`（Phase 4G）：`id`, `name`, `email` (unique), `password_hash`, `last_login_at`, `created_at`
 - 表 `usage_records`（Phase 4F）：`id`, `user_id`, `month` (YYYY-MM), `generation_count`
 - 表 `system_settings`：key-value 配置存储（如 `desired_worker_count`）
@@ -170,8 +182,9 @@ frontend/
 | GET | /api/jobs | 最近任务列表（默认 50 条）|
 | GET | /api/my/jobs | (JWT) 当前用户自己的任务列表 |
 | GET | /api/my/usage | (JWT) 当前用户本月用量（已用/限额/剩余/成功/失败）|
-| GET | /api/jobs/{job_id}/artifacts | Pipeline 中间产物列表 |
-| GET | /api/jobs/{job_id}/artifacts/{file} | 下载/查看中间产物 |
+| GET | /api/preview/{job_id} | (JWT) 预览生成的 PPT（?type=standalone）|
+| GET | /api/jobs/{job_id}/artifacts | (JWT) Pipeline 中间产物列表 |
+| GET | /api/jobs/{job_id}/artifacts/{file} | (JWT) 下载/查看中间产物 |
 | GET | /api/admin/summary | (Auth) 系统汇总：总数/成功率/耗时/token 估算 |
 | GET | /api/admin/jobs | (Auth) 任务列表，支持 status/limit/offset 筛选 |
 | GET | /api/admin/jobs/{job_id} | (Auth) 任务详情：时间线/token/质量报告（score+status+checks）/错误 |
@@ -180,9 +193,10 @@ frontend/
 | POST | /api/admin/settings | (Auth) 更新系统设置（支持 desired_worker_count）|
 | GET | /api/admin/users | (Auth) 用户列表 + 每人本月用量/成功/失败统计 |
 | GET | /api/admin/stats | (Auth) 快速统计：7 天任务数/token、总用户、本月用量 |
-| GET | /api/download/{job_id}/html | 下载 index.html |
-| GET | /api/download/{job_id}/standalone | 下载 standalone.html |
-| GET | /api/download/{job_id}/zip | 下载 ZIP 包 |
+| GET | /api/download/{job_id}/html | (JWT) 下载 index.html（S3: 302 → presigned URL）|
+| GET | /api/download/{job_id}/standalone | (JWT) 下载 standalone.html |
+| GET | /api/download/{job_id}/zip | (JWT) 下载 ZIP 包 |
+| GET | /api/admin/jobs/{job_id}/logs | (Auth) 查看/下载日志 |
 
 ## 任务状态
 
@@ -206,14 +220,12 @@ redis-server
 
 **终端 2 — Backend API：**
 ```bash
-cd html-ppt-app/backend
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+cd html-ppt-app/backend && uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 **终端 3 — Worker Supervisor（默认 2 个 worker）：**
 ```bash
-cd html-ppt-app/backend
-python worker_supervisor.py
+cd html-ppt-app/backend && python worker_supervisor.py
 # 自定义数量：python worker_supervisor.py --count 3
 # 或单 worker 模式：python worker.py
 ```
@@ -255,55 +267,80 @@ Settings 面板：修改 desired_worker_count
 10 秒自动刷新
 ---
 
-## Phase 5A — Railway 公网部署
+## Phase 5B — Railway 分离式部署
 
 ### 部署架构
 
 ```
-Railway 项目 ── GitHub 仓库自动部署
-  ├── Service: backend (API)  ── uvicorn main:app :8000
-  ├── Service: worker          ── python worker_supervisor.py
-  ├── Plugin: Redis            ── REDIS_URL 共享变量
-  └── Volume: /data            ── app.db + outputs/（持久化）
+                         ┌──────────────────────────────────────────┐
+  Internet               │  Railway Project "slidehttp"             │
+                         │                                          │
+  User ───► Frontend     │  Service: backend (API)                  │
+  (Vercel/static)        │    uvicorn main:app :8000                │
+                         │    ├─ Auth (JWT + bcrypt)                │
+                         │    ├─ Job CRUD, rate limiting            │
+                         │    └─ Download → presigned S3 URLs       │
+                         │                                          │
+                         │  Service: worker                         │
+                         │    python worker_supervisor.py           │
+                         │    ├─ Redis/RQ "generation" 队列         │
+                         │    ├─ /tmp/htmlppt-jobs/ 临时目录        │
+                         │    ├─ Claude Code + html-ppt-skill       │
+                         │    └─ 上传产物到 S3/R2                   │
+                         │                                          │
+                         │  Plugin: PostgreSQL                      │
+                         │    users, jobs, usage_records, settings  │
+                         │                                          │
+                         │  Plugin: Redis                           │
+                         │    RQ queue "generation"                 │
+                         │                                          │
+                         │  外部: Cloudflare R2 (S3-compatible)     │
+                         │    jobs/{job_id}/index.html              │
+                         │    jobs/{job_id}/standalone.html         │
+                         │    jobs/{job_id}/{job_id}.zip            │
+                         │    jobs/{job_id}/logs.txt                │
+                         │    jobs/{job_id}/quality_report.json     │
+                         └──────────────────────────────────────────┘
 ```
+
+### 两种模式
+
+| 模式 | STORAGE_PROVIDER | 数据库 | 文件存储 | 适用场景 |
+|---|---|---|---|---|
+| 本地开发 | `local` | SQLite | 本地 outputs/ 目录 | 4 终端本地开发 |
+| Railway 生产 | `s3` | PostgreSQL | S3/R2 对象存储 | Railway 公网部署 |
 
 ### 关键文件
 
 ```
-Dockerfile                    Python 3.12 + Node.js 18 + Claude Code CLI
-.env.production.example       所有 Railway 环境变量模板
-deploy/RAILWAY.md             详细部署指南（10 步）
-scripts/smoke_generate.py     冒烟测试脚本
-.gitignore                    排除 app.db / outputs / __pycache__ / .env
+Dockerfile                          Python 3.12 + Node.js 18 + Claude Code CLI
+.env.example                        本地开发环境变量模板
+.env.production.example             生产环境变量模板
+deploy/RAILWAY.md                   详细部署指南（10 步）
+scripts/smoke_test_remote.py        Phase 5B 远程冒烟测试
+scripts/worker_health_check.py      Worker 健康检查
+services/storage/storage_client.py  存储抽象层（Local + S3）
 ```
 
-### Docker 多进程设计
+### 核心变化（相比 Phase 5A）
 
-- 单镜像，两种 CMD：
-  - API: `uvicorn main:app --host 0.0.0.0 --port 8000`（默认）
-  - Worker: `python worker_supervisor.py`（Railway 中覆盖 start command）
-- Claude Code CLI 通过 npm 全局安装
-- `/data` 卷挂载用于 SQLite DB 和生成输出持久化
-- 环境变量 `ANTHROPIC_API_KEY` 必须设置，Claude Code 需要它调用 API
-
-### 部署文档
-
-详见 [deploy/RAILWAY.md](deploy/RAILWAY.md) — 包含：
-- 如何连接 GitHub 到 Railway
-- 如何创建 backend / worker 服务
-- 如何添加 Redis 插件
-- 如何设置 Volume
-- 如何配置环境变量
-- 如何执行 smoke test
-- 如何查看 logs
-- 故障排查表
+| 方面 | Phase 5A | Phase 5B |
+|---|---|---|
+| 数据库 | SQLite on Volume | PostgreSQL plugin |
+| 文件存储 | Volume /data/outputs | S3/R2 对象存储 |
+| 下载 | 公开 FileResponse | JWT + presigned URL |
+| 预览 | /outputs/ 静态挂载 | /api/preview/{id} + JWT |
+| Volume | 需要 | 不需要 |
+| Backend-Worker | 共享 Volume 读文件 | 通过 S3/Database 通信 |
 
 ---
 
 ## 每任务输出文件
 
 ```
-outputs/{job_id}/
+local: outputs/{job_id}/
+S3:   s3://{bucket}/jobs/{job_id}/
+
   prompt.txt             发送给 Claude Code 的 prompt
   generation_prompt.txt  （长文本模式）含 deck plan + 上下文的完整 prompt
   input_cleaned.json     （长文本模式）清洗后的结构化数据
