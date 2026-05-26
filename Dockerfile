@@ -14,7 +14,7 @@
 FROM python:3.12-slim-bookworm
 
 # Bump CACHEBUST to force full rebuild (e.g. change to 2, 3, ...)
-ARG CACHEBUST=4
+ARG CACHEBUST=5
 
 # ── System dependencies ──────────────────────────────────────────────
 RUN echo "Cache bust: ${CACHEBUST}" && \
@@ -76,6 +76,7 @@ RUN echo "Cache bust: ${CACHEBUST}" && \
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONIOENCODING=utf-8
 ENV CLAUDE_CODE_COMMAND=claude
+ENV CLAUDE_CODE_PERMISSION_MODE=acceptEdits
 ENV CLAUDE_TIMEOUT=1800
 ENV HOST=0.0.0.0
 ENV PORT=8000
