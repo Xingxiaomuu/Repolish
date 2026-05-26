@@ -147,6 +147,24 @@ def generate_deck(job_id: str):
         # ── Verify output ──────────────────────────────────────────────
         index_html = job_dir / "index.html"
         if not index_html.is_file():
+            # Claude Code may write to a different path than requested — search for it
+            _fallback_dirs = [
+                Path("/app/html-ppt-app/backend/outputs") / job_obj.id,
+                Path("/app/outputs") / job_obj.id,
+                Path(tempfile.gettempdir()) / "htmlppt-jobs" / job_obj.id,
+            ]
+            for fb_dir in _fallback_dirs:
+                candidate = fb_dir / "index.html"
+                if candidate.is_file():
+                    # Move all contents to the expected job_dir
+                    if fb_dir != job_dir and fb_dir.is_dir():
+                        for item in fb_dir.iterdir():
+                            shutil.move(str(item), str(job_dir / item.name))
+                        shutil.rmtree(str(fb_dir), ignore_errors=True)
+                    index_html = job_dir / "index.html"
+                    break
+
+        if not index_html.is_file():
             if exit_code != 0:
                 _fail_job(db, job_obj,
                     f"Claude Code exited with code {exit_code}. Check logs.", logs_path, job_dir)
