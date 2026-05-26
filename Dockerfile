@@ -89,7 +89,7 @@ ENV WORKER_COUNT=2
 
 # ── Non-root user (required by Claude Code — --dangerously-skip-permissions blocked for root) ──
 RUN useradd -m appuser && \
-    chown -R appuser:appuser /app /tmp/htmlppt-jobs
+    chown -R appuser:appuser /app /app/tmp
 USER appuser
 
 # ── Expose port ──────────────────────────────────────────────────────
