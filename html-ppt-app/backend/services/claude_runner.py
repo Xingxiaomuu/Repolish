@@ -165,7 +165,7 @@ def run_claude(job_dir: Path, logs_path: Path) -> int:
             )
         return -2
 
-    cmd = [resolved, "--print", "--output-format", "json", "--permission-mode", "acceptEdits"]
+    cmd = [resolved, "--print", "--output-format", "json", "--permission-mode", "bypassPermissions"]
 
     # Write log header
     with open(logs_path, "w", encoding="utf-8") as f:
