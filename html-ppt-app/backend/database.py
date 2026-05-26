@@ -157,6 +157,9 @@ def _seed_admin_user():
 
 def _cleanup_temp_job_dirs():
     """Remove orphaned temp job directories from previous worker runs."""
-    tmp_root = Path(tempfile.gettempdir()) / "htmlppt-jobs"
-    if tmp_root.is_dir():
-        shutil.rmtree(tmp_root, ignore_errors=True)
+    for tmp_root in [
+        Path(tempfile.gettempdir()) / "htmlppt-jobs",
+        Path("/app/tmp/htmlppt-jobs"),
+    ]:
+        if tmp_root.is_dir():
+            shutil.rmtree(tmp_root, ignore_errors=True)

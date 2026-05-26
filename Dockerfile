@@ -67,10 +67,10 @@ COPY html-ppt-app/backend/ /app/html-ppt-app/backend/
 # COPY html-ppt-app/frontend/dist/ /app/html-ppt-app/frontend/dist/
 
 # ── Temp job + shared output directories ────────────────────────────
-# /tmp/htmlppt-jobs/ — S3 mode: isolated temp dirs, cleaned up after upload
-# /data/outputs/     — local mode: shared Volume for SQLite DB + outputs
+# /app/tmp/htmlppt-jobs/ — S3 mode: isolated temp dirs under /app (sandbox allows writes here)
+# /data/outputs/         — local mode: shared Volume for SQLite DB + outputs
 RUN echo "Cache bust: ${CACHEBUST}" && \
-    mkdir -p /tmp/htmlppt-jobs /data/outputs && chmod 777 /tmp /data
+    mkdir -p /app/tmp/htmlppt-jobs /data/outputs && chmod 777 /app/tmp /data
 
 # ── Environment defaults ─────────────────────────────────────────────
 ENV PYTHONUNBUFFERED=1

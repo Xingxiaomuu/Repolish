@@ -177,7 +177,7 @@ def run_claude(job_dir: Path, logs_path: Path) -> int:
         f.write("=== STDOUT / STDERR ===\n\n")
 
     try:
-        # Explicitly pass env to ensure ANTHROPIC_API_KEY is inherited
+        # Run from PROJECT_ROOT so Claude Code finds .agents/skills/html-ppt/
         result = subprocess.run(
             cmd,
             input=prompt,

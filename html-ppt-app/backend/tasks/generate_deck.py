@@ -23,7 +23,8 @@ PIPELINE_MIN_CONTENT_CHARS = 1000
 def _resolve_job_dir(job_id: str) -> Path:
     """Return the working directory for job generation."""
     if settings.storage_provider == "s3":
-        tmp = Path(tempfile.gettempdir()) / "htmlppt-jobs" / job_id
+        # Use /app/tmp/ instead of /tmp/ — Claude Code sandbox blocks writes to /tmp
+        tmp = Path("/app/tmp/htmlppt-jobs") / job_id
         tmp.mkdir(parents=True, exist_ok=True)
         return tmp
     else:
