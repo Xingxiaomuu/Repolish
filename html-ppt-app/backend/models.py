@@ -84,6 +84,9 @@ class Job(Base):
     quality_warnings_count: Optional[int] = Column(Integer, nullable=True)
     quality_errors_count: Optional[int] = Column(Integer, nullable=True)
 
+    # Download token — allows auth-free download/preview via URL param
+    download_token: Optional[str] = Column(String, nullable=True, index=True)
+
     # Storage keys (Phase 5B) — S3 object keys under s3://bucket/jobs/{job_id}/
     index_html_key: Optional[str] = Column(String, nullable=True)
     standalone_html_key: Optional[str] = Column(String, nullable=True)
@@ -164,14 +167,17 @@ class JobResponse(BaseModel):
             "quality_status": job.quality_status,
             "quality_score": job.quality_score,
         }
+        dt = job.download_token or ""
         if job.status == "success":
             job_id = job.id
+            sep = "?" if dt else ""
+            tok = f"?token={dt}" if dt else ""
             data.update({
-                "preview_url": f"{base_url}/api/preview/{job_id}",
-                "preview_standalone_url": f"{base_url}/api/preview/{job_id}?type=standalone",
-                "download_html_url": f"{base_url}/api/download/{job_id}/html",
-                "download_standalone_url": f"{base_url}/api/download/{job_id}/standalone",
-                "download_zip_url": f"{base_url}/api/download/{job_id}/zip",
+                "preview_url": f"{base_url}/api/preview/{job_id}{tok}",
+                "preview_standalone_url": f"{base_url}/api/preview/{job_id}?type=standalone{('&token=' + dt) if dt else ''}",
+                "download_html_url": f"{base_url}/api/download/{job_id}/html{tok}",
+                "download_standalone_url": f"{base_url}/api/download/{job_id}/standalone{tok}",
+                "download_zip_url": f"{base_url}/api/download/{job_id}/zip{tok}",
             })
         if job.logs_path:
             data["logs_url"] = f"{base_url}/outputs/{job.id}/logs.txt" if base_url else f"/outputs/{job.id}/logs.txt"

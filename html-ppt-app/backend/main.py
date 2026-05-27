@@ -39,6 +39,32 @@ def _can_access_job(current_user: User, job: Job) -> bool:
     """User can access a job if they own it or are admin."""
     return bool(current_user.is_admin) or job.user_id == current_user.id
 
+def _lookup_job(job_id: str, db: Session) -> Job:
+    """Look up a successful job or raise 404."""
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job or job.status != "success":
+        raise HTTPException(status_code=404, detail="Job not found")
+    return job
+
+
+def _get_optional_user(
+    creds: HTTPAuthorizationCredentials | None = Depends(_bearer),
+    jwt_token: str | None = Query(None, alias="access_token"),
+    db: Session = Depends(get_db),
+) -> User | None:
+    """Like get_current_user but returns None instead of raising 401."""
+    t = creds.credentials if creds else jwt_token
+    if t is None:
+        return None
+    try:
+        payload = jwt.decode(t, settings.jwt_secret, algorithms=["HS256"])
+        user_id: str | None = payload.get("sub")
+        if user_id is None:
+            return None
+    except JWTError:
+        return None
+    return db.query(User).filter(User.id == user_id).first()
+
 def _hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
@@ -328,7 +354,9 @@ def create_job(
         db.commit()
 
     # ── Create job ────────────────────────────────────────────────────
+    import secrets
     job_id = file_manager.generate_job_id()
+    download_token = secrets.token_urlsafe(16)
     job = Job(
         id=job_id,
         user_id=current_user.id,
@@ -342,6 +370,7 @@ def create_job(
         extra_requirements=req.extra_requirements,
         search_level=req.search_level,
         content_chars=len(req.content or ""),
+        download_token=download_token,
     )
     db.add(job)
     db.commit()
@@ -413,11 +442,12 @@ def my_jobs(
             "quality_score": j.quality_score,
         }
         if j.status == "success":
+            tok = f"?token={j.download_token}" if j.download_token else ""
             item.update({
-                "preview_url": f"{settings.public_backend_url}/api/preview/{j.id}",
-                "download_html_url": f"{settings.public_backend_url}/api/download/{j.id}/html",
-                "download_standalone_url": f"{settings.public_backend_url}/api/download/{j.id}/standalone",
-                "download_zip_url": f"{settings.public_backend_url}/api/download/{j.id}/zip",
+                "preview_url": f"{settings.public_backend_url}/api/preview/{j.id}{tok}",
+                "download_html_url": f"{settings.public_backend_url}/api/download/{j.id}/html{tok}",
+                "download_standalone_url": f"{settings.public_backend_url}/api/download/{j.id}/standalone{tok}",
+                "download_zip_url": f"{settings.public_backend_url}/api/download/{j.id}/zip{tok}",
             })
         items.append(MyJobItem(**item))
     return {"jobs": items}
@@ -622,12 +652,14 @@ def admin_job_detail(job_id: str, db: Session = Depends(get_db), _=Depends(verif
     }
 
     if j.status == "success":
+        tok = f"?token={j.download_token}" if j.download_token else ""
+        tok_amp = f"&token={j.download_token}" if j.download_token else ""
         detail.update({
-            "preview_url": f"{settings.public_backend_url}/api/preview/{j.id}",
-            "preview_standalone_url": f"{settings.public_backend_url}/api/preview/{j.id}?type=standalone",
-            "download_html_url": f"{settings.public_backend_url}/api/download/{j.id}/html",
-            "download_standalone_url": f"{settings.public_backend_url}/api/download/{j.id}/standalone",
-            "download_zip_url": f"{settings.public_backend_url}/api/download/{j.id}/zip",
+            "preview_url": f"{settings.public_backend_url}/api/preview/{j.id}{tok}",
+            "preview_standalone_url": f"{settings.public_backend_url}/api/preview/{j.id}?type=standalone{tok_amp}",
+            "download_html_url": f"{settings.public_backend_url}/api/download/{j.id}/html{tok}",
+            "download_standalone_url": f"{settings.public_backend_url}/api/download/{j.id}/standalone{tok}",
+            "download_zip_url": f"{settings.public_backend_url}/api/download/{j.id}/zip{tok}",
         })
     if j.logs_path or j.logs_key:
         detail["logs_url"] = f"{settings.public_backend_url}/api/admin/jobs/{j.id}/logs"
@@ -827,15 +859,11 @@ _PIPELINE_ARTIFACTS = [
 def list_artifacts(
     job_id: str,
     db: Session = Depends(get_db),
-    access_token: str | None = Query(None),
-    current_user: User = Depends(get_current_user),
+    token: str | None = Query(None),
+    opt_user: User | None = Depends(_get_optional_user),
 ):
-    """List available pipeline artifacts for a job (auth required)."""
-    job = db.query(Job).filter(Job.id == job_id).first()
-    if not job:
-        raise HTTPException(status_code=404, detail="Job not found")
-    if not _can_access_job(current_user, job):
-        raise HTTPException(status_code=403, detail="Access denied")
+    """List available pipeline artifacts for a job (auth via download_token or JWT)."""
+    job = _auth_download(job_id, token, opt_user, db)
 
     available = []
     is_s3 = settings.storage_provider == "s3"
@@ -880,15 +908,11 @@ def get_artifact(
     job_id: str,
     filename: str,
     db: Session = Depends(get_db),
-    access_token: str | None = Query(None),
-    current_user: User = Depends(get_current_user),
+    token: str | None = Query(None),
+    opt_user: User | None = Depends(_get_optional_user),
 ):
-    """Download/view a specific pipeline artifact (auth required)."""
-    job = db.query(Job).filter(Job.id == job_id).first()
-    if not job:
-        raise HTTPException(status_code=404, detail="Job not found")
-    if not _can_access_job(current_user, job):
-        raise HTTPException(status_code=403, detail="Access denied")
+    """Download/view a specific pipeline artifact (auth via download_token or JWT)."""
+    job = _auth_download(job_id, token, opt_user, db)
 
     allowed = set(_PIPELINE_ARTIFACTS) | {"logs.txt"}
     if filename not in allowed:
@@ -912,20 +936,29 @@ def get_artifact(
     return FileResponse(path=str(file_path), filename=filename, media_type=media_type)
 
 
-# ── Download endpoints (Phase 5B: auth + storage-aware) ────────────────
+# ── Download endpoints (Phase 5B: auth via download_token or JWT) ─────
+
+def _auth_download(job_id: str, token: str | None, opt_user: User | None, db: Session) -> Job:
+    """Authenticate a download request: download_token first, then JWT fallback."""
+    job = _lookup_job(job_id, db)
+    # 1. Valid download_token → allow
+    if token and job.download_token and token == job.download_token:
+        return job
+    # 2. Valid JWT user who owns the job → allow
+    if opt_user and _can_access_job(opt_user, job):
+        return job
+    # 3. Neither worked → 401
+    raise HTTPException(status_code=401, detail="Authentication required")
+
 
 @app.get("/api/download/{job_id}/html")
 def download_html(
     job_id: str,
     db: Session = Depends(get_db),
-    access_token: str | None = Query(None),
-    current_user: User = Depends(get_current_user),
+    token: str | None = Query(None),
+    opt_user: User | None = Depends(_get_optional_user),
 ):
-    job = db.query(Job).filter(Job.id == job_id).first()
-    if not job or job.status != "success":
-        raise HTTPException(status_code=404, detail="Job not found")
-    if not _can_access_job(current_user, job):
-        raise HTTPException(status_code=403, detail="Access denied")
+    job = _auth_download(job_id, token, opt_user, db)
     return _download_or_redirect(job, "index_html_key", "index.html", "text/html")
 
 
@@ -933,14 +966,10 @@ def download_html(
 def download_standalone(
     job_id: str,
     db: Session = Depends(get_db),
-    access_token: str | None = Query(None),
-    current_user: User = Depends(get_current_user),
+    token: str | None = Query(None),
+    opt_user: User | None = Depends(_get_optional_user),
 ):
-    job = db.query(Job).filter(Job.id == job_id).first()
-    if not job or job.status != "success":
-        raise HTTPException(status_code=404, detail="Job not found")
-    if not _can_access_job(current_user, job):
-        raise HTTPException(status_code=403, detail="Access denied")
+    job = _auth_download(job_id, token, opt_user, db)
     return _download_or_redirect(job, "standalone_html_key", "standalone.html", "text/html")
 
 
@@ -948,14 +977,10 @@ def download_standalone(
 def download_zip(
     job_id: str,
     db: Session = Depends(get_db),
-    access_token: str | None = Query(None),
-    current_user: User = Depends(get_current_user),
+    token: str | None = Query(None),
+    opt_user: User | None = Depends(_get_optional_user),
 ):
-    job = db.query(Job).filter(Job.id == job_id).first()
-    if not job or job.status != "success":
-        raise HTTPException(status_code=404, detail="Job not found")
-    if not _can_access_job(current_user, job):
-        raise HTTPException(status_code=403, detail="Access denied")
+    job = _auth_download(job_id, token, opt_user, db)
     return _download_or_redirect(job, "zip_key", f"{job_id}.zip", "application/zip")
 
 
@@ -985,15 +1010,11 @@ def preview_job(
     job_id: str,
     type: str = Query("index", description="index or standalone"),
     db: Session = Depends(get_db),
-    access_token: str | None = Query(None),
-    current_user: User = Depends(get_current_user),
+    token: str | None = Query(None),
+    opt_user: User | None = Depends(_get_optional_user),
 ):
-    """Serve index.html or standalone.html for preview (auth required)."""
-    job = db.query(Job).filter(Job.id == job_id).first()
-    if not job or job.status != "success":
-        raise HTTPException(status_code=404, detail="Job not found")
-    if not _can_access_job(current_user, job):
-        raise HTTPException(status_code=403, detail="Access denied")
+    """Serve index.html or standalone.html for preview (auth via download_token or JWT)."""
+    job = _auth_download(job_id, token, opt_user, db)
 
     if type == "standalone":
         key_attr = "standalone_html_key"

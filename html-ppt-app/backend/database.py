@@ -101,11 +101,31 @@ def _migrate():
             ("packed_context_key", "VARCHAR"),
             ("input_cleaned_key", "VARCHAR"),
             ("generation_prompt_key", "VARCHAR"),
+            # Download token for auth-free download/preview links
+            ("download_token", "VARCHAR"),
         ]
         with engine.connect() as conn:
             for col_name, col_type in additions:
                 if col_name not in existing:
                     conn.execute(text(f"ALTER TABLE jobs ADD COLUMN {col_name} {col_type}"))
+                    conn.commit()
+
+    # ── Backfill download_token for existing jobs ─────────────────────
+    if inspector.has_table("jobs"):
+        import secrets
+        cols = {col["name"] for col in inspector.get_columns("jobs")}
+        if "download_token" in cols:
+            with engine.connect() as conn:
+                rows = conn.execute(
+                    text("SELECT id, download_token FROM jobs WHERE status = 'success' AND download_token IS NULL")
+                ).fetchall()
+                for row in rows:
+                    tok = secrets.token_urlsafe(16)
+                    conn.execute(
+                        text("UPDATE jobs SET download_token = :tok WHERE id = :jid"),
+                        {"tok": tok, "jid": row[0]},
+                    )
+                if rows:
                     conn.commit()
 
     # ── system_settings table ─────────────────────────────────────────
