@@ -11,8 +11,8 @@ export default defineConfig({
     },
   },
   preview: {
-    port: 5173,
+    port: 8080,
     host: '0.0.0.0',
-    allowedHosts: true,
+    allowedHosts: ['.railway.app', 'localhost', '127.0.0.1'],
   },
 })
