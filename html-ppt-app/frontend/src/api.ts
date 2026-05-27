@@ -3,6 +3,14 @@
 const TOKEN_KEY = 'slidehttp_token';
 const USER_KEY = 'slidehttp_user';
 
+// In production (Railway), the backend is on a separate domain.
+// Set VITE_API_BASE_URL on Railway to e.g. https://backend-production-e8475.up.railway.app
+const BASE = (import.meta as any).env?.VITE_API_BASE_URL || '';
+
+function apiUrl(path: string): string {
+  return BASE + path;
+}
+
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
 }
@@ -48,7 +56,7 @@ export interface LoginResponse {
 }
 
 export async function authRegister(name: string, email: string, password: string): Promise<void> {
-  const res = await fetch('/api/auth/register', {
+  const res = await fetch(apiUrl('/api/auth/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, email, password }),
@@ -60,7 +68,7 @@ export async function authRegister(name: string, email: string, password: string
 }
 
 export async function authLogin(email: string, password: string): Promise<LoginResponse> {
-  const res = await fetch('/api/auth/login', {
+  const res = await fetch(apiUrl('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -76,7 +84,7 @@ export async function authLogin(email: string, password: string): Promise<LoginR
 }
 
 export async function authMe(): Promise<UserInfo> {
-  const res = await fetch('/api/auth/me', { headers: authHeaders() });
+  const res = await fetch(apiUrl('/api/auth/me', { headers: authHeaders() });
   if (!res.ok) {
     throw new Error('Not authenticated');
   }
@@ -84,7 +92,7 @@ export async function authMe(): Promise<UserInfo> {
 }
 
 export async function authLogout(): Promise<void> {
-  await fetch('/api/auth/logout', { method: 'POST', headers: authHeaders() });
+  await fetch(apiUrl('/api/auth/logout', { method: 'POST', headers: authHeaders() });
   clearToken();
 }
 
@@ -140,7 +148,7 @@ export interface JobListResponse {
 }
 
 export async function createJob(req: GenerateRequest): Promise<CreateJobResponse> {
-  const res = await fetch("/api/jobs", {
+  const res = await fetch(apiUrl("/api/jobs"), {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authHeaders() },
     body: JSON.stringify(req),
@@ -155,7 +163,7 @@ export async function createJob(req: GenerateRequest): Promise<CreateJobResponse
 }
 
 export async function getJob(jobId: string): Promise<JobResponse> {
-  const res = await fetch(`/api/jobs/${jobId}`);
+  const res = await fetch(apiUrl(`/api/jobs/${jobId}`);
   if (!res.ok) {
     const detail = await res.json().catch(() => ({ detail: res.statusText }));
     throw new Error(detail.detail || `Request failed with status ${res.status}`);
@@ -164,7 +172,7 @@ export async function getJob(jobId: string): Promise<JobResponse> {
 }
 
 export async function listJobs(limit: number = 20): Promise<JobListResponse> {
-  const res = await fetch(`/api/jobs?limit=${limit}`);
+  const res = await fetch(apiUrl(`/api/jobs?limit=${limit}`);
   if (!res.ok) {
     const detail = await res.json().catch(() => ({ detail: res.statusText }));
     throw new Error(detail.detail || `Request failed with status ${res.status}`);
@@ -186,7 +194,7 @@ export interface ArtifactsResponse {
 }
 
 export async function getArtifacts(jobId: string): Promise<ArtifactsResponse> {
-  const res = await fetch(`/api/jobs/${jobId}/artifacts`);
+  const res = await fetch(apiUrl(`/api/jobs/${jobId}/artifacts`);
   if (!res.ok) {
     const detail = await res.json().catch(() => ({ detail: res.statusText }));
     throw new Error(detail.detail || `Request failed with status ${res.status}`);
@@ -333,7 +341,7 @@ export interface AdminStats {
 }
 
 async function adminFetch(path: string, password: string, init?: RequestInit) {
-  const res = await fetch(path, {
+  const res = await fetch(apiUrl(path), {
     ...init,
     headers: { ...(init?.headers || {}), ...adminHeaders(password) },
   });
@@ -426,7 +434,7 @@ export interface MyUsageResponse {
 }
 
 export async function myJobs(): Promise<{ jobs: MyJobItem[] }> {
-  const res = await fetch('/api/my/jobs', { headers: authHeaders() });
+  const res = await fetch(apiUrl('/api/my/jobs', { headers: authHeaders() });
   if (!res.ok) {
     const detail = await res.json().catch(() => ({ detail: res.statusText }));
     throw new Error(detail.detail || 'Failed to fetch jobs');
@@ -435,7 +443,7 @@ export async function myJobs(): Promise<{ jobs: MyJobItem[] }> {
 }
 
 export async function myUsage(): Promise<MyUsageResponse> {
-  const res = await fetch('/api/my/usage', { headers: authHeaders() });
+  const res = await fetch(apiUrl('/api/my/usage', { headers: authHeaders() });
   if (!res.ok) {
     const detail = await res.json().catch(() => ({ detail: res.statusText }));
     throw new Error(detail.detail || 'Failed to fetch usage');
