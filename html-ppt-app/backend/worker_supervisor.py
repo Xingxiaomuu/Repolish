@@ -215,13 +215,24 @@ def main():
 
         print(f"\nAll {count} worker(s) running. Press Ctrl+C to stop.\n")
 
-        # Monitor loop — poll every 2 seconds
+        # Monitor loop — poll every 2 seconds, restart crashed workers
         while True:
             for name, p in list(processes.items()):
                 ret = p.poll()
                 if ret is not None:
                     print(f"\n  [{name}] PID {p.pid} — exited with code {ret}")
                     del processes[name]
+                    # Restart the crashed worker
+                    print(f"  [{name}] Restarting...")
+                    time.sleep(1)
+                    new_p = subprocess.Popen(
+                        [sys.executable, str(BACKEND_DIR / "worker.py"), "--name", name],
+                        cwd=str(BACKEND_DIR),
+                        stdout=None,
+                        stderr=None,
+                    )
+                    processes[name] = new_p
+                    print(f"  [{name}] PID {new_p.pid} — restarted")
 
             if not processes:
                 print("\nAll workers have exited. Supervisor shutting down.")
