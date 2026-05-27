@@ -52,7 +52,9 @@ def make_request(
     follow_redirect: bool = False,
 ) -> tuple[int, dict | str]:
     """Make an HTTP request. Returns (status_code, body)."""
-    headers = {"Content-Type": "application/json"}
+    headers: dict[str, str] = {}
+    if method in ("POST", "PUT", "PATCH"):
+        headers["Content-Type"] = "application/json"
     if token:
         headers["Authorization"] = f"Bearer {token}"
     if admin_password:
@@ -61,13 +63,30 @@ def make_request(
     data = json.dumps(body).encode("utf-8") if body else None
     req = urllib.request.Request(url, data=data, headers=headers, method=method)
 
+    # Build opener that does NOT follow redirects (default urllib does, which
+    # leaks auth headers to presigned S3 URLs and causes 400 errors from R2)
+    class NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, req, fp, code, msg, headers, newurl):
+            return None
+        def http_error_302(self, req, fp, code, msg, headers):
+            return fp
+
     try:
         if follow_redirect:
-            # Use a custom opener that follows redirects
-            opener = urllib.request.build_opener(urllib.request.HTTPRedirectHandler())
+            # Strip auth headers from redirect requests (they leak to S3 presigned URLs)
+            class SafeRedirect(urllib.request.HTTPRedirectHandler):
+                def redirect_request(self, req, fp, code, msg, headers, newurl):
+                    new_req = urllib.request.HTTPRedirectHandler.redirect_request(
+                        self, req, fp, code, msg, headers, newurl)
+                    if new_req:
+                        new_req.headers = {k: v for k, v in new_req.headers.items()
+                                           if k.lower() not in ('authorization', 'x-admin-password')}
+                    return new_req
+            opener = urllib.request.build_opener(SafeRedirect)
             with opener.open(req, timeout=30) as resp:
                 return resp.status, resp.read().decode("utf-8")[:500]
-        with urllib.request.urlopen(req, timeout=30) as resp:
+        opener = urllib.request.build_opener(NoRedirect)
+        with opener.open(req, timeout=30) as resp:
             content_type = resp.headers.get("Content-Type", "")
             raw = resp.read().decode("utf-8")
             if "application/json" in content_type:

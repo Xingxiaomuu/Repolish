@@ -172,12 +172,14 @@ def _create_token(user_id: str) -> str:
 
 def get_current_user(
     creds: HTTPAuthorizationCredentials | None = Depends(_bearer),
+    access_token: str | None = Query(None, description="JWT token (alternative to Authorization header)"),
     db: Session = Depends(get_db),
 ) -> User:
-    if creds is None:
+    token = creds.credentials if creds else access_token
+    if token is None:
         raise HTTPException(status_code=401, detail="Authentication required")
     try:
-        payload = jwt.decode(creds.credentials, settings.jwt_secret, algorithms=["HS256"])
+        payload = jwt.decode(token, settings.jwt_secret, algorithms=["HS256"])
         user_id: str | None = payload.get("sub")
         if user_id is None:
             raise HTTPException(status_code=401, detail="Invalid token")

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { myJobs, type MyJobItem } from './api';
+import { myJobs, authDownloadUrl, type MyJobItem } from './api';
 
 interface Props {
   lang: 'zh' | 'en';
@@ -96,7 +96,7 @@ export default function MyJobsPage({ lang }: Props) {
                   <td>
                     <div className="job-links">
                       {j.download_standalone_url && (
-                        <a href={j.download_standalone_url} className="mini-link accent">
+                        <a href={authDownloadUrl(j.download_standalone_url)} className="mini-link accent">
                           {t('下载 Standalone', 'Download Standalone')}
                         </a>
                       )}

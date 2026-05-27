@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { createJob, getJob, getArtifacts, type GenerateRequest, type JobResponse, type ArtifactInfo } from './api';
+import { createJob, getJob, getArtifacts, authDownloadUrl, type GenerateRequest, type JobResponse, type ArtifactInfo } from './api';
 import { EXAMPLE_CARDS, type ExampleCard } from './examples';
 
 interface Props {
@@ -385,12 +385,12 @@ export default function StudioPage({ lang }: Props) {
                 <p className="link-desc">{t('需要服务器上的 html-ppt skill 资源', 'Requires the html-ppt skill assets on the server')}</p>
                 <div className="link-row">
                   {job.preview_url && (
-                    <a href={job.preview_url} target="_blank" rel="noopener noreferrer" className="result-link">
+                    <a href={authDownloadUrl(job.preview_url)} target="_blank" rel="noopener noreferrer" className="result-link">
                       {t('预览', 'Preview')}
                     </a>
                   )}
                   {job.download_html_url && (
-                    <a href={job.download_html_url} className="result-link">
+                    <a href={authDownloadUrl(job.download_html_url)} className="result-link">
                       {t('下载 HTML', 'Download HTML')}
                     </a>
                   )}
@@ -402,11 +402,11 @@ export default function StudioPage({ lang }: Props) {
                   <h4>{t('独立版本', 'Standalone Version')}</h4>
                   <p className="link-desc">{t('完全自包含 — 可复制到任意电脑离线打开', 'Fully self-contained — copy to any computer, works offline')}</p>
                   <div className="link-row">
-                    <a href={job.preview_standalone_url} target="_blank" rel="noopener noreferrer" className="result-link accent">
+                    <a href={authDownloadUrl(job.preview_standalone_url)} target="_blank" rel="noopener noreferrer" className="result-link accent">
                       {t('预览独立版', 'Preview Standalone')}
                     </a>
                     {job.download_standalone_url && (
-                      <a href={job.download_standalone_url} className="result-link accent">
+                      <a href={authDownloadUrl(job.download_standalone_url)} className="result-link accent">
                         {t('下载独立版', 'Download Standalone')}
                       </a>
                     )}
@@ -418,7 +418,7 @@ export default function StudioPage({ lang }: Props) {
                 <div className="link-group">
                   <h4>{t('打包下载', 'Bundle')}</h4>
                   <p className="link-desc">{t('ZIP 包含两个版本 + 日志', 'ZIP with both versions + logs')}</p>
-                  <a href={job.download_zip_url} className="result-link">
+                  <a href={authDownloadUrl(job.download_zip_url)} className="result-link">
                     {t('下载 ZIP', 'Download ZIP')}
                   </a>
                 </div>
@@ -434,7 +434,7 @@ export default function StudioPage({ lang }: Props) {
                   {artifacts.map(a => (
                     <a
                       key={a.filename}
-                      href={a.url}
+                      href={authDownloadUrl(a.url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="result-link"
@@ -458,7 +458,7 @@ export default function StudioPage({ lang }: Props) {
               <pre className="error-detail">{job.error_message}</pre>
             )}
             {job.logs_url && (
-              <a href={job.logs_url} target="_blank" rel="noopener noreferrer" className="result-link" style={{ marginTop: '0.5rem', display: 'inline-block' }}>
+              <a href={authDownloadUrl(job.logs_url)} target="_blank" rel="noopener noreferrer" className="result-link" style={{ marginTop: '0.5rem', display: 'inline-block' }}>
                 {t('查看日志', 'View Logs')}
               </a>
             )}

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   adminGetSummary, adminListJobs, adminGetJobDetail, adminGetQueue,
   adminGetSettings, adminSetSetting, adminGetUsers, adminGetStats,
-  adminUpdateUser,
+  adminUpdateUser, authDownloadUrl,
   type AdminSummary, type AdminJobItem, type AdminJobDetail,
   type AdminQueue, type SettingItem, type AdminUserItem, type AdminStats,
 } from './api';
@@ -489,12 +489,12 @@ export default function AdminPage() {
               <div className="detail-group">
                 <h4>Download Links</h4>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.3rem' }}>
-                  {detail.preview_url && <a href={detail.preview_url} target="_blank" rel="noopener noreferrer" className="result-link" style={{ fontSize: '0.8rem' }}>Preview</a>}
-                  {detail.preview_standalone_url && <a href={detail.preview_standalone_url} target="_blank" rel="noopener noreferrer" className="result-link accent" style={{ fontSize: '0.8rem' }}>Standalone</a>}
-                  {detail.download_html_url && <a href={detail.download_html_url} className="result-link" style={{ fontSize: '0.8rem' }}>HTML</a>}
-                  {detail.download_standalone_url && <a href={detail.download_standalone_url} className="result-link accent" style={{ fontSize: '0.8rem' }}>Standalone DL</a>}
-                  {detail.download_zip_url && <a href={detail.download_zip_url} className="result-link" style={{ fontSize: '0.8rem' }}>ZIP</a>}
-                  {detail.logs_url && <a href={detail.logs_url} target="_blank" rel="noopener noreferrer" className="result-link" style={{ fontSize: '0.8rem' }}>Logs</a>}
+                  {detail.preview_url && <a href={authDownloadUrl(detail.preview_url)} target="_blank" rel="noopener noreferrer" className="result-link" style={{ fontSize: '0.8rem' }}>Preview</a>}
+                  {detail.preview_standalone_url && <a href={authDownloadUrl(detail.preview_standalone_url)} target="_blank" rel="noopener noreferrer" className="result-link accent" style={{ fontSize: '0.8rem' }}>Standalone</a>}
+                  {detail.download_html_url && <a href={authDownloadUrl(detail.download_html_url)} className="result-link" style={{ fontSize: '0.8rem' }}>HTML</a>}
+                  {detail.download_standalone_url && <a href={authDownloadUrl(detail.download_standalone_url)} className="result-link accent" style={{ fontSize: '0.8rem' }}>Standalone DL</a>}
+                  {detail.download_zip_url && <a href={authDownloadUrl(detail.download_zip_url)} className="result-link" style={{ fontSize: '0.8rem' }}>ZIP</a>}
+                  {detail.logs_url && <a href={authDownloadUrl(detail.logs_url)} target="_blank" rel="noopener noreferrer" className="result-link" style={{ fontSize: '0.8rem' }}>Logs</a>}
                 </div>
               </div>
             )}

@@ -15,6 +15,14 @@ export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
 }
 
+export function authDownloadUrl(url: string | null | undefined): string {
+  if (!url) return '';
+  const token = getToken();
+  if (!token) return url;
+  const sep = url.includes('?') ? '&' : '?';
+  return `${url}${sep}access_token=${token}`;
+}
+
 export function setToken(token: string): void {
   localStorage.setItem(TOKEN_KEY, token);
 }
