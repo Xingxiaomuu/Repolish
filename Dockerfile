@@ -14,7 +14,7 @@
 FROM python:3.12-slim-bookworm
 
 # Bump CACHEBUST to force full rebuild (e.g. change to 2, 3, ...)
-ARG CACHEBUST=8
+ARG CACHEBUST=9
 
 # ── System dependencies ──────────────────────────────────────────────
 RUN echo "Cache bust: ${CACHEBUST}" && \
@@ -36,7 +36,7 @@ RUN node --version && npm --version
 # ── Install Claude Code CLI globally ─────────────────────────────────
 # Set CI=true to skip interactive setup prompts
 ENV CI=true
-RUN npm install -g @anthropic-ai/claude-code 2>&1 || echo "Claude Code CLI install attempted"
+RUN npm install -g @anthropic-ai/claude-code@2.1.150 2>&1 || echo "Claude Code CLI install attempted"
 
 # Verify claude exists (non-fatal — will be health-checked at runtime)
 RUN which claude || echo "claude not on PATH yet (will be available after npm global bin setup)"
