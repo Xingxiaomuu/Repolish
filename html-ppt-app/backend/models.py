@@ -146,7 +146,7 @@ class JobResponse(BaseModel):
     quality_score: Optional[int] = None  # 0-100
 
     @classmethod
-    def from_orm(cls, job: Job) -> "JobResponse":
+    def from_orm(cls, job: Job, base_url: str = "") -> "JobResponse":
         data = {
             "job_id": job.id,
             "status": job.status,
@@ -167,14 +167,14 @@ class JobResponse(BaseModel):
         if job.status == "success":
             job_id = job.id
             data.update({
-                "preview_url": f"/api/preview/{job_id}",
-                "preview_standalone_url": f"/api/preview/{job_id}?type=standalone",
-                "download_html_url": f"/api/download/{job_id}/html",
-                "download_standalone_url": f"/api/download/{job_id}/standalone",
-                "download_zip_url": f"/api/download/{job_id}/zip",
+                "preview_url": f"{base_url}/api/preview/{job_id}",
+                "preview_standalone_url": f"{base_url}/api/preview/{job_id}?type=standalone",
+                "download_html_url": f"{base_url}/api/download/{job_id}/html",
+                "download_standalone_url": f"{base_url}/api/download/{job_id}/standalone",
+                "download_zip_url": f"{base_url}/api/download/{job_id}/zip",
             })
         if job.logs_path:
-            data["logs_url"] = f"/outputs/{job.id}/logs.txt"
+            data["logs_url"] = f"{base_url}/outputs/{job.id}/logs.txt" if base_url else f"/outputs/{job.id}/logs.txt"
         return cls(**data)
 
 

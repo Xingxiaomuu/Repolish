@@ -372,7 +372,7 @@ def get_job(job_id: str, db: Session = Depends(get_db)):
     job = db.query(Job).filter(Job.id == job_id).first()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
-    resp = JobResponse.from_orm(job)
+    resp = JobResponse.from_orm(job, settings.public_backend_url)
     # Compute live queue position for queued jobs
     if job.status == "queued":
         resp.queue_position = _compute_queue_position(job_id)
@@ -382,7 +382,7 @@ def get_job(job_id: str, db: Session = Depends(get_db)):
 @app.get("/api/jobs", response_model=JobListResponse)
 def list_jobs(limit: int = 50, db: Session = Depends(get_db)):
     jobs = db.query(Job).order_by(Job.created_at.desc()).limit(limit).all()
-    return JobListResponse(jobs=[JobResponse.from_orm(j) for j in jobs])
+    return JobListResponse(jobs=[JobResponse.from_orm(j, settings.public_backend_url) for j in jobs])
 
 
 # ── My Jobs / My Usage (Phase 4G) ──────────────────────────────────────
@@ -412,10 +412,10 @@ def my_jobs(
         }
         if j.status == "success":
             item.update({
-                "preview_url": f"/api/preview/{j.id}",
-                "download_html_url": f"/api/download/{j.id}/html",
-                "download_standalone_url": f"/api/download/{j.id}/standalone",
-                "download_zip_url": f"/api/download/{j.id}/zip",
+                "preview_url": f"{settings.public_backend_url}/api/preview/{j.id}",
+                "download_html_url": f"{settings.public_backend_url}/api/download/{j.id}/html",
+                "download_standalone_url": f"{settings.public_backend_url}/api/download/{j.id}/standalone",
+                "download_zip_url": f"{settings.public_backend_url}/api/download/{j.id}/zip",
             })
         items.append(MyJobItem(**item))
     return {"jobs": items}
@@ -621,14 +621,14 @@ def admin_job_detail(job_id: str, db: Session = Depends(get_db), _=Depends(verif
 
     if j.status == "success":
         detail.update({
-            "preview_url": f"/api/preview/{j.id}",
-            "preview_standalone_url": f"/api/preview/{j.id}?type=standalone",
-            "download_html_url": f"/api/download/{j.id}/html",
-            "download_standalone_url": f"/api/download/{j.id}/standalone",
-            "download_zip_url": f"/api/download/{j.id}/zip",
+            "preview_url": f"{settings.public_backend_url}/api/preview/{j.id}",
+            "preview_standalone_url": f"{settings.public_backend_url}/api/preview/{j.id}?type=standalone",
+            "download_html_url": f"{settings.public_backend_url}/api/download/{j.id}/html",
+            "download_standalone_url": f"{settings.public_backend_url}/api/download/{j.id}/standalone",
+            "download_zip_url": f"{settings.public_backend_url}/api/download/{j.id}/zip",
         })
     if j.logs_path or j.logs_key:
-        detail["logs_url"] = f"/api/admin/jobs/{j.id}/logs"
+        detail["logs_url"] = f"{settings.public_backend_url}/api/admin/jobs/{j.id}/logs"
 
     # Storage keys (Phase 5B)
     detail.update({
@@ -845,7 +845,7 @@ def list_artifacts(
                 available.append({
                     "filename": name,
                     "size": None,  # S3: size not easily known without HEAD
-                    "url": f"/api/jobs/{job_id}/artifacts/{name}",
+                    "url": f"{settings.public_backend_url}/api/jobs/{job_id}/artifacts/{name}",
                 })
         else:
             fpath = file_manager.get_job_dir(job_id) / name
