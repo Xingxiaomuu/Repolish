@@ -40,3 +40,4 @@ docker-compose.override.yml
 # ── Claude Code ──────────────────────────────────────────────────────
 .claude/memory/
 .claude/worktrees/
+html-ppt-app/frontend/tsconfig.tsbuildinfo
