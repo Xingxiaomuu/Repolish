@@ -27,6 +27,7 @@ API 表
 | Phase 4G | 前端升级、登录注册、移动端适配、模板卡片 ✅ |
 | Phase 5A | Railway 公网部署（Dockerfile + 双服务 + Redis + Volume + Smoke Test）✅ |
 | Phase 5B | Railway 分离式部署（PostgreSQL + Redis + S3/R2 对象存储、无共享 Volume）✅ |
+| Phase 5C | 生产 Bug 修复 + 部署踩坑总结（download_token / _bearer / Railway 快照）✅ |
 
 ---
 
@@ -161,6 +162,7 @@ frontend/
 - 表 `jobs`：存储所有请求参数、输出路径、worker 信息、时间戳、状态、token 估算、质量检查结果
   - 字段：`user_id`、`worker_name`、`queue_position`、`retry_count`、`estimated_input_tokens`、`estimated_output_tokens`、`model_name`、`generation_prompt_chars`、`generated_html_chars`、`quality_status`、`quality_score`、`quality_warnings_count`、`quality_errors_count`
   - Phase 5B 新增：`index_html_key`、`standalone_html_key`、`zip_key`、`logs_key`、`quality_report_key`、`deck_plan_key`、`packed_context_key`、`input_cleaned_key`、`generation_prompt_key`（S3 对象存储 key）
+  - Phase 5C 新增：`download_token`（随机令牌，嵌入下载/预览 URL 实现无需 JWT 的浏览器下载认证）
 - 表 `users`（Phase 4G）：`id`, `name`, `email` (unique), `password_hash`, `last_login_at`, `created_at`
 - 表 `usage_records`（Phase 4F）：`id`, `user_id`, `month` (YYYY-MM), `generation_count`
 - 表 `system_settings`：key-value 配置存储（如 `desired_worker_count`）
@@ -314,6 +316,7 @@ Settings 面板：修改 desired_worker_count
 
 ```
 Dockerfile                          Python 3.12 + Node.js 18 + Claude Code CLI
+railway.toml                        显式指定 DOCKERFILE builder（避免自动检测问题）
 .env.example                        本地开发环境变量模板
 .env.production.example             生产环境变量模板
 deploy/RAILWAY.md                   详细部署指南（10 步）
@@ -332,6 +335,51 @@ services/storage/storage_client.py  存储抽象层（Local + S3）
 | 预览 | /outputs/ 静态挂载 | /api/preview/{id} + JWT |
 | Volume | 需要 | 不需要 |
 | Backend-Worker | 共享 Volume 读文件 | 通过 S3/Database 通信 |
+
+---
+
+## Phase 5C — 生产 Bug 修复 & 部署踩坑
+
+### 修复 1：download_token 机制（`<a>` 标签下载认证）
+
+**问题**：Phase 5B 下载/预览路由加了 JWT 认证，但浏览器 `<a href>` 点击下载时不会发送 `Authorization` header，导致 401。
+
+**解决**：后端在创建 job 时生成 `secrets.token_urlsafe(16)` 随机令牌，存入 `jobs.download_token`，直接嵌入 API 返回的所有下载/预览 URL（`?token=xxx`）。服务端验证时接受 token 或 JWT，token 优先，无需前端改动。
+
+涉及文件：`models.py`（新增 `download_token` 列 + URL 嵌入）、`database.py`（迁移 + 旧任务补填）、`main.py`（`_auth_download()` 验证逻辑）
+
+### 修复 2：消除 `_bearer` 前向引用
+
+**问题**：`main.py` 中 `_bearer = HTTPBearer(auto_error=False)` 定义在 `_get_optional_user()` 之后，Python 函数定义时求值默认参数导致 `NameError`。
+
+**解决**：彻底删除 `_bearer` 和 `HTTPBearer` 依赖，改用 FastAPI 内置 `Header(None)` 直接读取 `Authorization` 头，新建 `_extract_token()` 函数。零模块级变量依赖，彻底避免定义顺序问题。
+
+涉及文件：`main.py`（`_extract_token` 替代 `_bearer`，`_get_optional_user` + `get_current_user` 改用新依赖）
+
+### Railway 部署踩坑总集
+
+| # | 故障 | 根因 | 解决 |
+|---|---|---|---|
+| 1 | Frontend 403 Forbidden | Vite 6 `allowedHosts: true` bug | 降级 Vite 5.4.21 |
+| 2 | Frontend 502 Bad Gateway | Root Directory 设成 backend 路径 | 改为 `html-ppt-app/frontend` |
+| 3 | 下载 401 认证失败 | `<a>` 标签不传 Authorization header | download_token 嵌 URL |
+| 4 | `_bearer` NameError | Python 前向引用 + 旧快照 | `_extract_token` + 删服务重建 |
+| 5 | **Railway 代码快照卡死** | Railway 内部快照永不更新，Disconnect/Reconnect 无效 | **删服务重建** |
+| 6 | 相对 URL 下载失败 | API 返回 `/api/download/...` 相对路径 | `public_backend_url` 拼绝对 URL |
+
+### Railway 快照卡死 — 诊断 & 处理
+
+**症状**：代码已推到 GitHub，反复部署但构建日志永不变化（步骤数不变、CACHEBUST 不变、DIAG 诊断不出现）。
+
+**诊断**：WebFetch 验证 GitHub 代码正确 → `git ls-remote` 验证远程 HEAD 最新 → Dockerfile 加 `RUN grep` 诊断 → 日志不出现 → 确认快照卡死。
+
+**处理**：Disconnect/Reconnect GitHub（无效）→ **删除服务重建**（数据库是独立 Plugin，数据不丢）→ 构建步骤从 `[1/17]` 变为 `[1/20]`，CACHEBUST 从 9 变 10。
+
+### 后续部署流程
+
+正常：改代码 → `git push` → Railway 自动/手动 Deploy → 生效
+
+快照又卡死：直接删服务重建，5 分钟搞定。不要折腾 Disconnect/Reconnect。
 
 ---
 
