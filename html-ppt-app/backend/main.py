@@ -827,6 +827,7 @@ _PIPELINE_ARTIFACTS = [
 def list_artifacts(
     job_id: str,
     db: Session = Depends(get_db),
+    access_token: str | None = Query(None),
     current_user: User = Depends(get_current_user),
 ):
     """List available pipeline artifacts for a job (auth required)."""
@@ -879,6 +880,7 @@ def get_artifact(
     job_id: str,
     filename: str,
     db: Session = Depends(get_db),
+    access_token: str | None = Query(None),
     current_user: User = Depends(get_current_user),
 ):
     """Download/view a specific pipeline artifact (auth required)."""
@@ -916,6 +918,7 @@ def get_artifact(
 def download_html(
     job_id: str,
     db: Session = Depends(get_db),
+    access_token: str | None = Query(None),
     current_user: User = Depends(get_current_user),
 ):
     job = db.query(Job).filter(Job.id == job_id).first()
@@ -930,6 +933,7 @@ def download_html(
 def download_standalone(
     job_id: str,
     db: Session = Depends(get_db),
+    access_token: str | None = Query(None),
     current_user: User = Depends(get_current_user),
 ):
     job = db.query(Job).filter(Job.id == job_id).first()
@@ -944,6 +948,7 @@ def download_standalone(
 def download_zip(
     job_id: str,
     db: Session = Depends(get_db),
+    access_token: str | None = Query(None),
     current_user: User = Depends(get_current_user),
 ):
     job = db.query(Job).filter(Job.id == job_id).first()
@@ -980,6 +985,7 @@ def preview_job(
     job_id: str,
     type: str = Query("index", description="index or standalone"),
     db: Session = Depends(get_db),
+    access_token: str | None = Query(None),
     current_user: User = Depends(get_current_user),
 ):
     """Serve index.html or standalone.html for preview (auth required)."""
