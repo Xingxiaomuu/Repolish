@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { myJobs, authDownloadUrl, type MyJobItem } from './api';
+import { myJobs, type MyJobItem } from './api';
 
 interface Props {
   lang: 'zh' | 'en';
@@ -95,13 +95,22 @@ export default function MyJobsPage({ lang }: Props) {
                   </td>
                   <td>
                     <div className="job-links">
-                      {j.download_standalone_url && (
-                        <a href={authDownloadUrl(j.download_standalone_url)} className="mini-link accent">
-                          {t('下载 Standalone', 'Download Standalone')}
-                        </a>
-                      )}
-                      {j.status === 'success' && !j.download_standalone_url && (
-                        <span className="muted-text">{t('无文件', 'N/A')}</span>
+                      {j.status === 'success' && (
+                        <>
+                          {j.download_standalone_url && (
+                            <a href={j.download_standalone_url} className="mini-link accent" download>
+                              {t('下载 HTML PPT', 'Download HTML PPT')}
+                            </a>
+                          )}
+                          {j.download_zip_url && (
+                            <a href={j.download_zip_url} className="mini-link accent">
+                              {t('下载 ZIP', 'Download ZIP')}
+                            </a>
+                          )}
+                          {!j.download_standalone_url && !j.download_zip_url && (
+                            <span className="muted-text">{t('无文件', 'N/A')}</span>
+                          )}
+                        </>
                       )}
                       {j.status !== 'success' && <span className="muted-text">-</span>}
                     </div>

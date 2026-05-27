@@ -27,8 +27,9 @@ class StorageClient(ABC):
         """Download object at key to local_path. Returns the local path."""
 
     @abstractmethod
-    def generate_presigned_url(self, key: str, expires_in: int = 3600) -> str:
-        """Generate a time-limited download URL for the object at key."""
+    def generate_presigned_url(self, key: str, expires_in: int = 3600, download_filename: str | None = None) -> str:
+        """Generate a time-limited download URL. If download_filename is set, the URL
+        will include Content-Disposition: attachment headers to force download."""
 
     @abstractmethod
     def object_exists(self, key: str) -> bool:
@@ -83,7 +84,7 @@ class LocalStorageClient(StorageClient):
         shutil.copy2(src, local_path)
         return local_path
 
-    def generate_presigned_url(self, key: str, expires_in: int = 3600) -> str:
+    def generate_presigned_url(self, key: str, expires_in: int = 3600, download_filename: str | None = None) -> str:
         return f"/outputs/{key}"
 
     def object_exists(self, key: str) -> bool:
@@ -155,10 +156,13 @@ class S3StorageClient(StorageClient):
         self._client.download_file(self._bucket, key, str(local_path))
         return local_path
 
-    def generate_presigned_url(self, key: str, expires_in: int = 3600) -> str:
+    def generate_presigned_url(self, key: str, expires_in: int = 3600, download_filename: str | None = None) -> str:
+        params: dict = {"Bucket": self._bucket, "Key": key}
+        if download_filename:
+            params["ResponseContentDisposition"] = f'attachment; filename="{download_filename}"'
         return self._client.generate_presigned_url(
             "get_object",
-            Params={"Bucket": self._bucket, "Key": key},
+            Params=params,
             ExpiresIn=expires_in,
         )
 

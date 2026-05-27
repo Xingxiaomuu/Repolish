@@ -989,7 +989,7 @@ def download_zip(
     return _download_or_redirect(job, "zip_key", f"{job_id}.zip", "application/zip")
 
 
-def _download_or_redirect(job: Job, key_attr: str, filename: str, media_type: str):
+def _download_or_redirect(job: Job, key_attr: str, filename: str, media_type: str, download: bool = True):
     """Return a download response — presigned URL redirect for S3, FileResponse for local."""
     if settings.storage_provider == "s3":
         from services.storage import get_storage_client
@@ -997,14 +997,16 @@ def _download_or_redirect(job: Job, key_attr: str, filename: str, media_type: st
         key = getattr(job, key_attr, None) or f"jobs/{job.id}/{filename}"
         if not storage.object_exists(key):
             raise HTTPException(status_code=404, detail="File not available")
-        url = storage.generate_presigned_url(key)
+        dl_name = filename if download else None
+        url = storage.generate_presigned_url(key, download_filename=dl_name)
         return RedirectResponse(url=url, status_code=302)
 
     # Local mode
     from services import file_manager
     local_path = file_manager.get_job_dir(job.id) / filename
     if local_path.is_file():
-        return FileResponse(path=str(local_path), filename=filename, media_type=media_type)
+        kw = {"filename": filename} if download else {}
+        return FileResponse(path=str(local_path), media_type=media_type, **kw)
     raise HTTPException(status_code=404, detail="File not found")
 
 
