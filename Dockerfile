@@ -63,6 +63,11 @@ COPY .agents/ /app/.agents/
 # Backend source
 COPY html-ppt-app/backend/ /app/html-ppt-app/backend/
 
+# ── Verify main.py is the latest version (diagnostic) ──────────────────
+RUN echo "=== DIAG: main.py lines 48-56 ===" && sed -n '48,56p' /app/html-ppt-app/backend/main.py
+RUN grep -q "_extract_token" /app/html-ppt-app/backend/main.py || (echo "FATAL: main.py is STALE - still has _bearer reference!" && exit 1)
+RUN echo "=== DIAG: main.py OK (no _bearer found, _extract_token present) ==="
+
 # Frontend (optional — served by backend static files if needed)
 # COPY html-ppt-app/frontend/dist/ /app/html-ppt-app/frontend/dist/
 
