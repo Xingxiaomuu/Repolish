@@ -47,6 +47,9 @@ def _lookup_job(job_id: str, db: Session) -> Job:
     return job
 
 
+_bearer = HTTPBearer(auto_error=False)
+
+
 def _get_optional_user(
     creds: HTTPAuthorizationCredentials | None = Depends(_bearer),
     jwt_token: str | None = Query(None, alias="access_token"),
@@ -70,7 +73,6 @@ def _hash_password(password: str) -> str:
 
 def _verify_password(password: str, hashed: str) -> bool:
     return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
-_bearer = HTTPBearer(auto_error=False)
 
 
 @asynccontextmanager
