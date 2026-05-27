@@ -9,7 +9,7 @@ from fastapi import FastAPI, HTTPException, Depends, Query, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, RedirectResponse
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
 from rq import Queue, Worker
 from sqlalchemy.orm import Session
 from sqlalchemy import func, text
@@ -47,20 +47,25 @@ def _lookup_job(job_id: str, db: Session) -> Job:
     return job
 
 
-_bearer = HTTPBearer(auto_error=False)
+def _extract_token(
+    authorization: str | None = Header(None, include_in_schema=False),
+    access_token: str | None = Query(None, alias="access_token", include_in_schema=False),
+) -> str | None:
+    """Extract JWT from Authorization: Bearer <token> or ?access_token=<token>."""
+    if authorization and authorization.startswith("Bearer "):
+        return authorization[7:]
+    return access_token
 
 
 def _get_optional_user(
-    creds: HTTPAuthorizationCredentials | None = Depends(_bearer),
-    jwt_token: str | None = Query(None, alias="access_token"),
+    token: str | None = Depends(_extract_token),
     db: Session = Depends(get_db),
 ) -> User | None:
     """Like get_current_user but returns None instead of raising 401."""
-    t = creds.credentials if creds else jwt_token
-    if t is None:
+    if token is None:
         return None
     try:
-        payload = jwt.decode(t, settings.jwt_secret, algorithms=["HS256"])
+        payload = jwt.decode(token, settings.jwt_secret, algorithms=["HS256"])
         user_id: str | None = payload.get("sub")
         if user_id is None:
             return None
@@ -199,11 +204,9 @@ def _create_token(user_id: str) -> str:
 
 
 def get_current_user(
-    creds: HTTPAuthorizationCredentials | None = Depends(_bearer),
-    access_token: str | None = Query(None, description="JWT token (alternative to Authorization header)"),
+    token: str | None = Depends(_extract_token),
     db: Session = Depends(get_db),
 ) -> User:
-    token = creds.credentials if creds else access_token
     if token is None:
         raise HTTPException(status_code=401, detail="Authentication required")
     try:
