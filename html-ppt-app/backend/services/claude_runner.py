@@ -140,7 +140,7 @@ Use ONLY the report content provided by the user. Do not search the web.
     return prompt
 
 
-def run_claude(job_dir: Path, logs_path: Path) -> int:
+def run_claude(job_dir: Path, logs_path: Path, model: str | None = None) -> int:
     """
     Run Claude Code CLI with the prompt piped via stdin.
 
@@ -166,6 +166,9 @@ def run_claude(job_dir: Path, logs_path: Path) -> int:
         return -2
 
     cmd = [resolved, "--print", "--output-format", "json", "--permission-mode", "bypassPermissions"]
+    effective_model = model or settings.claude_model
+    if effective_model:
+        cmd += ["--model", effective_model]
 
     # Force disable extended thinking (DeepSeek API returns thinking blocks but
     # Claude Code doesn't pass them back correctly, causing 400 errors on turn 2)

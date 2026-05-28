@@ -159,6 +159,7 @@ class GenerateRequest(BaseModel):
     audience: Optional[str] = ""
     extra_requirements: Optional[str] = ""
     search_level: Optional[str] = "none"  # "none" | "light" | "deep"
+    model: Optional[str] = "deepseek-v4-pro"  # "deepseek-v4-pro" | "deepseek-v4-flash"
 
 
 class JobResponse(BaseModel):

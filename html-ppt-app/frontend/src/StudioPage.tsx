@@ -21,6 +21,7 @@ export default function StudioPage({ lang }: Props) {
   const [audience, setAudience] = useState('');
   const [extraRequirements, setExtraRequirements] = useState('');
   const [searchLevel, setSearchLevel] = useState<'none' | 'light' | 'deep'>('none');
+  const [model, setModel] = useState<'deepseek-v4-pro' | 'deepseek-v4-flash'>('deepseek-v4-pro');
 
   // Example modal
   const [exampleModal, setExampleModal] = useState<ExampleCard | null>(null);
@@ -140,6 +141,7 @@ export default function StudioPage({ lang }: Props) {
       audience,
       extra_requirements: extraRequirements,
       search_level: searchLevel,
+      model,
     };
 
     try {
@@ -290,9 +292,9 @@ export default function StudioPage({ lang }: Props) {
           </div>
         </div>
 
-        {/* Row 4: Audience + Search Level */}
+        {/* Row 4: Audience + Model + Search Level */}
         <div className="form-row">
-          <div className="field flex-2">
+          <div className="field flex-1">
             <label htmlFor="audience">{t('目标受众', 'Audience')}</label>
             <input
               id="audience"
@@ -301,6 +303,25 @@ export default function StudioPage({ lang }: Props) {
               onChange={e => setAudience(e.target.value)}
               placeholder={t('例如：战略投资部', 'e.g. Strategic Investment Department')}
             />
+          </div>
+          <div className="field flex-1">
+            <label>{t('模型', 'Model')}</label>
+            <div className="search-level-row" style={{ gridTemplateColumns: '1fr 1fr' }}>
+              {([
+                ['deepseek-v4-pro', 'V4 Pro', t('高质量/慢', 'High quality / slow')],
+                ['deepseek-v4-flash', 'V4 Flash', t('快速/便宜', 'Fast / cheap')],
+              ] as const).map(([val, label, desc]) => (
+                <button
+                  key={val}
+                  type="button"
+                  className={`search-level-btn ${model === val ? 'active' : ''}`}
+                  onClick={() => setModel(val)}
+                >
+                  <span className="sl-label">{label}</span>
+                  <span className="sl-desc">{desc}</span>
+                </button>
+              ))}
+            </div>
           </div>
           <div className="field flex-1">
             <label>{t('研究深度', 'Research Depth')}</label>

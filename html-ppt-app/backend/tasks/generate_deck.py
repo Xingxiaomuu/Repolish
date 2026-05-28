@@ -74,6 +74,7 @@ def _setup_request(job: Job) -> SimpleNamespace:
         extra_requirements=job.extra_requirements or "",
         slide_count=job.slide_count or 10,
         search_level=job.search_level or "none",
+        model=job.model_name or "deepseek-v4-pro",
     )
 
 
@@ -121,7 +122,7 @@ def generate_deck(job_id: str):
 
         # Store prompt char count for token estimation
         job_obj.generation_prompt_chars = len(prompt)
-        job_obj.model_name = "claude-code"
+        job_obj.model_name = request.model or "deepseek-v4-pro"
         db.commit()
 
         # ── Run Claude Code ────────────────────────────────────────────
@@ -129,7 +130,7 @@ def generate_deck(job_id: str):
             # In S3 mode, set cwd to job_dir so Claude writes there
             old_cwd = os.getcwd()
             os.chdir(str(job_dir))
-        exit_code = run_claude(job_dir, logs_path)
+        exit_code = run_claude(job_dir, logs_path, model=request.model)
         if is_s3:
             os.chdir(old_cwd)
 

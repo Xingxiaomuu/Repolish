@@ -41,16 +41,19 @@ def plan(cleaned: dict[str, Any], target_slide_count: int = 10,
         deck_type = "presentation deck"
         chars_per_slide = 600
 
-    # Estimate slide count from content, respecting user target
+    # Estimate slide count from content — used only as a floor / fallback
     content_slide_estimate = max(3, total_chars // chars_per_slide)
-    # Blend user target with content estimate
+    # Respect user's explicit target; only fall back to content estimate when not specified
     if target_slide_count and target_slide_count > 0:
-        blended = int(target_slide_count * 0.6 + content_slide_estimate * 0.4)
+        slide_count = target_slide_count
     else:
-        blended = content_slide_estimate
+        slide_count = content_slide_estimate
 
     # Clamp to reasonable range (min 3, max 40)
-    slide_count = max(3, min(40, blended))
+    slide_count = max(3, min(40, slide_count))
+
+    # Ensure we have at least enough slides for content density
+    slide_count = max(slide_count, content_slide_estimate // 2 + 1)
 
     # Ensure we have at least one content slide per 2 sections
     slide_count = max(slide_count, section_count // 2 + 1)

@@ -509,6 +509,7 @@ def create_job(
         search_level=req.search_level,
         content_chars=len(req.content or ""),
         download_token=download_token,
+        model_name=req.model or "deepseek-v4-pro",
     )
     db.add(job)
     db.commit()

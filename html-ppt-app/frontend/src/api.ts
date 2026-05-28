@@ -115,6 +115,7 @@ export interface GenerateRequest {
   audience: string;
   extra_requirements: string;
   search_level: string; // "none" | "light" | "deep"
+  model: string; // "deepseek-v4-pro" | "deepseek-v4-flash"
 }
 
 export interface CreateJobResponse {

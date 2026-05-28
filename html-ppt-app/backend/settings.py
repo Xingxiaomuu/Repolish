@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     # Claude Code
     claude_code_command: str = "claude"
     claude_timeout: int = 1800
+    claude_model: str = "deepseek-v4-pro"  # "" = use Claude Code default
 
     # Server
     host: str = "0.0.0.0"
