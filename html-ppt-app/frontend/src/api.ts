@@ -228,6 +228,9 @@ export interface AdminSummary {
   estimated_output_tokens: number;
   average_generation_seconds: number;
   success_rate: number;
+  // Phase 5H
+  path_check_failed_jobs: number;
+  missing_storage_object_jobs: number;
 }
 
 export interface AdminJobItem {
@@ -301,6 +304,21 @@ export interface AdminJobDetail {
   download_standalone_url?: string;
   download_zip_url?: string;
   logs_url?: string;
+  // Phase 5H: Path check
+  path_check_status?: string;
+  path_check_errors_count: number;
+  path_check_warnings_count: number;
+  path_check_key?: string;
+  // Storage keys (Phase 5B)
+  index_html_key?: string;
+  standalone_html_key?: string;
+  zip_key?: string;
+  logs_key?: string;
+  quality_report_key?: string;
+  deck_plan_key?: string;
+  packed_context_key?: string;
+  input_cleaned_key?: string;
+  generation_prompt_key?: string;
 }
 
 export interface AdminQueue {
@@ -509,4 +527,62 @@ export async function myUsage(): Promise<MyUsageResponse> {
     throw new Error(detail.detail || 'Failed to fetch usage');
   }
   return res.json();
+}
+
+
+// ── Feedback (Phase 5E) ────────────────────────────────────────────────
+
+export interface FeedbackRequest {
+  rating: number;
+  content_accuracy: number;
+  visual_quality: number;
+  usefulness: number;
+  would_use_again: boolean;
+  most_needed_feature?: string;
+  comment?: string;
+}
+
+export interface FeedbackResponse {
+  id: string;
+  job_id: string;
+  rating: number;
+  content_accuracy: number;
+  visual_quality: number;
+  usefulness: number;
+  would_use_again: boolean;
+  most_needed_feature?: string;
+  comment?: string;
+  created_at?: string;
+}
+
+export async function submitFeedback(jobId: string, req: FeedbackRequest): Promise<FeedbackResponse> {
+  const res = await fetch(apiUrl(`/api/jobs/${jobId}/feedback`), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(req),
+  });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(detail.detail || 'Failed to submit feedback');
+  }
+  return res.json();
+}
+
+export async function getFeedback(jobId: string): Promise<FeedbackResponse> {
+  const res = await fetch(apiUrl(`/api/jobs/${jobId}/feedback`), { headers: authHeaders() });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(detail.detail || 'Failed to get feedback');
+  }
+  return res.json();
+}
+
+
+// ── CSV Export (Phase 5E) ──────────────────────────────────────────────
+
+export function adminExportUrl(type: 'jobs' | 'users' | 'feedback', password: string): string {
+  const base = apiUrl(`/api/admin/export/${type}.csv`);
+  // CSV export uses X-Admin-Password header — but <a> tags can't set headers.
+  // Use a query param workaround via backend redirect.
+  return `${base}?admin_password=${encodeURIComponent(password)}`;
 }

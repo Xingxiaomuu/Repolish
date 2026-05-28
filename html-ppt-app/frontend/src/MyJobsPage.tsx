@@ -99,15 +99,10 @@ export default function MyJobsPage({ lang }: Props) {
                         <>
                           {j.download_standalone_url && (
                             <a href={j.download_standalone_url} className="mini-link accent" download>
-                              {t('下载 HTML PPT', 'Download HTML PPT')}
+                              {t('报告', 'Report')}
                             </a>
                           )}
-                          {j.download_zip_url && (
-                            <a href={j.download_zip_url} className="mini-link accent">
-                              {t('下载 ZIP', 'Download ZIP')}
-                            </a>
-                          )}
-                          {!j.download_standalone_url && !j.download_zip_url && (
+                          {!j.download_standalone_url && (
                             <span className="muted-text">{t('无文件', 'N/A')}</span>
                           )}
                         </>

@@ -87,6 +87,12 @@ class Job(Base):
     # Download token — allows auth-free download/preview via URL param
     download_token: Optional[str] = Column(String, nullable=True, index=True)
 
+    # Path check (Phase 5H) — automated validation after worker generation
+    path_check_key: Optional[str] = Column(String, nullable=True)
+    path_check_status: Optional[str] = Column(String, nullable=True)  # "pass" | "warning" | "fail"
+    path_check_errors_count: int = Column(Integer, default=0)
+    path_check_warnings_count: int = Column(Integer, default=0)
+
     # Storage keys (Phase 5B) — S3 object keys under s3://bucket/jobs/{job_id}/
     index_html_key: Optional[str] = Column(String, nullable=True)
     standalone_html_key: Optional[str] = Column(String, nullable=True)
@@ -122,6 +128,24 @@ class InviteCode(Base):
     created_at: DateTime = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     bound_at: Optional[DateTime] = Column(DateTime, nullable=True)
     notes: Optional[str] = Column(String, nullable=True)
+
+
+# ── Feedback table (Phase 5E) ─────────────────────────────────────────
+
+class Feedback(Base):
+    __tablename__ = "feedback"
+
+    id: str = Column(String, primary_key=True, default=lambda: uuid.uuid4().hex[:12])
+    job_id: str = Column(String, ForeignKey("jobs.id"), nullable=False, index=True)
+    user_id: str = Column(String, ForeignKey("users.id"), nullable=False, index=True)
+    rating: int = Column(Integer, nullable=False)  # 1-5
+    content_accuracy: int = Column(Integer, nullable=False)  # 1-5
+    visual_quality: int = Column(Integer, nullable=False)  # 1-5
+    usefulness: int = Column(Integer, nullable=False)  # 1-5
+    would_use_again: bool = Column(Integer, nullable=False)  # 0 or 1
+    most_needed_feature: Optional[str] = Column(String, nullable=True)
+    comment: Optional[str] = Column(Text, nullable=True)
+    created_at: DateTime = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 # ── Pydantic API models ───────────────────────────────────────────────
@@ -275,6 +299,17 @@ class AdminSummaryResponse(BaseModel):
     estimated_output_tokens: int
     average_generation_seconds: float
     success_rate: float
+    # Phase 5H
+    path_check_failed_jobs: int = 0
+    missing_storage_object_jobs: int = 0
+    # Phase 5E — Feedback stats
+    average_rating: float = 0.0
+    average_content_accuracy: float = 0.0
+    average_visual_quality: float = 0.0
+    average_usefulness: float = 0.0
+    would_use_again_rate: float = 0.0
+    feedback_count: int = 0
+    low_rating_jobs: int = 0
 
 
 class AdminJobItem(BaseModel):
@@ -349,6 +384,11 @@ class AdminJobDetail(BaseModel):
     download_standalone_url: Optional[str] = None
     download_zip_url: Optional[str] = None
     logs_url: Optional[str] = None
+    # Path check (Phase 5H)
+    path_check_status: Optional[str] = None
+    path_check_errors_count: int = 0
+    path_check_warnings_count: int = 0
+    path_check_key: Optional[str] = None
     # Storage keys (Phase 5B)
     index_html_key: Optional[str] = None
     standalone_html_key: Optional[str] = None
@@ -359,6 +399,8 @@ class AdminJobDetail(BaseModel):
     packed_context_key: Optional[str] = None
     input_cleaned_key: Optional[str] = None
     generation_prompt_key: Optional[str] = None
+    # Phase 5E — Feedback
+    feedback: Optional[dict] = None
 
 
 class SettingUpdate(BaseModel):
@@ -430,3 +472,28 @@ class InviteCodeItem(BaseModel):
 class InviteCodeListResponse(BaseModel):
     invite_codes: list[InviteCodeItem]
     total: int
+
+
+# ── Feedback models (Phase 5E) ──────────────────────────────────────────
+
+class FeedbackRequest(BaseModel):
+    rating: int = Field(ge=1, le=5)
+    content_accuracy: int = Field(ge=1, le=5)
+    visual_quality: int = Field(ge=1, le=5)
+    usefulness: int = Field(ge=1, le=5)
+    would_use_again: bool
+    most_needed_feature: Optional[str] = None
+    comment: Optional[str] = None
+
+
+class FeedbackResponse(BaseModel):
+    id: str
+    job_id: str
+    rating: int
+    content_accuracy: int
+    visual_quality: int
+    usefulness: int
+    would_use_again: bool
+    most_needed_feature: Optional[str] = None
+    comment: Optional[str] = None
+    created_at: Optional[str] = None

@@ -29,6 +29,8 @@ API 表
 | Phase 5B | Railway 分离式部署（PostgreSQL + Redis + S3/R2 对象存储、无共享 Volume）✅ |
 | Phase 5C | 生产 Bug 修复 + 部署踩坑总结（download_token / _bearer / Railway 快照）✅ |
 | Phase 5D | 公网测试安全加固（邀请码注册、输入限制、Redis 限流、下载权限、敏感文件保护）✅ |
+| Phase 5E | 小范围内测反馈闭环（反馈 API + 数据库 + 前端卡片 + Admin 展示 + CSV 导出）✅ |
+| Phase 5H | 路径规范与部署路径自动检查（Path Contract + Validator + 自动检查 + Admin 展示）✅ |
 
 ---
 
@@ -72,6 +74,7 @@ Frontend (已登录) → POST /api/jobs (topic, content... + Bearer token)
       → zip 打包
       → Step 6: quality_checker → 质量报告（A-H 8 类检查）
       → S3 模式: 上传所有产物到对象存储，写入 storage_key 到 DB
+      → Phase 5H: Path Validator 自动检查 → path_check.json 上传 → 写入检查结果到 DB
       → DB: UPDATE job (status=success/failed, quality_*, *_key)
   ← Frontend 每 2s 轮询 GET /api/jobs/{job_id}
 ```
@@ -204,6 +207,7 @@ frontend/
 | POST | /api/admin/invite-codes | (Auth) 创建邀请码（Phase 5D）|
 | PUT | /api/admin/invite-codes/{id} | (Auth) 编辑邀请码（Phase 5D）|
 | DELETE | /api/admin/invite-codes/{id} | (Auth) 删除邀请码（Phase 5D）|
+| GET | /api/admin/jobs/{job_id}/path-check | (Auth) 查看 path_check.json（Phase 5H）|
 
 ## 任务状态
 
@@ -494,4 +498,204 @@ S3:   s3://{bucket}/jobs/{job_id}/
   index.html             生成的 PPT
   standalone.html        独立版本（可离线打开）
   logs.txt               Worker 运行日志
+  path_check.json         Phase 5H: 路径验证报告
+```
+
+---
+
+## Phase 5H — 路径规范与部署路径自动检查
+
+### 一、Path Contract（路径契约）
+
+所有路径和 storage key 必须来自 `services/path_contract.py`，禁止手动拼接字符串。
+
+**ArtifactType**（唯一允许的类型标识符）：
+```
+index_html, standalone_html, zip, logs, quality_report,
+deck_plan, packed_context, generation_prompt, input_cleaned,
+prompt, path_check
+```
+
+**本地临时路径**（Worker scratch space）：
+```
+/tmp/htmlppt-jobs/{job_id}/index.html
+/tmp/htmlppt-jobs/{job_id}/standalone.html
+/tmp/htmlppt-jobs/{job_id}/logs.txt
+...
+```
+
+**Storage Key**（S3/R2 对象存储）：
+```
+jobs/{job_id}/index.html
+jobs/{job_id}/standalone.html
+jobs/{job_id}/deck.zip
+jobs/{job_id}/logs.txt
+jobs/{job_id}/quality_report.json
+jobs/{job_id}/deck_plan.json
+jobs/{job_id}/packed_context.json
+jobs/{job_id}/generation_prompt.txt
+jobs/{job_id}/path_check.json
+```
+
+**核心函数**：
+- `get_storage_key(job_id, artifact_type)` — 生成 storage key
+- `get_local_path(job_id, artifact_type)` — 生成本地临时路径
+- `get_job_tmp_dir(job_id)` — Worker 临时目录
+- `artifact_filename(artifact_type)` — 获取规范文件名
+- `filename_to_artifact_type(filename)` — 文件名 → ArtifactType
+
+### 二、Path Validator
+
+`services/path_validator.py`：
+
+- `validate_job_paths(job) → dict` — 检查所有 DB 列（9 项检查）：
+  1. storage key 是否符合 `jobs/{job_id}/...` 格式
+  2. 是否包含反斜杠
+  3. 是否包含 `..`
+  4. 是否以 `/` 开头
+  5. 是否误存 `http://` 或 `https://`
+  6. 是否误存 `/tmp/` 或 `backend/outputs`
+  7. key 里的 job_id 是否和 job.id 一致
+  8. success job 是否有必需 key（index_html、standalone_html、zip、quality_report）
+  9. 本地路径列是否误存 storage key
+
+- `validate_storage_objects(job, storage_client) → dict` — 检查 S3 对象是否存在
+
+### 三、Worker 自动检查
+
+Worker 上传文件后自动执行：
+1. `validate_job_paths(job)` → 路径格式检查
+2. `validate_storage_objects(job, storage_client)` → 对象存在检查
+3. 生成 `path_check.json` 并上传到 `jobs/{job_id}/path_check.json`
+4. 写入 DB：`path_check_key`、`path_check_status`、`path_check_errors_count`、`path_check_warnings_count`
+
+### 四、下载 API 路径安全
+
+所有下载和预览 API 必须：
+1. 验证用户 → 查询 job → 权限检查
+2. 根据 artifact_type 通过 `get_storage_key()` 获取 key
+3. 先查 DB 中的 `*_key` 列，fallback 到 path_contract 规范 key
+4. 检查 object exists → 返回 presigned URL 或代理下载
+5. 不允许前端传任意 key
+
+### 五、Admin 路径检查展示
+
+- **Summary 卡片**：`path_check_failed_jobs`、`missing_storage_object_jobs`
+- **Job Detail**：path_check_status、errors_count、warnings_count、storage keys 列表
+- **新增 API**：`GET /api/admin/jobs/{job_id}/path-check` — 查看 path_check.json
+
+### 六、Smoke Test 增强
+
+`smoke_test_remote.py` 新增检查：
+- 验证 storage keys 格式（`jobs/{job_id}/...`）
+- 验证 path_check_status 不能是 fail
+
+### 关键文件变更
+
+```
+backend/
+  services/
+    path_contract.py       新增：统一路径/Key 生成规则
+    path_validator.py      新增：路径验证 + 对象存在检查
+  models.py                新增 Job 列：path_check_* (4 列)
+  database.py              新增 migration
+  tasks/generate_deck.py   所有路径/Key 改用 path_contract，上传后自动检查
+  main.py                  下载/预览 API 改用 path_contract，Admin 展示 path_check
+  scripts/
+    smoke_test_remote.py   新增 path check 验证
+
+frontend/
+  src/
+    api.ts                 新增 path_check 字段类型
+    AdminPage.tsx          新增 path check 展示 + storage keys 列表
+```
+
+---
+
+## Phase 5E — 小范围内测反馈闭环
+
+### 一、Feedback API
+
+**POST /api/jobs/{job_id}/feedback** (JWT required)
+- 用户必须登录，只能反馈自己的 job
+- 同一 job 多次反馈 = upsert（覆盖旧反馈）
+- 请求体字段：
+  - `rating` (1-5) — 综合评分
+  - `content_accuracy` (1-5) — 内容准确性
+  - `visual_quality` (1-5) — 页面专业程度
+  - `usefulness` (1-5) — 省时程度
+  - `would_use_again` (bool) — 是否愿意继续使用
+  - `most_needed_feature` (str, optional) — 最想要的功能
+  - `comment` (str, optional) — 其他意见
+
+**GET /api/jobs/{job_id}/feedback** (JWT required)
+- 查看某个 job 的反馈（需 job 归属或 admin）
+
+### 二、数据库
+
+新增表 `feedback`：
+- `id`, `job_id` (FK→jobs.id), `user_id` (FK→users.id)
+- `rating`, `content_accuracy`, `visual_quality`, `usefulness` (all INTEGER 1-5)
+- `would_use_again` (INTEGER, 0/1)
+- `most_needed_feature` (VARCHAR), `comment` (TEXT)
+- `created_at` (DATETIME)
+
+### 三、Admin 增强
+
+**Admin Summary 新增 7 个统计字段**：
+- `average_rating`, `average_content_accuracy`, `average_visual_quality`, `average_usefulness`
+- `would_use_again_rate`, `feedback_count`, `low_rating_jobs` (rating ≤ 2)
+
+**Admin Job Detail 新增**：
+- 显示该 job 的 feedback（评分、是否愿意再用、最想要功能、评论、提交时间）
+
+**CSV Export**（Phase 5E）：
+- `GET /api/admin/export/jobs.csv` — 所有 job 导出（含用户信息）
+- `GET /api/admin/export/users.csv` — 所有用户导出（含用量统计）
+- `GET /api/admin/export/feedback.csv` — 所有反馈导出（含用户和 job 信息）
+- 认证：同时支持 `X-Admin-Password` header 和 `?admin_password=` query param（适配 `<a>` 标签下载）
+
+### 四、前端反馈卡片
+
+**StudioPage.tsx**（生成成功后显示）：
+- 简化的下载区：只保留独立版本（"报告/Report"）预览 + 下载，移除标准版本和 ZIP
+- 反馈卡片：6 个问题（5 个星级 + 1 个布尔 + 2 个可选），支持中英双语
+- 已提交后显示感谢 + 修改按钮
+
+**MyJobsPage.tsx**（简化下载）：
+- 只保留 "报告/Report" 下载链接，移除 ZIP
+
+**AdminPage.tsx**（新增）：
+- Summary 卡片区新增反馈统计卡片（有反馈数据时显示）
+- CSV Export 区（三个导出链接）
+- Job Detail 面板新增用户反馈展示区
+
+### 五、下载文件名改进
+
+- `_sanitize_filename(name, max_len=60)` — 清洗文件名（去特殊字符、合并空白、截断）
+- `_job_download_name(job, suffix)` — 根据 topic 生成下载文件名
+- 所有下载路由使用 topic-based filename（`Content-Disposition: attachment; filename="..."`）
+
+### 关键文件变更
+
+```
+backend/
+  models.py             新增 Feedback ORM + FeedbackRequest/FeedbackResponse Pydantic
+                         AdminSummaryResponse 新增 7 个反馈统计字段
+                         AdminJobDetail 新增 feedback 字段
+  database.py           新增 feedback 表 migration
+  main.py               新增 POST/GET /api/jobs/{job_id}/feedback
+                         Admin summary 计算反馈统计
+                         Admin job detail 包含 feedback
+                         CSV Export: jobs.csv / users.csv / feedback.csv
+                         _sanitize_filename + _job_download_name 辅助函数
+                         _auth_export 依赖（header + query param 双认证）
+
+frontend/
+  src/api.ts            新增 FeedbackRequest/FeedbackResponse 类型
+                         新增 submitFeedback / getFeedback / adminExportUrl
+  src/StudioPage.tsx     简化下载区 + 反馈卡片（6 问题）
+  src/MyJobsPage.tsx     简化下载为仅"报告/Report"
+  src/AdminPage.tsx      反馈统计卡片 + CSV 导出 + 详情面板反馈
+  src/styles.css         新增反馈卡片 CSS（.feedback-card/.star-btn/.bool-btn 等）
 ```

@@ -4,6 +4,7 @@ import {
   adminGetSettings, adminSetSetting, adminGetUsers, adminGetStats,
   adminUpdateUser, authDownloadUrl,
   adminListInviteCodes, adminCreateInviteCode, adminUpdateInviteCode, adminDeleteInviteCode,
+  adminExportUrl,
   type AdminSummary, type AdminJobItem, type AdminJobDetail,
   type AdminQueue, type SettingItem, type AdminUserItem, type AdminStats,
   type InviteCodeItem,
@@ -286,6 +287,47 @@ export default function AdminPage() {
           <div className="admin-card"><strong>{(summary.success_rate * 100).toFixed(1)}%</strong><span>Success Rate</span></div>
           <div className="admin-card"><strong>{summary.average_generation_seconds.toFixed(0)}s</strong><span>Avg Gen Time</span></div>
           <div className="admin-card"><strong>{(summary.estimated_input_tokens + summary.estimated_output_tokens).toLocaleString()}</strong><span>Est. Total Tokens</span></div>
+          <div className="admin-card" style={{ borderLeft: summary.path_check_failed_jobs > 0 ? '3px solid #ef4444' : '3px solid #22c55e' }}>
+            <strong style={{ color: summary.path_check_failed_jobs > 0 ? '#ef4444' : '#22c55e' }}>{summary.path_check_failed_jobs}</strong>
+            <span>Path Check Failed</span>
+          </div>
+          <div className="admin-card" style={{ borderLeft: summary.missing_storage_object_jobs > 0 ? '3px solid #f59e0b' : '3px solid #22c55e' }}>
+            <strong style={{ color: summary.missing_storage_object_jobs > 0 ? '#f59e0b' : '#22c55e' }}>{summary.missing_storage_object_jobs}</strong>
+            <span>Missing Storage</span>
+          </div>
+          {/* Feedback stats (Phase 5E) */}
+          {summary.feedback_count > 0 && (
+            <>
+              <div className="admin-card" style={{ borderLeft: '3px solid var(--app-accent)' }}>
+                <strong>{summary.feedback_count}</strong>
+                <span>Feedback Count</span>
+              </div>
+              <div className="admin-card" style={{ borderLeft: summary.average_rating >= 4 ? '3px solid #22c55e' : summary.average_rating >= 3 ? '3px solid #f59e0b' : '3px solid #ef4444' }}>
+                <strong style={{ color: summary.average_rating >= 4 ? '#22c55e' : summary.average_rating >= 3 ? '#f59e0b' : '#ef4444' }}>{summary.average_rating.toFixed(1)}</strong>
+                <span>Avg Rating</span>
+              </div>
+              <div className="admin-card">
+                <strong>{summary.average_content_accuracy.toFixed(1)}</strong>
+                <span>Avg Accuracy</span>
+              </div>
+              <div className="admin-card">
+                <strong>{summary.average_visual_quality.toFixed(1)}</strong>
+                <span>Avg Visual</span>
+              </div>
+              <div className="admin-card">
+                <strong>{summary.average_usefulness.toFixed(1)}</strong>
+                <span>Avg Usefulness</span>
+              </div>
+              <div className="admin-card" style={{ borderLeft: summary.would_use_again_rate >= 0.7 ? '3px solid #22c55e' : '3px solid #f59e0b' }}>
+                <strong>{(summary.would_use_again_rate * 100).toFixed(0)}%</strong>
+                <span>Would Use Again</span>
+              </div>
+              <div className="admin-card" style={{ borderLeft: summary.low_rating_jobs > 0 ? '3px solid #ef4444' : '3px solid #22c55e' }}>
+                <strong style={{ color: summary.low_rating_jobs > 0 ? '#ef4444' : '#22c55e' }}>{summary.low_rating_jobs}</strong>
+                <span>Low Ratings</span>
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -401,6 +443,22 @@ export default function AdminPage() {
             {settingsSaving ? 'Saving...' : 'Save'}
           </button>
           <span style={{ fontSize: '0.75rem', color: '#888' }}>(requires supervisor restart)</span>
+        </div>
+      </div>
+
+      {/* CSV Export (Phase 5E) */}
+      <div className="admin-section">
+        <h3>CSV Export</h3>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <a href={adminExportUrl('jobs', password)} className="result-link" style={{ fontSize: '0.82rem' }}>
+            Export Jobs CSV
+          </a>
+          <a href={adminExportUrl('users', password)} className="result-link" style={{ fontSize: '0.82rem' }}>
+            Export Users CSV
+          </a>
+          <a href={adminExportUrl('feedback', password)} className="result-link" style={{ fontSize: '0.82rem' }}>
+            Export Feedback CSV
+          </a>
         </div>
       </div>
 
@@ -697,6 +755,73 @@ export default function AdminPage() {
                   {JSON.stringify(detail.quality_report, null, 2)}
                 </pre>
               )}
+            </div>
+          )}
+
+          {/* Phase 5E: Feedback */}
+          {detail.feedback && (
+            <div style={{ marginTop: '0.75rem' }}>
+              <h4>User Feedback</h4>
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                <span>Rating: <strong>{detail.feedback.rating}/5</strong></span>
+                <span>Accuracy: <strong>{detail.feedback.content_accuracy}/5</strong></span>
+                <span>Visual: <strong>{detail.feedback.visual_quality}/5</strong></span>
+                <span>Usefulness: <strong>{detail.feedback.usefulness}/5</strong></span>
+                <span>Would Use Again: <strong style={{ color: detail.feedback.would_use_again ? '#22c55e' : '#ef4444' }}>{detail.feedback.would_use_again ? 'Yes' : 'No'}</strong></span>
+              </div>
+              {detail.feedback.most_needed_feature && (
+                <div style={{ fontSize: '0.85rem', marginBottom: '0.3rem' }}>
+                  <span style={{ color: 'var(--app-muted)' }}>Most Needed: </span>
+                  <strong>{detail.feedback.most_needed_feature}</strong>
+                </div>
+              )}
+              {detail.feedback.comment && (
+                <div style={{ fontSize: '0.85rem', color: 'var(--app-muted)', background: '#f8fafc', padding: '0.5rem 0.75rem', borderRadius: 6, border: '1px solid var(--app-border-light)' }}>
+                  "{detail.feedback.comment}"
+                </div>
+              )}
+              {detail.feedback.created_at && (
+                <div style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.3rem' }}>Submitted: {formatTime(detail.feedback.created_at)}</div>
+              )}
+            </div>
+          )}
+
+          {/* Phase 5H: Path Check */}
+          {(detail.path_check_status || detail.path_check_errors_count != null) && (
+            <div style={{ marginTop: '0.75rem' }}>
+              <h4>Path Check</h4>
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                <span>Status: <strong style={{
+                  color: detail.path_check_status === 'pass' ? '#22c55e' : detail.path_check_status === 'fail' ? '#ef4444' : '#f59e0b'
+                }}>{detail.path_check_status?.toUpperCase() || 'UNKNOWN'}</strong></span>
+                <span>Errors: <strong style={{color: (detail.path_check_errors_count ?? 0) > 0 ? '#ef4444' : '#22c55e'}}>{detail.path_check_errors_count ?? 0}</strong></span>
+                <span>Warnings: <strong style={{color: (detail.path_check_warnings_count ?? 0) > 0 ? '#f59e0b' : '#22c55e'}}>{detail.path_check_warnings_count ?? 0}</strong></span>
+              </div>
+            </div>
+          )}
+
+          {/* Phase 5H: Storage Keys */}
+          {(detail.index_html_key || detail.standalone_html_key) && (
+            <div style={{ marginTop: '0.75rem' }}>
+              <h4>Storage Keys</h4>
+              <div style={{ maxHeight: 200, overflowY: 'auto', background: '#1a1a2e', borderRadius: 8, padding: '0.5rem 0.75rem', fontSize: '0.75rem', fontFamily: 'monospace' }}>
+                {[
+                  ['index_html', detail.index_html_key],
+                  ['standalone_html', detail.standalone_html_key],
+                  ['zip', detail.zip_key],
+                  ['logs', detail.logs_key],
+                  ['quality_report', detail.quality_report_key],
+                  ['deck_plan', detail.deck_plan_key],
+                  ['packed_context', detail.packed_context_key],
+                  ['input_cleaned', detail.input_cleaned_key],
+                  ['generation_prompt', detail.generation_prompt_key],
+                ].map(([label, key]) => key ? (
+                  <div key={label} style={{ padding: '0.1rem 0', display: 'flex', gap: '0.5rem' }}>
+                    <span style={{ color: '#aaa', minWidth: 130 }}>{label}:</span>
+                    <span style={{ color: '#5b8def' }}>{key}</span>
+                  </div>
+                ) : null)}
+              </div>
             </div>
           )}
         </div>

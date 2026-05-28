@@ -263,12 +263,12 @@ def verify_auth_enforcement(base: str, job_id: str) -> bool:
 def verify_storage_keys(
     base: str, job_id: str, admin_password: str | None
 ) -> bool:
-    """Verify storage keys are populated (requires admin)."""
+    """Verify storage keys are populated and path check passed (requires admin)."""
     if not admin_password:
         print("\n[Step 6] Skipping storage key verification (no admin password).")
         return True
 
-    print("\n[Step 6] Verifying storage keys via admin...")
+    print("\n[Step 6] Verifying storage keys and path check via admin...")
     code, body = make_request(
         api_url(f"/api/admin/jobs/{job_id}", base),
         admin_password=admin_password,
@@ -286,9 +286,32 @@ def verify_storage_keys(
         value = body.get(field)
         icon = "[OK]" if value else "[WARN]"
         if not value:
-            # Some keys may be null if pipeline didn't run
-            pass
+            all_ok = False
         print(f"  {icon} {field}: {value or 'N/A'}")
+
+    # Phase 5H: Check storage key format
+    print("\n  Checking storage key format...")
+    for field in key_fields:
+        key = body.get(field)
+        if key:
+            expected_prefix = f"jobs/{job_id}/"
+            if not key.startswith(expected_prefix):
+                print(f"  [FAIL] {field} has invalid prefix: {key}")
+                all_ok = False
+    if all(k and k.startswith(f"jobs/{job_id}/") for k in [body.get(f) for f in key_fields if body.get(f)]):
+        print(f"  [OK] All storage keys match jobs/{job_id}/...")
+
+    # Phase 5H: Check path_check_status
+    path_check_status = body.get("path_check_status")
+    if path_check_status:
+        icon = "[OK]" if path_check_status != "fail" else "[FAIL]"
+        if path_check_status == "fail":
+            all_ok = False
+        print(f"\n  {icon} path_check_status: {path_check_status}")
+        print(f"       path_check_errors_count: {body.get('path_check_errors_count', 0)}")
+        print(f"       path_check_warnings_count: {body.get('path_check_warnings_count', 0)}")
+    else:
+        print("\n  [WARN] No path_check_status (may not have been generated yet)")
 
     return True
 

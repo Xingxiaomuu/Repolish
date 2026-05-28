@@ -876,6 +876,113 @@ textarea { resize: vertical; }
   border-color: var(--app-accent);
 }
 
+/* ── Feedback Card (Phase 5E) ──────────────────────────────────────── */
+.feedback-card {
+  background: var(--app-card);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+  padding: 1rem 1.25rem;
+  box-shadow: var(--app-shadow);
+}
+.feedback-card h4 {
+  font-size: 0.95rem;
+  margin-bottom: 0.15rem;
+  color: var(--app-text);
+}
+.feedback-desc {
+  font-size: 0.82rem;
+  color: var(--app-muted);
+  margin-bottom: 0.75rem;
+}
+.feedback-done {
+  font-size: 0.9rem;
+  color: #166534;
+  padding: 0.5rem 0.75rem;
+  background: #f0fdf4;
+  border-radius: var(--app-radius-sm);
+}
+
+.feedback-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.feedback-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.feedback-row label {
+  font-size: 0.8rem;
+  color: var(--app-text);
+}
+
+.star-row {
+  display: flex;
+  gap: 0.15rem;
+}
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  color: #d1d5db;
+  transition: all var(--app-transition);
+  padding: 0;
+  line-height: 1;
+}
+.star-btn:hover { color: #fbbf24; }
+.star-btn.active { color: #f59e0b; }
+.star-btn.big { font-size: 1.6rem; }
+
+.bool-row {
+  display: flex;
+  gap: 0.5rem;
+}
+.bool-btn {
+  padding: 0.35rem 1rem;
+  border: 1.5px solid var(--app-border);
+  border-radius: var(--app-radius-sm);
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-family: inherit;
+  font-weight: 500;
+  transition: all var(--app-transition);
+}
+.bool-btn:hover { border-color: var(--app-primary); }
+.bool-btn.active.yes { background: #22c55e; color: #fff; border-color: #22c55e; }
+.bool-btn.active.no { background: #ef4444; color: #fff; border-color: #ef4444; }
+
+.feedback-select {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-sm);
+  font-size: 0.82rem;
+  font-family: inherit;
+  background: #fff;
+  color: var(--app-text);
+}
+.feedback-select:focus {
+  outline: none;
+  border-color: var(--app-primary);
+}
+
+.feedback-textarea {
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-sm);
+  font-size: 0.82rem;
+  font-family: inherit;
+  resize: vertical;
+  background: #fff;
+  color: var(--app-text);
+}
+.feedback-textarea:focus {
+  outline: none;
+  border-color: var(--app-primary);
+}
+
 /* ── Modal ─────────────────────────────────────────────────────────── */
 .modal-overlay {
   position: fixed;

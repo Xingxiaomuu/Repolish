@@ -103,6 +103,11 @@ def _migrate():
             ("generation_prompt_key", "VARCHAR"),
             # Download token for auth-free download/preview links
             ("download_token", "VARCHAR"),
+            # Phase 5H — Path check validation
+            ("path_check_key", "VARCHAR"),
+            ("path_check_status", "VARCHAR"),
+            ("path_check_errors_count", "INTEGER DEFAULT 0"),
+            ("path_check_warnings_count", "INTEGER DEFAULT 0"),
         ]
         with engine.connect() as conn:
             for col_name, col_type in additions:
@@ -163,6 +168,11 @@ def _migrate():
     if not inspector.has_table("invite_codes"):
         import models  # noqa: F811
         Base.metadata.create_all(bind=engine, tables=[models.InviteCode.__table__])
+
+    # ── feedback table (Phase 5E) ──────────────────────────────────────
+    if not inspector.has_table("feedback"):
+        import models  # noqa: F811
+        Base.metadata.create_all(bind=engine, tables=[models.Feedback.__table__])
 
 
 def _seed_admin_user():

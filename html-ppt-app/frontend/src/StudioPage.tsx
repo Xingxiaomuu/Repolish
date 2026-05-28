@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { createJob, getJob, getArtifacts, authDownloadUrl, type GenerateRequest, type JobResponse, type ArtifactInfo } from './api';
+import { createJob, getJob, authDownloadUrl, submitFeedback, getFeedback, type GenerateRequest, type JobResponse, type FeedbackResponse } from './api';
 import { EXAMPLE_CARDS, type ExampleCard } from './examples';
 
 interface Props {
@@ -30,7 +30,14 @@ export default function StudioPage({ lang }: Props) {
   const [job, setJob] = useState<JobResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
-  const [artifacts, setArtifacts] = useState<ArtifactInfo[]>([]);
+  const [feedback, setFeedback] = useState<FeedbackResponse | null>(null);
+  const [feedbackForm, setFeedbackForm] = useState({
+    rating: 5, content_accuracy: 4, visual_quality: 4, usefulness: 4,
+    would_use_again: true, most_needed_feature: '', comment: '',
+  });
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
+  const [feedbackError, setFeedbackError] = useState('');
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const t = (zh: string, en: string) => (lang === 'zh' ? zh : en);
@@ -58,11 +65,14 @@ export default function StudioPage({ lang }: Props) {
           clearActiveJob();
           setLoading(false);
           if (j.status === 'success') {
+            // Load existing feedback
             try {
-              const a = await getArtifacts(j.job_id);
-              setArtifacts(a.artifacts);
+              const fb = await getFeedback(j.job_id);
+              setFeedback(fb);
+              setFeedbackSubmitted(true);
             } catch {
-              setArtifacts([]);
+              setFeedback(null);
+              setFeedbackSubmitted(false);
             }
           }
         }
@@ -93,9 +103,13 @@ export default function StudioPage({ lang }: Props) {
           clearActiveJob();
           if (j.status === 'success') {
             try {
-              const a = await getArtifacts(j.job_id);
-              setArtifacts(a.artifacts);
-            } catch { /* ignore */ }
+              const fb = await getFeedback(savedJobId);
+              setFeedback(fb);
+              setFeedbackSubmitted(true);
+            } catch {
+              setFeedback(null);
+              setFeedbackSubmitted(false);
+            }
           }
         }
       } catch {
@@ -112,7 +126,9 @@ export default function StudioPage({ lang }: Props) {
     setLoading(true);
     setError(null);
     setJob(null);
-    setArtifacts([]);
+    setFeedback(null);
+    setFeedbackSubmitted(false);
+    setFeedbackError('');
     setRemaining(null);
 
     const req: GenerateRequest = {
@@ -379,73 +395,161 @@ export default function StudioPage({ lang }: Props) {
               </div>
             )}
             <div className="result-links">
-              {/* Standard Version */}
+              {/* Report (standalone) — primary */}
               <div className="link-group">
-                <h4>{t('标准版本', 'Standard Version')}</h4>
-                <p className="link-desc">{t('需要服务器上的 html-ppt skill 资源', 'Requires the html-ppt skill assets on the server')}</p>
+                <h4>{t('报告', 'Report')}</h4>
+                <p className="link-desc">{t('可复制到任意电脑离线打开', 'Copy to any computer, works offline')}</p>
                 <div className="link-row">
-                  {job.preview_url && (
-                    <a href={authDownloadUrl(job.preview_url)} target="_blank" rel="noopener noreferrer" className="result-link">
+                  {job.preview_standalone_url && (
+                    <a href={authDownloadUrl(job.preview_standalone_url)} target="_blank" rel="noopener noreferrer" className="result-link accent">
                       {t('预览', 'Preview')}
                     </a>
                   )}
-                  {job.download_html_url && (
-                    <a href={authDownloadUrl(job.download_html_url)} className="result-link">
-                      {t('下载 HTML', 'Download HTML')}
+                  {job.download_standalone_url && (
+                    <a href={authDownloadUrl(job.download_standalone_url)} className="result-link accent">
+                      {t('下载 HTML PPT', 'Download HTML PPT')}
                     </a>
                   )}
                 </div>
               </div>
-              {/* Standalone Version */}
-              {job.preview_standalone_url && (
-                <div className="link-group">
-                  <h4>{t('独立版本', 'Standalone Version')}</h4>
-                  <p className="link-desc">{t('完全自包含 — 可复制到任意电脑离线打开', 'Fully self-contained — copy to any computer, works offline')}</p>
-                  <div className="link-row">
-                    <a href={authDownloadUrl(job.preview_standalone_url)} target="_blank" rel="noopener noreferrer" className="result-link accent">
-                      {t('预览独立版', 'Preview Standalone')}
-                    </a>
-                    {job.download_standalone_url && (
-                      <a href={authDownloadUrl(job.download_standalone_url)} className="result-link accent">
-                        {t('下载独立版', 'Download Standalone')}
-                      </a>
-                    )}
-                  </div>
+            </div>
+
+            {/* Feedback Card (Phase 5E) */}
+            <div className="feedback-card">
+              <h4>{t('反馈', 'Feedback')}</h4>
+              <p className="feedback-desc">
+                {t('帮助我们改进生成质量（可选）', 'Help us improve generation quality (optional)')}
+              </p>
+
+              {feedbackSubmitted ? (
+                <div className="feedback-done">
+                  <span style={{ color: '#22c55e', fontSize: '1.2rem' }}>✓</span>{' '}
+                  {t('感谢您的反馈！', 'Thank you for your feedback!')}
+                  {feedback && (
+                    <button className="link-btn" style={{ marginLeft: '0.75rem', fontSize: '0.8rem' }}
+                      onClick={() => { setFeedbackSubmitted(false); setFeedback(feedback); }}>
+                      {t('修改', 'Edit')}
+                    </button>
+                  )}
                 </div>
-              )}
-              {/* ZIP */}
-              {job.download_zip_url && (
-                <div className="link-group">
-                  <h4>{t('打包下载', 'Bundle')}</h4>
-                  <p className="link-desc">{t('ZIP 包含两个版本 + 日志', 'ZIP with both versions + logs')}</p>
-                  <a href={authDownloadUrl(job.download_zip_url)} className="result-link">
-                    {t('下载 ZIP', 'Download ZIP')}
-                  </a>
+              ) : (
+                <div className="feedback-form">
+                  <div className="feedback-row">
+                    <label>{t('1. 内容是否准确？', '1. Content accuracy?')}</label>
+                    <div className="star-row">
+                      {[1,2,3,4,5].map(n => (
+                        <button key={n} type="button"
+                          className={`star-btn ${n <= feedbackForm.content_accuracy ? 'active' : ''}`}
+                          onClick={() => setFeedbackForm({...feedbackForm, content_accuracy: n})}
+                        >{n <= feedbackForm.content_accuracy ? '★' : '☆'}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="feedback-row">
+                    <label>{t('2. 页面是否专业？', '2. Visual quality?')}</label>
+                    <div className="star-row">
+                      {[1,2,3,4,5].map(n => (
+                        <button key={n} type="button"
+                          className={`star-btn ${n <= feedbackForm.visual_quality ? 'active' : ''}`}
+                          onClick={() => setFeedbackForm({...feedbackForm, visual_quality: n})}
+                        >{n <= feedbackForm.visual_quality ? '★' : '☆'}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="feedback-row">
+                    <label>{t('3. 是否比你自己整理快？', '3. Faster than doing it yourself?')}</label>
+                    <div className="star-row">
+                      {[1,2,3,4,5].map(n => (
+                        <button key={n} type="button"
+                          className={`star-btn ${n <= feedbackForm.usefulness ? 'active' : ''}`}
+                          onClick={() => setFeedbackForm({...feedbackForm, usefulness: n})}
+                        >{n <= feedbackForm.usefulness ? '★' : '☆'}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="feedback-row">
+                    <label>{t('4. 是否愿意继续使用？', '4. Would you use it again?')}</label>
+                    <div className="bool-row">
+                      <button
+                        type="button"
+                        className={`bool-btn ${feedbackForm.would_use_again ? 'active yes' : ''}`}
+                        onClick={() => setFeedbackForm({...feedbackForm, would_use_again: true})}
+                      >{t('愿意', 'Yes')}</button>
+                      <button
+                        type="button"
+                        className={`bool-btn ${!feedbackForm.would_use_again ? 'active no' : ''}`}
+                        onClick={() => setFeedbackForm({...feedbackForm, would_use_again: false})}
+                      >{t('不愿意', 'No')}</button>
+                    </div>
+                  </div>
+                  <div className="feedback-row">
+                    <label>{t('5. 最想要哪个功能？', '5. Most needed feature?')}</label>
+                    <select
+                      value={feedbackForm.most_needed_feature}
+                      onChange={e => setFeedbackForm({...feedbackForm, most_needed_feature: e.target.value})}
+                      className="feedback-select"
+                    >
+                      <option value="">{t('— 选择 —', '— Select —')}</option>
+                      <option value="images">{t('图片/图表', 'Images / Charts')}</option>
+                      <option value="charts">{t('数据图表', 'Data Charts')}</option>
+                      <option value="editing">{t('在线编辑', 'Online Editing')}</option>
+                      <option value="pptx">{t('PPTX 导出', 'PPTX Export')}</option>
+                      <option value="deep_research">{t('深度研究', 'Deep Research')}</option>
+                    </select>
+                  </div>
+                  <div className="feedback-row">
+                    <label>{t('6. 其他意见', '6. Other comments')}</label>
+                    <textarea
+                      rows={2}
+                      value={feedbackForm.comment}
+                      onChange={e => setFeedbackForm({...feedbackForm, comment: e.target.value})}
+                      placeholder={t('任何建议或发现的问题...', 'Any suggestions or issues...')}
+                      className="feedback-textarea"
+                    />
+                  </div>
+                  <div className="feedback-row">
+                    <label>{t('综合评分', 'Overall rating')}</label>
+                    <div className="star-row">
+                      {[1,2,3,4,5].map(n => (
+                        <button key={n} type="button"
+                          className={`star-btn big ${n <= feedbackForm.rating ? 'active' : ''}`}
+                          onClick={() => setFeedbackForm({...feedbackForm, rating: n})}
+                        >{n <= feedbackForm.rating ? '★' : '☆'}</button>
+                      ))}
+                    </div>
+                  </div>
+                  {feedbackError && <p style={{ color: '#ef4444', fontSize: '0.85rem' }}>{feedbackError}</p>}
+                  <button
+                    className="btn-primary"
+                    style={{ marginTop: '0.5rem', padding: '0.5rem 1.5rem', fontSize: '0.9rem' }}
+                    disabled={feedbackSubmitting}
+                    onClick={async () => {
+                      setFeedbackSubmitting(true);
+                      setFeedbackError('');
+                      try {
+                        const fb = await submitFeedback(job.job_id, {
+                          rating: feedbackForm.rating,
+                          content_accuracy: feedbackForm.content_accuracy,
+                          visual_quality: feedbackForm.visual_quality,
+                          usefulness: feedbackForm.usefulness,
+                          would_use_again: feedbackForm.would_use_again,
+                          most_needed_feature: feedbackForm.most_needed_feature || undefined,
+                          comment: feedbackForm.comment || undefined,
+                        });
+                        setFeedback(fb);
+                        setFeedbackSubmitted(true);
+                      } catch (err: any) {
+                        setFeedbackError(err.message || 'Failed to submit feedback');
+                      } finally {
+                        setFeedbackSubmitting(false);
+                      }
+                    }}
+                  >
+                    {t('提交反馈', 'Submit Feedback')}
+                  </button>
                 </div>
               )}
             </div>
-
-            {/* Pipeline Artifacts */}
-            {artifacts.length > 0 && (
-              <div className="link-group">
-                <h4>{t('处理产物', 'Pipeline Artifacts')}</h4>
-                <p className="link-desc">{t('中间文件 — deck plan、context、质量报告', 'Intermediate files — deck plan, context, quality report')}</p>
-                <div className="link-row">
-                  {artifacts.map(a => (
-                    <a
-                      key={a.filename}
-                      href={authDownloadUrl(a.url)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="result-link"
-                      style={{ fontSize: '0.78rem', padding: '0.3rem 0.7rem' }}
-                    >
-                      {a.filename} ({(a.size / 1024).toFixed(1)} KB)
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         )}
 

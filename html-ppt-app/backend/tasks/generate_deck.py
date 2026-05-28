@@ -1,7 +1,6 @@
 import json
 import os
 import shutil
-import tempfile
 import traceback
 from datetime import datetime, timezone
 from pathlib import Path
@@ -12,6 +11,9 @@ from models import Job
 from services import file_manager
 from services.claude_runner import run_claude
 from services.html_inliner import inline_html
+from services.path_contract import (
+    get_storage_key, get_local_path, get_job_tmp_dir,
+)
 from services.storage import get_storage_client
 from settings import settings
 
@@ -21,44 +23,45 @@ PIPELINE_MIN_CONTENT_CHARS = 1000
 
 
 def _resolve_job_dir(job_id: str) -> Path:
-    """Return the working directory for job generation."""
+    """Return the working directory for job generation.
+
+    In S3 mode: use /tmp/htmlppt-jobs/{job_id}/ (ephemeral scratch space).
+    In local mode: use OUTPUTS_DIR/{job_id}/ (persistent, for direct file serving).
+    """
     if settings.storage_provider == "s3":
-        # Use same OUTPUT_DIR as local mode — ensures file_manager paths stay consistent
-        return file_manager.create_job_dir(job_id)
+        d = get_job_tmp_dir(job_id)
+        d.mkdir(parents=True, exist_ok=True)
+        return d
     else:
         return file_manager.create_job_dir(job_id)
 
 
 def _upload_outputs(job: Job, job_dir: Path) -> None:
-    """Upload all generated outputs to object storage and write storage keys to DB."""
+    """Upload all generated outputs to object storage and write storage keys to DB.
+
+    All storage keys come from path_contract.get_storage_key() — no manual string concat.
+    """
     storage = get_storage_client()
     jid = job.id
 
-    files_to_upload = {
-        "index_html_key": ("index.html", "text/html; charset=utf-8"),
-        "standalone_html_key": ("standalone.html", "text/html; charset=utf-8"),
-        "zip_key": (f"{jid}.zip", "application/zip"),
-        "logs_key": ("logs.txt", "text/plain; charset=utf-8"),
-        "quality_report_key": ("quality_report.json", "application/json"),
-        "deck_plan_key": ("deck_plan.json", "application/json"),
-        "packed_context_key": ("packed_context.json", "application/json"),
-        "input_cleaned_key": ("input_cleaned.json", "application/json"),
-        "generation_prompt_key": ("generation_prompt.txt", "text/plain; charset=utf-8"),
-    }
+    artifact_types: list[tuple[str, ArtifactType]] = [
+        ("index_html_key", "index_html"),
+        ("standalone_html_key", "standalone_html"),
+        ("zip_key", "zip"),
+        ("logs_key", "logs"),
+        ("quality_report_key", "quality_report"),
+        ("deck_plan_key", "deck_plan"),
+        ("packed_context_key", "packed_context"),
+        ("input_cleaned_key", "input_cleaned"),
+        ("generation_prompt_key", "generation_prompt"),
+    ]
 
-    for attr, (filename, _content_type) in files_to_upload.items():
-        local_path = job_dir / filename
+    for attr, at in artifact_types:
+        local_path = get_local_path(jid, at)
         if local_path.is_file():
-            key = f"jobs/{jid}/{filename}"
+            key = get_storage_key(jid, at)
             storage.upload_file(local_path, key)
             setattr(job, attr, key)
-
-    # Zip lives in parent dir (alongside job dir), not inside it
-    zip_at_parent = job_dir.parent / f"{jid}.zip"
-    if zip_at_parent.is_file() and not job.zip_key:
-        key = f"jobs/{jid}/{jid}.zip"
-        storage.upload_file(zip_at_parent, key)
-        job.zip_key = key
 
 
 def _setup_request(job: Job) -> SimpleNamespace:
@@ -208,6 +211,9 @@ def generate_deck(job_id: str):
         if is_s3:
             _upload_outputs(job_obj, job_dir)
 
+            # Phase 5H: Run path check after upload
+            _run_path_check(job_obj, job_dir, db)
+
         # ── Mark success ───────────────────────────────────────────────
         job_obj.status = "success"
         job_obj.index_html_path = str(index_html)
@@ -332,6 +338,72 @@ def _run_quality_check(job_dir: Path, logs_path: Path, use_pipeline: bool = Fals
     return report
 
 
+def _run_path_check(job: Job, job_dir: Path, db) -> None:
+    """Phase 5H: Validate storage keys and object existence, upload path_check.json."""
+    from services.path_validator import validate_job_paths, validate_storage_objects
+
+    log = _log_writer(job_dir / "logs.txt")
+    log("\n=== Phase 5H: Path Check ===\n")
+
+    try:
+        # 1. Validate paths (DB column checks, no I/O)
+        path_result = validate_job_paths(job)
+        log(f"  Path validation: {path_result['status']}")
+        for e in path_result["errors"]:
+            log(f"    [ERROR] {e}")
+        for w in path_result["warnings"]:
+            log(f"    [WARN]  {w}")
+
+        # 2. Validate storage objects exist
+        storage = get_storage_client()
+        obj_result = validate_storage_objects(job, storage)
+        all_exist = obj_result["all_exist"]
+        log(f"  Storage objects: {'all exist' if all_exist else 'some missing'}")
+        for attr_name, info in obj_result["objects"].items():
+            if info["key"] and not info["exists"]:
+                log(f"    [MISSING] {attr_name}: {info['key']}")
+
+        # 3. Build path_check.json
+        path_check = {
+            "job_id": job.id,
+            "path_validation": path_result,
+            "storage_objects": {k: v for k, v in obj_result["objects"].items() if v["key"] is not None},
+            "all_storage_keys": {
+                at: get_storage_key(job.id, at)
+                for at in ["index_html", "standalone_html", "zip", "logs", "quality_report",
+                            "deck_plan", "packed_context", "generation_prompt", "input_cleaned"]
+            },
+        }
+        _save_json(job_dir / "path_check.json", path_check)
+
+        # 4. Upload path_check.json to storage
+        try:
+            key = get_storage_key(job.id, "path_check")
+            storage.upload_file(job_dir / "path_check.json", key)
+            job.path_check_key = key
+        except Exception as e:
+            log(f"    [WARN] Could not upload path_check.json: {e}")
+
+        # 5. Write path check results to DB
+        job.path_check_status = path_result["status"]
+        job.path_check_errors_count = len(path_result["errors"])
+        job.path_check_warnings_count = len(path_result["warnings"])
+        db.commit()
+
+        log(f"  → Status: {path_result['status']}, "
+            f"Errors: {len(path_result['errors'])}, "
+            f"Warnings: {len(path_result['warnings'])}\n")
+
+    except Exception as e:
+        log(f"  [WARN] Path check failed with exception: {e}\n")
+        try:
+            job.path_check_status = "fail"
+            job.path_check_errors_count = 1
+            db.commit()
+        except Exception:
+            pass
+
+
 def _save_json(path: Path, data):
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -368,7 +440,7 @@ def _fail_job(db, job: Job | None, error_message: str, logs_path: Path | None, j
         if settings.storage_provider == "s3":
             try:
                 storage = get_storage_client()
-                key = f"jobs/{job.id}/logs.txt"
+                key = get_storage_key(job.id, "logs")
                 storage.upload_file(logs_path, key)
                 job.logs_key = key
             except Exception:

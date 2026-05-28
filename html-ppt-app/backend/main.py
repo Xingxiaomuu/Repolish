@@ -19,22 +19,49 @@ import bcrypt
 from database import init_db, get_db
 from models import (
     GenerateRequest, JobResponse, JobListResponse, CreateJobResponse, Job,
-    User, UsageRecord, SystemSetting, InviteCode,
+    User, UsageRecord, SystemSetting, InviteCode, Feedback,
     RegisterRequest, LoginRequest, LoginResponse, UserResponse,
     MyJobItem, MyUsageResponse,
     AdminSummaryResponse, AdminJobItem, AdminJobListResponse, AdminJobDetail,
     AdminUserItem, AdminUserListResponse, AdminStatsResponse,
     SettingUpdate, SettingItem, UpdateUserRequest,
     CreateInviteCodeRequest, InviteCodeItem, InviteCodeListResponse,
+    FeedbackRequest, FeedbackResponse,
 )
 from services import file_manager
 from services.admin_auth import verify_admin_password
+from services.path_contract import (
+    get_storage_key, artifact_filename, filename_to_artifact_type,
+    ArtifactType, ALL_ARTIFACT_TYPES,
+)
 from settings import settings
 
 BASE_DIR = Path(__file__).resolve().parent
 OUTPUTS_DIR = BASE_DIR / "outputs"
 
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+def _sanitize_filename(name: str, max_len: int = 60) -> str:
+    """Sanitize a string for use as a download filename."""
+    import unicodedata
+    # Keep only alphanumeric, Chinese chars, spaces, and basic punctuation
+    cleaned = "".join(c for c in name if c.isalnum() or c.isspace() or c in "_-+()（）")
+    # Normalize unicode
+    cleaned = unicodedata.normalize("NFKC", cleaned)
+    # Collapse whitespace
+    cleaned = " ".join(cleaned.split())
+    if len(cleaned) > max_len:
+        cleaned = cleaned[:max_len].rsplit(" ", 1)[0]
+    return cleaned.strip() or "report"
+
+
+def _job_download_name(job: Job, suffix: str = ".html") -> str:
+    """Generate a download filename from job topic."""
+    topic = (job.topic or "").strip()
+    if topic:
+        return _sanitize_filename(topic) + suffix
+    return f"report-{job.id[:8]}{suffix}"
+
 
 def _can_access_job(current_user: User, job: Job) -> bool:
     """User can access a job if they own it or are admin."""
@@ -629,6 +656,33 @@ def admin_summary(db: Session = Depends(get_db), _=Depends(verify_admin_password
 
     success_rate = round(success / total, 4) if total > 0 else 0.0
 
+    # Phase 5H: Path check stats
+    path_check_failed = db.query(func.count(Job.id)).filter(
+        Job.path_check_status == "fail"
+    ).scalar() or 0
+    missing_storage = db.query(func.count(Job.id)).filter(
+        Job.status == "success",
+        Job.index_html_key.is_(None),
+        Job.index_html_path.is_(None),
+    ).scalar() or 0
+
+    # Phase 5E: Feedback stats
+    fb_total = db.query(func.count(Feedback.id)).scalar() or 0
+    avg_rating = 0.0
+    avg_accuracy = 0.0
+    avg_visual = 0.0
+    avg_useful = 0.0
+    wua_rate = 0.0
+    low_rating = 0
+    if fb_total > 0:
+        avg_rating = round((db.query(func.avg(Feedback.rating)).scalar() or 0.0), 1)
+        avg_accuracy = round((db.query(func.avg(Feedback.content_accuracy)).scalar() or 0.0), 1)
+        avg_visual = round((db.query(func.avg(Feedback.visual_quality)).scalar() or 0.0), 1)
+        avg_useful = round((db.query(func.avg(Feedback.usefulness)).scalar() or 0.0), 1)
+        would_again = db.query(func.count(Feedback.id)).filter(Feedback.would_use_again == 1).scalar() or 0
+        wua_rate = round(would_again / fb_total, 2) if fb_total > 0 else 0.0
+        low_rating = db.query(func.count(Feedback.id)).filter(Feedback.rating <= 2).scalar() or 0
+
     return {
         "total_jobs": total,
         "success_jobs": success,
@@ -641,6 +695,15 @@ def admin_summary(db: Session = Depends(get_db), _=Depends(verify_admin_password
         "estimated_output_tokens": total_out or 0,
         "average_generation_seconds": round(avg_sec, 1),
         "success_rate": success_rate,
+        "path_check_failed_jobs": path_check_failed,
+        "missing_storage_object_jobs": missing_storage,
+        "average_rating": avg_rating,
+        "average_content_accuracy": avg_accuracy,
+        "average_visual_quality": avg_visual,
+        "average_usefulness": avg_useful,
+        "would_use_again_rate": wua_rate,
+        "feedback_count": fb_total,
+        "low_rating_jobs": low_rating,
     }
 
 
@@ -790,6 +853,29 @@ def admin_job_detail(job_id: str, db: Session = Depends(get_db), _=Depends(verif
         "input_cleaned_key": j.input_cleaned_key,
         "generation_prompt_key": j.generation_prompt_key,
     })
+
+    # Path check (Phase 5H)
+    detail.update({
+        "path_check_status": j.path_check_status,
+        "path_check_errors_count": j.path_check_errors_count or 0,
+        "path_check_warnings_count": j.path_check_warnings_count or 0,
+        "path_check_key": j.path_check_key,
+    })
+
+    # Feedback (Phase 5E)
+    fb = db.query(Feedback).filter(Feedback.job_id == j.id).first()
+    if fb:
+        detail["feedback"] = {
+            "id": fb.id,
+            "rating": fb.rating,
+            "content_accuracy": fb.content_accuracy,
+            "visual_quality": fb.visual_quality,
+            "usefulness": fb.usefulness,
+            "would_use_again": bool(fb.would_use_again),
+            "most_needed_feature": fb.most_needed_feature,
+            "comment": fb.comment,
+            "created_at": fb.created_at.isoformat() if fb.created_at else None,
+        }
 
     return detail
 
@@ -1139,6 +1225,10 @@ def list_artifacts(
         key_attr = _artifact_key_attr(name)
         if is_s3:
             key = getattr(job, key_attr, None)
+            # Fallback to canonical key from path_contract
+            if not key:
+                at = filename_to_artifact_type(name)
+                key = get_storage_key(job_id, at) if at else None
             if key:
                 available.append({
                     "filename": name,
@@ -1158,16 +1248,23 @@ def list_artifacts(
 
 
 def _artifact_key_attr(filename: str) -> str:
-    """Map artifact filename to Job storage key attribute."""
+    """Map artifact filename to Job storage key attribute (from path_contract)."""
+    at = filename_to_artifact_type(filename)
+    if at is None:
+        return ""
     mapping = {
-        "input_cleaned.json": "input_cleaned_key",
-        "deck_plan.json": "deck_plan_key",
-        "packed_context.json": "packed_context_key",
-        "generation_prompt.txt": "generation_prompt_key",
-        "quality_report.json": "quality_report_key",
-        "prompt.txt": "generation_prompt_key",
+        "index_html": "index_html_key",
+        "standalone_html": "standalone_html_key",
+        "zip": "zip_key",
+        "logs": "logs_key",
+        "quality_report": "quality_report_key",
+        "deck_plan": "deck_plan_key",
+        "packed_context": "packed_context_key",
+        "generation_prompt": "generation_prompt_key",
+        "input_cleaned": "input_cleaned_key",
+        "prompt": "generation_prompt_key",
     }
-    return mapping.get(filename, "")
+    return mapping.get(at, "")
 
 
 @app.get("/api/jobs/{job_id}/artifacts/{filename:path}")
@@ -1194,7 +1291,8 @@ def get_artifact(
     if is_s3:
         from services.storage import get_storage_client
         storage = get_storage_client()
-        key = f"jobs/{job_id}/{filename}"
+        at = filename_to_artifact_type(filename)
+        key = get_storage_key(job_id, at) if at else f"jobs/{job_id}/{filename}"
         if not storage.object_exists(key):
             raise HTTPException(status_code=404, detail="Artifact not found")
         url = storage.generate_presigned_url(key)
@@ -1206,6 +1304,95 @@ def get_artifact(
 
     media_type = "application/json" if filename.endswith(".json") else "text/plain"
     return FileResponse(path=str(file_path), filename=filename, media_type=media_type)
+
+
+# ── Feedback (Phase 5E) ──────────────────────────────────────────────
+
+@app.post("/api/jobs/{job_id}/feedback", response_model=FeedbackResponse)
+def submit_feedback(
+    job_id: str,
+    req: FeedbackRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Submit or update feedback for a completed job. Only the job owner can submit."""
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if job.status != "success" and job.status != "failed":
+        raise HTTPException(status_code=400, detail="Feedback can only be submitted for completed jobs.")
+    if job.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You can only submit feedback for your own jobs.")
+
+    fb = db.query(Feedback).filter(Feedback.job_id == job_id).first()
+    if fb:
+        fb.rating = req.rating
+        fb.content_accuracy = req.content_accuracy
+        fb.visual_quality = req.visual_quality
+        fb.usefulness = req.usefulness
+        fb.would_use_again = 1 if req.would_use_again else 0
+        fb.most_needed_feature = req.most_needed_feature
+        fb.comment = req.comment
+    else:
+        fb = Feedback(
+            job_id=job_id,
+            user_id=current_user.id,
+            rating=req.rating,
+            content_accuracy=req.content_accuracy,
+            visual_quality=req.visual_quality,
+            usefulness=req.usefulness,
+            would_use_again=1 if req.would_use_again else 0,
+            most_needed_feature=req.most_needed_feature,
+            comment=req.comment,
+        )
+        db.add(fb)
+
+    db.commit()
+    db.refresh(fb)
+
+    return FeedbackResponse(
+        id=fb.id,
+        job_id=fb.job_id,
+        rating=fb.rating,
+        content_accuracy=fb.content_accuracy,
+        visual_quality=fb.visual_quality,
+        usefulness=fb.usefulness,
+        would_use_again=bool(fb.would_use_again),
+        most_needed_feature=fb.most_needed_feature,
+        comment=fb.comment,
+        created_at=fb.created_at.isoformat() if fb.created_at else None,
+    )
+
+
+@app.get("/api/jobs/{job_id}/feedback", response_model=FeedbackResponse)
+def get_feedback(
+    job_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Get the feedback for a job the current user owns."""
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if not _can_access_job(current_user, job):
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    fb = db.query(Feedback).filter(Feedback.job_id == job_id).first()
+    if not fb:
+        raise HTTPException(status_code=404, detail="No feedback for this job")
+
+    return FeedbackResponse(
+        id=fb.id,
+        job_id=fb.job_id,
+        rating=fb.rating,
+        content_accuracy=fb.content_accuracy,
+        visual_quality=fb.visual_quality,
+        usefulness=fb.usefulness,
+        would_use_again=bool(fb.would_use_again),
+        most_needed_feature=fb.most_needed_feature,
+        comment=fb.comment,
+        created_at=fb.created_at.isoformat() if fb.created_at else None,
+    )
 
 
 # ── Download endpoints (Phase 5B: auth via download_token or JWT) ─────
@@ -1231,7 +1418,8 @@ def download_html(
     opt_user: User | None = Depends(_get_optional_user),
 ):
     job = _auth_download(job_id, token, opt_user, db)
-    return _download_or_redirect(job, "index_html_key", "index.html", "text/html")
+    return _download_or_redirect(job, "index_html_key", "index.html", "text/html",
+                                  download_filename=_job_download_name(job, "-standard.html"))
 
 
 @app.get("/api/download/{job_id}/standalone")
@@ -1242,7 +1430,8 @@ def download_standalone(
     opt_user: User | None = Depends(_get_optional_user),
 ):
     job = _auth_download(job_id, token, opt_user, db)
-    return _download_or_redirect(job, "standalone_html_key", "standalone.html", "text/html")
+    return _download_or_redirect(job, "standalone_html_key", "standalone.html", "text/html",
+                                  download_filename=_job_download_name(job, ".html"))
 
 
 @app.get("/api/download/{job_id}/zip")
@@ -1253,18 +1442,27 @@ def download_zip(
     opt_user: User | None = Depends(_get_optional_user),
 ):
     job = _auth_download(job_id, token, opt_user, db)
-    return _download_or_redirect(job, "zip_key", f"{job_id}.zip", "application/zip")
+    return _download_or_redirect(job, "zip_key", f"{job_id}.zip", "application/zip",
+                                  download_filename=_job_download_name(job, ".zip"))
 
 
-def _download_or_redirect(job: Job, key_attr: str, filename: str, media_type: str, download: bool = True):
-    """Return a download response — presigned URL redirect for S3, FileResponse for local."""
+def _download_or_redirect(job: Job, key_attr: str, filename: str, media_type: str,
+                          download: bool = True, download_filename: str | None = None):
+    """Return a download response — presigned URL redirect for S3, FileResponse for local.
+
+    All storage keys come from path_contract. Fallback key uses get_storage_key().
+    """
     if settings.storage_provider == "s3":
         from services.storage import get_storage_client
         storage = get_storage_client()
-        key = getattr(job, key_attr, None) or f"jobs/{job.id}/{filename}"
+        key = getattr(job, key_attr, None)
+        if not key:
+            # Fallback: compute canonical key from path_contract
+            at = filename_to_artifact_type(filename)
+            key = get_storage_key(job.id, at) if at else f"jobs/{job.id}/{filename}"
         if not storage.object_exists(key):
             raise HTTPException(status_code=404, detail="File not available")
-        dl_name = filename if download else None
+        dl_name = download_filename or (filename if download else None)
         url = storage.generate_presigned_url(key, download_filename=dl_name)
         return RedirectResponse(url=url, status_code=302)
 
@@ -1272,7 +1470,9 @@ def _download_or_redirect(job: Job, key_attr: str, filename: str, media_type: st
     from services import file_manager
     local_path = file_manager.get_job_dir(job.id) / filename
     if local_path.is_file():
-        kw = {"filename": filename} if download else {}
+        kw: dict = {}
+        if download:
+            kw["filename"] = download_filename or filename
         return FileResponse(path=str(local_path), media_type=media_type, **kw)
     raise HTTPException(status_code=404, detail="File not found")
 
@@ -1292,15 +1492,17 @@ def preview_job(
 
     if type == "standalone":
         key_attr = "standalone_html_key"
-        filename = "standalone.html"
+        artifact_type: ArtifactType = "standalone_html"
     else:
         key_attr = "index_html_key"
-        filename = "index.html"
+        artifact_type = "index_html"
+
+    filename = artifact_filename(artifact_type)
 
     if settings.storage_provider == "s3":
         from services.storage import get_storage_client
         storage = get_storage_client()
-        key = getattr(job, key_attr, None) or f"jobs/{job_id}/{filename}"
+        key = getattr(job, key_attr, None) or get_storage_key(job_id, artifact_type)
         if not storage.object_exists(key):
             raise HTTPException(status_code=404, detail="Preview not available")
         url = storage.generate_presigned_url(key)
@@ -1337,6 +1539,143 @@ def admin_download_logs(
             return FileResponse(path=str(logs_path), filename="logs.txt", media_type="text/plain")
 
     raise HTTPException(status_code=404, detail="Logs not available")
+
+
+# ── Admin path check endpoint (Phase 5H) ──────────────────────────────
+
+@app.get("/api/admin/jobs/{job_id}/path-check")
+def admin_view_path_check(
+    job_id: str,
+    db: Session = Depends(get_db),
+    _=Depends(verify_admin_password),
+):
+    """Admin: view path_check.json for a job."""
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    if settings.storage_provider == "s3" and job.path_check_key:
+        from services.storage import get_storage_client
+        storage = get_storage_client()
+        url = storage.generate_presigned_url(job.path_check_key)
+        return RedirectResponse(url=url, status_code=302)
+
+    # Local mode: look for path_check.json in job dir
+    if job.output_dir:
+        pc_path = Path(job.output_dir) / "path_check.json"
+        if pc_path.is_file():
+            return FileResponse(path=str(pc_path), filename="path_check.json",
+                                media_type="application/json")
+
+    raise HTTPException(status_code=404, detail="Path check not available")
+
+
+# ── CSV Export (Phase 5E) ────────────────────────────────────────────
+
+import csv
+import io
+from fastapi.responses import StreamingResponse
+
+
+def _auth_export(admin_password_q: str | None = Query(None),
+                 x_admin_password: str | None = Header(None)) -> None:
+    """Auth for CSV export — accepts header or query param (<a> tag support)."""
+    if not settings.admin_password:
+        return
+    if x_admin_password == settings.admin_password:
+        return
+    if admin_password_q == settings.admin_password:
+        return
+    raise HTTPException(status_code=401, detail="Invalid admin password")
+
+
+@app.get("/api/admin/export/jobs.csv")
+def admin_export_jobs_csv(db: Session = Depends(get_db), _=Depends(_auth_export)):
+    """Export all jobs as CSV."""
+    rows = db.query(Job, User).outerjoin(User, Job.user_id == User.id).order_by(Job.created_at.desc()).all()
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["job_id", "status", "user_name", "user_email", "topic", "language", "style",
+                      "slide_count", "content_chars", "quality_status", "quality_score",
+                      "estimated_input_tokens", "estimated_output_tokens",
+                      "created_at", "started_at", "finished_at", "error_message"])
+    for j, u in rows:
+        writer.writerow([
+            j.id, j.status,
+            u.name if u else "", u.email if u else "",
+            j.topic, j.language, j.style,
+            j.slide_count, j.content_chars,
+            j.quality_status, j.quality_score,
+            j.estimated_input_tokens, j.estimated_output_tokens,
+            j.created_at.isoformat() if j.created_at else "",
+            j.started_at.isoformat() if j.started_at else "",
+            j.finished_at.isoformat() if j.finished_at else "",
+            (j.error_message or "")[:500],
+        ])
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=jobs.csv"},
+    )
+
+
+@app.get("/api/admin/export/users.csv")
+def admin_export_users_csv(db: Session = Depends(get_db), _=Depends(_auth_export)):
+    """Export all users with usage stats as CSV."""
+    now = datetime.now(timezone.utc)
+    month_key = now.strftime("%Y-%m")
+    users = db.query(User).order_by(User.created_at.desc()).all()
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["user_id", "name", "email", "is_admin", "can_generate",
+                      "total_jobs", "success_jobs", "failed_jobs",
+                      "this_month_generations", "created_at", "last_login_at"])
+    for u in users:
+        total_jobs = db.query(func.count(Job.id)).filter(Job.user_id == u.id).scalar() or 0
+        success = db.query(func.count(Job.id)).filter(Job.user_id == u.id, Job.status == "success").scalar() or 0
+        failed = db.query(func.count(Job.id)).filter(Job.user_id == u.id, Job.status == "failed").scalar() or 0
+        usage = db.query(UsageRecord).filter(UsageRecord.user_id == u.id, UsageRecord.month == month_key).first()
+        this_month = usage.generation_count if usage else 0
+        writer.writerow([
+            u.id, u.name, u.email,
+            1 if u.is_admin else 0, 1 if u.can_generate else 0,
+            total_jobs, success, failed, this_month,
+            u.created_at.isoformat() if u.created_at else "",
+            u.last_login_at.isoformat() if u.last_login_at else "",
+        ])
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=users.csv"},
+    )
+
+
+@app.get("/api/admin/export/feedback.csv")
+def admin_export_feedback_csv(db: Session = Depends(get_db), _=Depends(_auth_export)):
+    """Export all feedback as CSV."""
+    rows = db.query(Feedback, User, Job).join(User, Feedback.user_id == User.id) \
+        .join(Job, Feedback.job_id == Job.id).order_by(Feedback.created_at.desc()).all()
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["feedback_id", "job_id", "user_name", "user_email", "topic",
+                      "rating", "content_accuracy", "visual_quality", "usefulness",
+                      "would_use_again", "most_needed_feature", "comment", "created_at"])
+    for fb, u, j in rows:
+        writer.writerow([
+            fb.id, fb.job_id, u.name, u.email, j.topic,
+            fb.rating, fb.content_accuracy, fb.visual_quality, fb.usefulness,
+            1 if fb.would_use_again else 0,
+            fb.most_needed_feature or "", (fb.comment or "")[:500],
+            fb.created_at.isoformat() if fb.created_at else "",
+        ])
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=feedback.csv"},
+    )
 
 
 # ── Static file serving (outputs & examples) — must be last ────────────
