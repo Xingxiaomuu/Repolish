@@ -1060,6 +1060,32 @@ def admin_delete_invite_code(
     return {"message": "Invite code deleted"}
 
 
+@app.post("/api/admin/reset-database")
+def admin_reset_database(
+    confirm: str = Query(None),
+    db: Session = Depends(get_db),
+    _=Depends(verify_admin_password),
+):
+    """Reset all data — wipe users, jobs, usage_records, invite_codes, system_settings.
+    Requires ?confirm=yes to prevent accidental invocation."""
+    if confirm != "yes":
+        raise HTTPException(status_code=400, detail="Add ?confirm=yes to confirm database reset. This is irreversible.")
+
+    tables = ["usage_records", "jobs", "invite_codes", "system_settings", "users"]
+    deleted = {}
+    for table in tables:
+        result = db.execute(text(f"DELETE FROM {table}"))
+        deleted[table] = result.rowcount
+
+    db.commit()
+
+    # Re-seed admin user
+    from database import _seed_admin_user
+    _seed_admin_user()
+
+    return {"message": "Database reset complete", "deleted": deleted}
+
+
 def _compute_queue_position(job_id: str) -> int | None:
     """Get a queued job's current position in the Redis queue (1-indexed).
     Matches by the job_id argument passed to generate_deck, not RQ's internal UUID."""
