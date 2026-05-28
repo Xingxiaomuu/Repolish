@@ -173,8 +173,8 @@ def _seed_admin_user():
         admin_email = "dchen022@e.ntu.edu.sg"
         user = db.query(User).filter(User.email == admin_email).first()
         if user and (not user.is_admin or not user.can_generate):
-            user.is_admin = True
-            user.can_generate = True
+            user.is_admin = 1
+            user.can_generate = 1
             db.commit()
     finally:
         db.close()

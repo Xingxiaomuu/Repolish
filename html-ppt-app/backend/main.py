@@ -905,9 +905,9 @@ def admin_update_user(
         raise HTTPException(status_code=404, detail="User not found")
 
     if req.is_admin is not None:
-        user.is_admin = req.is_admin
+        user.is_admin = 1 if req.is_admin else 0
     if req.can_generate is not None:
-        user.can_generate = req.can_generate
+        user.can_generate = 1 if req.can_generate else 0
 
     db.commit()
     return {
