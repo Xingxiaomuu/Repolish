@@ -159,6 +159,11 @@ def _migrate():
         import models  # noqa: F811
         Base.metadata.create_all(bind=engine, tables=[models.UsageRecord.__table__])
 
+    # ── invite_codes table (Phase 5D) ───────────────────────────────────
+    if not inspector.has_table("invite_codes"):
+        import models  # noqa: F811
+        Base.metadata.create_all(bind=engine, tables=[models.InviteCode.__table__])
+
 
 def _seed_admin_user():
     """Ensure dchen022@e.ntu.edu.sg is an admin with unlimited generations."""

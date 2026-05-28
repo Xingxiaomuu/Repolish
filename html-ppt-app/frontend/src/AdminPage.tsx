@@ -3,8 +3,10 @@ import {
   adminGetSummary, adminListJobs, adminGetJobDetail, adminGetQueue,
   adminGetSettings, adminSetSetting, adminGetUsers, adminGetStats,
   adminUpdateUser, authDownloadUrl,
+  adminListInviteCodes, adminCreateInviteCode, adminUpdateInviteCode, adminDeleteInviteCode,
   type AdminSummary, type AdminJobItem, type AdminJobDetail,
   type AdminQueue, type SettingItem, type AdminUserItem, type AdminStats,
+  type InviteCodeItem,
 } from './api';
 
 const STATUS_OPTIONS = ['', 'queued', 'running', 'success', 'failed'];
@@ -36,6 +38,13 @@ export default function AdminPage() {
   // Settings
   const [workerCountInput, setWorkerCountInput] = useState('');
   const [settingsSaving, setSettingsSaving] = useState(false);
+
+  // Invite codes (Phase 5D)
+  const [inviteCodes, setInviteCodes] = useState<InviteCodeItem[]>([]);
+  const [newCode, setNewCode] = useState('');
+  const [newCodeLimit, setNewCodeLimit] = useState(10);
+  const [newCodeNotes, setNewCodeNotes] = useState('');
+  const [inviteMsg, setInviteMsg] = useState('');
 
   // Loading
   const [loading, setLoading] = useState(false);
@@ -76,6 +85,14 @@ export default function AdminPage() {
       setAllSettings(st);
       setUsers(us.users);
       setStats(xs);
+
+      // Invite codes (Phase 5D) — fetch separately so failure doesn't break the entire page
+      try {
+        const ic = await adminListInviteCodes(password);
+        setInviteCodes(ic.invite_codes);
+      } catch {
+        setInviteCodes([]);  // silently degrade if endpoint not yet available
+      }
 
       // Load worker count from settings
       const wc = st.find((s: SettingItem) => s.key === 'desired_worker_count');
@@ -150,6 +167,45 @@ export default function AdminPage() {
       setUsers(prev => prev.map(u =>
         u.user_id === userId ? { ...u, can_generate: res.can_generate } : u
       ));
+    } catch (err: any) {
+      alert('Failed: ' + (err.message || 'Unknown error'));
+    }
+  };
+
+  // ── Invite code actions (Phase 5D) ────────────────────────────────────
+
+  const createInviteCode = async () => {
+    if (!password || !newCode.trim()) return;
+    setInviteMsg('');
+    try {
+      await adminCreateInviteCode(newCode.trim(), newCodeLimit, newCodeNotes, password);
+      setNewCode('');
+      setNewCodeNotes('');
+      setInviteMsg('Invite code created!');
+      const ic = await adminListInviteCodes(password);
+      setInviteCodes(ic.invite_codes);
+    } catch (err: any) {
+      setInviteMsg('Error: ' + (err.message || 'Unknown error'));
+    }
+  };
+
+  const toggleInviteActive = async (id: string, current: boolean) => {
+    if (!password) return;
+    try {
+      await adminUpdateInviteCode(id, { is_active: !current }, password);
+      setInviteCodes(prev => prev.map(ic =>
+        ic.id === id ? { ...ic, is_active: !current } : ic
+      ));
+    } catch (err: any) {
+      alert('Failed: ' + (err.message || 'Unknown error'));
+    }
+  };
+
+  const deleteInviteCode = async (id: string) => {
+    if (!password || !confirm('Delete this invite code?')) return;
+    try {
+      await adminDeleteInviteCode(id, password);
+      setInviteCodes(prev => prev.filter(ic => ic.id !== id));
     } catch (err: any) {
       alert('Failed: ' + (err.message || 'Unknown error'));
     }
@@ -346,6 +402,109 @@ export default function AdminPage() {
           </button>
           <span style={{ fontSize: '0.75rem', color: '#888' }}>(requires supervisor restart)</span>
         </div>
+      </div>
+
+      {/* Invite Code Management (Phase 5D) */}
+      <div className="admin-section">
+        <h3>Invite Codes ({inviteCodes.length})</h3>
+
+        {/* Create new */}
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+          <input
+            type="text"
+            value={newCode}
+            onChange={e => setNewCode(e.target.value)}
+            placeholder="New code (min 4 chars)"
+            style={{ width: 180 }}
+          />
+          <input
+            type="number"
+            min={1} max={999}
+            value={newCodeLimit}
+            onChange={e => setNewCodeLimit(Number(e.target.value))}
+            style={{ width: 70 }}
+            title="Monthly generation limit"
+          />
+          <input
+            type="text"
+            value={newCodeNotes}
+            onChange={e => setNewCodeNotes(e.target.value)}
+            placeholder="Notes (optional)"
+            style={{ width: 160 }}
+          />
+          <button onClick={createInviteCode} className="preset-btn active" style={{ borderRadius: 8 }}>
+            Create
+          </button>
+          {inviteMsg && <span style={{ fontSize: '0.8rem', color: inviteMsg.includes('Error') ? '#ef4444' : '#22c55e' }}>{inviteMsg}</span>}
+        </div>
+
+        {/* Code list */}
+        {inviteCodes.length > 0 && (
+          <div style={{ overflowX: 'auto' }}>
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Monthly Limit</th>
+                  <th>Active</th>
+                  <th>Bound User</th>
+                  <th>Created</th>
+                  <th>Bound At</th>
+                  <th>Notes</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {inviteCodes.map(ic => (
+                  <tr key={ic.id}>
+                    <td className="mono">{ic.code}</td>
+                    <td className="num">{ic.monthly_limit}</td>
+                    <td>
+                      <button
+                        className="preset-btn"
+                        style={{
+                          fontSize: '0.72rem', padding: '0.2rem 0.5rem',
+                          background: ic.is_active ? '#22c55e' : '#e2e8f0',
+                          color: ic.is_active ? '#fff' : '#64748b',
+                          borderColor: ic.is_active ? '#22c55e' : '#e2e8f0',
+                          borderRadius: 4,
+                        }}
+                        onClick={() => toggleInviteActive(ic.id, ic.is_active)}
+                      >
+                        {ic.is_active ? 'Yes' : 'No'}
+                      </button>
+                    </td>
+                    <td>
+                      {ic.bound_user_id ? (
+                        <span title={ic.bound_user_email || ''}>{ic.bound_user_name || ic.bound_user_id.slice(-8)}</span>
+                      ) : (
+                        <span style={{ color: '#888' }}>Unbound</span>
+                      )}
+                    </td>
+                    <td>{ic.created_at ? new Date(ic.created_at).toLocaleDateString() : '-'}</td>
+                    <td>{ic.bound_at ? new Date(ic.bound_at).toLocaleDateString() : '-'}</td>
+                    <td className="ellipsis" style={{ maxWidth: 120 }}>{ic.notes || '-'}</td>
+                    <td>
+                      <button
+                        className="preset-btn"
+                        style={{
+                          fontSize: '0.72rem', padding: '0.2rem 0.5rem',
+                          color: '#ef4444', borderColor: '#ef4444',
+                          background: 'transparent',
+                        }}
+                        onClick={() => deleteInviteCode(ic.id)}
+                        disabled={!!ic.bound_user_id}
+                        title={ic.bound_user_id ? 'Cannot delete bound code' : 'Delete'}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Job Table */}

@@ -63,11 +63,11 @@ export interface LoginResponse {
   user: UserInfo;
 }
 
-export async function authRegister(name: string, email: string, password: string): Promise<void> {
+export async function authRegister(name: string, email: string, password: string, inviteCode?: string): Promise<void> {
   const res = await fetch(apiUrl('/api/auth/register'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, email, password }),
+    body: JSON.stringify({ name, email, password, invite_code: inviteCode || undefined }),
   });
   if (!res.ok) {
     const detail = await res.json().catch(() => ({ detail: res.statusText }));
@@ -415,6 +415,58 @@ export async function adminUpdateUser(
 
 export async function adminGetStats(password: string): Promise<AdminStats> {
   return adminFetch('/api/admin/stats', password);
+}
+
+
+// ── Admin invite codes (Phase 5D) ────────────────────────────────────
+
+export interface InviteCodeItem {
+  id: string;
+  code: string;
+  created_by?: string;
+  bound_user_id?: string;
+  bound_user_name?: string;
+  bound_user_email?: string;
+  monthly_limit: number;
+  is_active: boolean;
+  created_at?: string;
+  bound_at?: string;
+  notes?: string;
+}
+
+export async function adminListInviteCodes(password: string): Promise<{ invite_codes: InviteCodeItem[]; total: number }> {
+  return adminFetch('/api/admin/invite-codes', password);
+}
+
+export async function adminCreateInviteCode(
+  code: string,
+  monthlyLimit: number,
+  notes: string,
+  password: string,
+): Promise<any> {
+  return adminFetch('/api/admin/invite-codes', password, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code, monthly_limit: monthlyLimit, notes }),
+  });
+}
+
+export async function adminUpdateInviteCode(
+  inviteId: string,
+  body: { is_active?: boolean; monthly_limit?: number; notes?: string },
+  password: string,
+): Promise<any> {
+  return adminFetch(`/api/admin/invite-codes/${inviteId}`, password, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+}
+
+export async function adminDeleteInviteCode(inviteId: string, password: string): Promise<void> {
+  return adminFetch(`/api/admin/invite-codes/${inviteId}`, password, {
+    method: 'DELETE',
+  });
 }
 
 // ── My Jobs / My Usage (Phase 4G) ────────────────────────────────────

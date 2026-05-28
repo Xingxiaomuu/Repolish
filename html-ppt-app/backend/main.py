@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 import redis
-from fastapi import FastAPI, HTTPException, Depends, Query, Header
+from fastapi import FastAPI, HTTPException, Depends, Query, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, RedirectResponse
@@ -19,12 +19,13 @@ import bcrypt
 from database import init_db, get_db
 from models import (
     GenerateRequest, JobResponse, JobListResponse, CreateJobResponse, Job,
-    User, UsageRecord, SystemSetting,
+    User, UsageRecord, SystemSetting, InviteCode,
     RegisterRequest, LoginRequest, LoginResponse, UserResponse,
     MyJobItem, MyUsageResponse,
     AdminSummaryResponse, AdminJobItem, AdminJobListResponse, AdminJobDetail,
     AdminUserItem, AdminUserListResponse, AdminStatsResponse,
     SettingUpdate, SettingItem, UpdateUserRequest,
+    CreateInviteCodeRequest, InviteCodeItem, InviteCodeListResponse,
 )
 from services import file_manager
 from services.admin_auth import verify_admin_password
@@ -45,6 +46,34 @@ def _lookup_job(job_id: str, db: Session) -> Job:
     if not job or job.status != "success":
         raise HTTPException(status_code=404, detail="Job not found")
     return job
+
+
+# ── Rate limiting (Phase 5D) ──────────────────────────────────────────
+
+def _check_rate_limit(key: str, max_requests: int, window_seconds: int) -> bool:
+    """Redis-based sliding window rate limit. Returns True if under limit."""
+    try:
+        now_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
+        window_start = now_ms - (window_seconds * 1000)
+        pipe = redis_conn.pipeline()
+        pipe.zremrangebyscore(key, 0, window_start)
+        pipe.zcard(key)
+        _, count = pipe.execute()
+        if count < max_requests:
+            redis_conn.zadd(key, {str(now_ms): now_ms})
+            redis_conn.expire(key, window_seconds + 10)
+            return True
+        return False
+    except Exception:
+        return True  # fail open if Redis is down
+
+
+def _get_client_ip(request: Request) -> str:
+    """Best-effort client IP from X-Forwarded-For or direct connection."""
+    forwarded = request.headers.get("X-Forwarded-For", "")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "127.0.0.1"
 
 
 def _extract_token(
@@ -226,7 +255,7 @@ def get_current_user(
 # ── Auth endpoints (Phase 4G) ──────────────────────────────────────────
 
 @app.post("/api/auth/register")
-def auth_register(req: RegisterRequest, db: Session = Depends(get_db)):
+def auth_register(req: RegisterRequest, request: Request, db: Session = Depends(get_db)):
     email = req.email.strip().lower()
     name = req.name.strip()
 
@@ -236,6 +265,33 @@ def auth_register(req: RegisterRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Please provide your name.")
     if len(req.password) < 6:
         raise HTTPException(status_code=400, detail="Password must be at least 6 characters.")
+
+    # Phase 5D: Rate limiting (per IP, hourly)
+    ip = _get_client_ip(request)
+    rl_key = f"ratelimit:register:{ip}"
+    if not _check_rate_limit(rl_key, settings.rate_limit_register_per_hour, 3600):
+        raise HTTPException(status_code=429, detail="Too many registration attempts. Please try again later.")
+
+    # Phase 5D: Invite code validation
+    code = ""
+    invite = None
+    if settings.invite_code_required:
+        code = (req.invite_code or "").strip()
+        if not code:
+            raise HTTPException(status_code=400, detail="An invite code is required to register.")
+
+        # Check universal test invite code first
+        if settings.test_invite_code and code == settings.test_invite_code:
+            pass  # universal code accepted
+        else:
+            invite = db.query(InviteCode).filter(
+                InviteCode.code == code,
+                InviteCode.is_active == 1,
+            ).first()
+            if not invite:
+                raise HTTPException(status_code=400, detail="Invalid or expired invite code.")
+            if invite.bound_user_id:
+                raise HTTPException(status_code=400, detail="This invite code has already been used.")
 
     existing = db.query(User).filter(User.email == email).first()
     if existing:
@@ -254,16 +310,29 @@ def auth_register(req: RegisterRequest, db: Session = Depends(get_db)):
         created_at=datetime.now(timezone.utc),
     )
     db.add(user)
+    db.flush()  # get user.id
+
+    # Phase 5D: Bind invite code to this user
+    if settings.invite_code_required and code and code != settings.test_invite_code:
+        invite.bound_user_id = user.id
+        invite.bound_at = datetime.now(timezone.utc)
+
     db.commit()
 
     return {"message": "Registration successful. Please login."}
 
 
 @app.post("/api/auth/login", response_model=LoginResponse)
-def auth_login(req: LoginRequest, db: Session = Depends(get_db)):
+def auth_login(req: LoginRequest, request: Request, db: Session = Depends(get_db)):
     email = req.email.strip().lower()
     if not email:
         raise HTTPException(status_code=400, detail="Email is required.")
+
+    # Phase 5D: Rate limiting (per IP, per 10 min window)
+    ip = _get_client_ip(request)
+    rl_key = f"ratelimit:login:{ip}"
+    if not _check_rate_limit(rl_key, settings.rate_limit_login_per_10min, 600):
+        raise HTTPException(status_code=429, detail="Too many login attempts. Please try again later.")
 
     user = db.query(User).filter(User.email == email).first()
     if not user:
@@ -319,6 +388,37 @@ def create_job(
     if not req.topic.strip() and not req.content.strip():
         raise HTTPException(status_code=400, detail="Please provide at least a topic or some content.")
 
+    # Phase 5D: Input size limits
+    topic_len = len(req.topic or "")
+    content_len = len(req.content or "")
+    extra_len = len(req.extra_requirements or "")
+
+    if topic_len > settings.max_topic_chars:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Topic is too long ({topic_len} chars). Maximum is {settings.max_topic_chars} characters.",
+        )
+    if content_len > settings.max_report_chars:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Report content is too long ({content_len} chars). Maximum is {settings.max_report_chars} characters.",
+        )
+    if extra_len > settings.max_extra_requirements_chars:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Extra requirements are too long ({extra_len} chars). Maximum is {settings.max_extra_requirements_chars} characters.",
+        )
+
+    # Phase 5D: Rate limiting (per user, hourly) — skipped for admins
+    is_admin = bool(current_user.is_admin)
+    if not is_admin:
+        rl_key = f"ratelimit:create_job:{current_user.id}"
+        if not _check_rate_limit(rl_key, settings.rate_limit_create_job_per_hour, 3600):
+            raise HTTPException(
+                status_code=429,
+                detail=f"You've reached the rate limit ({settings.rate_limit_create_job_per_hour} jobs per hour). Please wait before creating another job.",
+            )
+
     # ── Permission check ───────────────────────────────────────────────
     if not current_user.can_generate:
         raise HTTPException(
@@ -326,11 +426,17 @@ def create_job(
             detail="Your account has been restricted from generating. Please contact the admin.",
         )
 
-    # ── Rate limiting (skipped for admins) ─────────────────────────────
+    # ── Monthly generation limit (Phase 4F + Phase 5D invite code limit) ──
     now = datetime.now(timezone.utc)
     month_key = now.strftime("%Y-%m")
-    limit = settings.free_generations_per_month
-    is_admin = bool(current_user.is_admin)
+
+    # Phase 5D: Check invite code binding for custom monthly limit
+    if not is_admin:
+        invite = db.query(InviteCode).filter(InviteCode.bound_user_id == current_user.id).first()
+        limit = invite.monthly_limit if invite else settings.free_generations_per_month
+    else:
+        limit = 999999
+        invite = None
 
     if not is_admin:
         usage = db.query(UsageRecord).filter(
@@ -465,7 +571,10 @@ def my_usage(
 ):
     now = datetime.now(timezone.utc)
     month_key = now.strftime("%Y-%m")
-    limit = settings.free_generations_per_month
+
+    # Phase 5D: Check invite code for custom monthly limit
+    invite = db.query(InviteCode).filter(InviteCode.bound_user_id == current_user.id).first()
+    limit = invite.monthly_limit if invite else settings.free_generations_per_month
 
     usage = db.query(UsageRecord).filter(
         UsageRecord.user_id == current_user.id,
@@ -749,7 +858,7 @@ def admin_users(db: Session = Depends(get_db), _=Depends(verify_admin_password))
     """List all users with usage stats."""
     now = datetime.now(timezone.utc)
     month_key = now.strftime("%Y-%m")
-    limit = settings.free_generations_per_month
+    default_limit = settings.free_generations_per_month
 
     users = db.query(User).order_by(User.created_at.desc()).all()
     items = []
@@ -763,6 +872,10 @@ def admin_users(db: Session = Depends(get_db), _=Depends(verify_admin_password))
             UsageRecord.user_id == u.id, UsageRecord.month == month_key).first()
         this_month = usage.generation_count if usage else 0
 
+        # Phase 5D: Each user may have a different limit via invite code
+        ic = db.query(InviteCode).filter(InviteCode.bound_user_id == u.id).first()
+        user_limit = ic.monthly_limit if ic else default_limit
+
         items.append(AdminUserItem(
             user_id=u.id,
             name=u.name,
@@ -774,7 +887,7 @@ def admin_users(db: Session = Depends(get_db), _=Depends(verify_admin_password))
             success_jobs=success_jobs,
             failed_jobs=failed_jobs,
             this_month_count=this_month,
-            monthly_limit=limit,
+            monthly_limit=user_limit,
         ))
     return AdminUserListResponse(users=items, total=len(items))
 
@@ -836,6 +949,117 @@ def admin_stats(db: Session = Depends(get_db), _=Depends(verify_admin_password))
     }
 
 
+# ── Admin invite code endpoints (Phase 5D) ─────────────────────────────
+
+@app.get("/api/admin/invite-codes", response_model=InviteCodeListResponse)
+def admin_list_invite_codes(db: Session = Depends(get_db), _=Depends(verify_admin_password)):
+    """List all invite codes with binding status."""
+    rows = db.query(InviteCode).order_by(InviteCode.created_at.desc()).all()
+    items = []
+    for ic in rows:
+        bound_name = None
+        bound_email = None
+        if ic.bound_user_id:
+            u = db.query(User).filter(User.id == ic.bound_user_id).first()
+            if u:
+                bound_name = u.name
+                bound_email = u.email
+        items.append(InviteCodeItem(
+            id=ic.id,
+            code=ic.code,
+            created_by=ic.created_by,
+            bound_user_id=ic.bound_user_id,
+            bound_user_name=bound_name,
+            bound_user_email=bound_email,
+            monthly_limit=ic.monthly_limit,
+            is_active=bool(ic.is_active),
+            created_at=ic.created_at.isoformat() if ic.created_at else None,
+            bound_at=ic.bound_at.isoformat() if ic.bound_at else None,
+            notes=ic.notes,
+        ))
+    return InviteCodeListResponse(invite_codes=items, total=len(items))
+
+
+@app.post("/api/admin/invite-codes")
+def admin_create_invite_code(
+    req: CreateInviteCodeRequest,
+    db: Session = Depends(get_db),
+    _=Depends(verify_admin_password),
+):
+    """Create a new invite code."""
+    code = req.code.strip()
+    if not code or len(code) < 4:
+        raise HTTPException(status_code=400, detail="Invite code must be at least 4 characters.")
+    if len(code) > 64:
+        raise HTTPException(status_code=400, detail="Invite code must be at most 64 characters.")
+
+    existing = db.query(InviteCode).filter(InviteCode.code == code).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="This invite code already exists.")
+
+    ic = InviteCode(
+        code=code,
+        monthly_limit=req.monthly_limit,
+        notes=req.notes,
+    )
+    db.add(ic)
+    db.commit()
+    db.refresh(ic)
+
+    return {
+        "id": ic.id,
+        "code": ic.code,
+        "monthly_limit": ic.monthly_limit,
+        "is_active": bool(ic.is_active),
+        "notes": ic.notes,
+        "created_at": ic.created_at.isoformat() if ic.created_at else None,
+    }
+
+
+@app.put("/api/admin/invite-codes/{invite_id}")
+def admin_update_invite_code(
+    invite_id: str,
+    req: dict,
+    db: Session = Depends(get_db),
+    _=Depends(verify_admin_password),
+):
+    """Update an invite code (monthly_limit, is_active, notes). Cannot change code string."""
+    ic = db.query(InviteCode).filter(InviteCode.id == invite_id).first()
+    if not ic:
+        raise HTTPException(status_code=404, detail="Invite code not found")
+
+    if "is_active" in req:
+        ic.is_active = 1 if req["is_active"] else 0
+    if "monthly_limit" in req:
+        limit_val = int(req["monthly_limit"])
+        if limit_val < 1 or limit_val > 999:
+            raise HTTPException(status_code=400, detail="Monthly limit must be between 1 and 999.")
+        ic.monthly_limit = limit_val
+    if "notes" in req:
+        ic.notes = req["notes"]
+
+    db.commit()
+    return {"id": ic.id, "code": ic.code, "is_active": bool(ic.is_active), "monthly_limit": ic.monthly_limit, "notes": ic.notes}
+
+
+@app.delete("/api/admin/invite-codes/{invite_id}")
+def admin_delete_invite_code(
+    invite_id: str,
+    db: Session = Depends(get_db),
+    _=Depends(verify_admin_password),
+):
+    """Delete an invite code. Cannot delete a bound code."""
+    ic = db.query(InviteCode).filter(InviteCode.id == invite_id).first()
+    if not ic:
+        raise HTTPException(status_code=404, detail="Invite code not found")
+    if ic.bound_user_id:
+        raise HTTPException(status_code=400, detail="Cannot delete an invite code that is already bound to a user.")
+
+    db.delete(ic)
+    db.commit()
+    return {"message": "Invite code deleted"}
+
+
 def _compute_queue_position(job_id: str) -> int | None:
     """Get a queued job's current position in the Redis queue (1-indexed).
     Matches by the job_id argument passed to generate_deck, not RQ's internal UUID."""
@@ -859,6 +1083,14 @@ _PIPELINE_ARTIFACTS = [
     "prompt.txt",
 ]
 
+# Phase 5D: Files that only admins can access (not job owners)
+_SENSITIVE_ARTIFACTS = {
+    "logs.txt",
+    "generation_prompt.txt",
+    "packed_context.json",
+    "deck_plan.json",
+}
+
 
 @app.get("/api/jobs/{job_id}/artifacts")
 def list_artifacts(
@@ -867,13 +1099,17 @@ def list_artifacts(
     token: str | None = Query(None),
     opt_user: User | None = Depends(_get_optional_user),
 ):
-    """List available pipeline artifacts for a job (auth via download_token or JWT)."""
+    """List available pipeline artifacts (auth via download_token or JWT). Sensitive files are admin-only."""
     job = _auth_download(job_id, token, opt_user, db)
+    is_admin = bool(opt_user and opt_user.is_admin) if opt_user else False
 
     available = []
     is_s3 = settings.storage_provider == "s3"
 
-    for name in _PIPELINE_ARTIFACTS:
+    # Phase 5D: Non-admin users cannot see sensitive artifacts
+    visible = _PIPELINE_ARTIFACTS if is_admin else [a for a in _PIPELINE_ARTIFACTS if a not in _SENSITIVE_ARTIFACTS]
+
+    for name in visible:
         key_attr = _artifact_key_attr(name)
         if is_s3:
             key = getattr(job, key_attr, None)
@@ -916,8 +1152,13 @@ def get_artifact(
     token: str | None = Query(None),
     opt_user: User | None = Depends(_get_optional_user),
 ):
-    """Download/view a specific pipeline artifact (auth via download_token or JWT)."""
+    """Download/view a specific pipeline artifact (auth via download_token or JWT). Sensitive files admin-only."""
     job = _auth_download(job_id, token, opt_user, db)
+
+    # Phase 5D: Restrict sensitive files to admin only
+    if filename in _SENSITIVE_ARTIFACTS:
+        if not opt_user or not bool(opt_user.is_admin):
+            raise HTTPException(status_code=403, detail="Access denied. Only admins can view this file.")
 
     allowed = set(_PIPELINE_ARTIFACTS) | {"logs.txt"}
     if filename not in allowed:

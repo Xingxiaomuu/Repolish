@@ -24,6 +24,20 @@ class Settings(BaseSettings):
     # Rate limiting (Phase 4F)
     free_generations_per_month: int = 3
 
+    # Phase 5D: Invite code
+    invite_code_required: bool = False
+    test_invite_code: str = ""  # universal invite code (empty = disabled)
+
+    # Phase 5D: Input size limits
+    max_report_chars: int = 80000
+    max_topic_chars: int = 200
+    max_extra_requirements_chars: int = 2000
+
+    # Phase 5D: Rate limiting (Redis)
+    rate_limit_register_per_hour: int = 10
+    rate_limit_login_per_10min: int = 20
+    rate_limit_create_job_per_hour: int = 5
+
     # Worker (Phase 4B)
     worker_count: int = 2
 

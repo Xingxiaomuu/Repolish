@@ -108,6 +108,22 @@ class SystemSetting(Base):
     value: Optional[str] = Column(String, nullable=True)
 
 
+# ── Invite Code table (Phase 5D) ────────────────────────────────────────
+
+class InviteCode(Base):
+    __tablename__ = "invite_codes"
+
+    id: str = Column(String, primary_key=True, default=lambda: uuid.uuid4().hex[:12])
+    code: str = Column(String, unique=True, nullable=False, index=True)
+    created_by: Optional[str] = Column(String, nullable=True)  # admin user id
+    bound_user_id: Optional[str] = Column(String, ForeignKey("users.id"), nullable=True)
+    monthly_limit: int = Column(Integer, default=10)  # free generations per month for this user
+    is_active: bool = Column(Integer, default=1)
+    created_at: DateTime = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    bound_at: Optional[DateTime] = Column(DateTime, nullable=True)
+    notes: Optional[str] = Column(String, nullable=True)
+
+
 # ── Pydantic API models ───────────────────────────────────────────────
 
 class GenerateRequest(BaseModel):
@@ -200,6 +216,7 @@ class RegisterRequest(BaseModel):
     name: str
     email: str
     password: str  # min 6 chars, hashed before storage
+    invite_code: Optional[str] = None
 
 
 class LoginRequest(BaseModel):
@@ -386,3 +403,30 @@ class AdminStatsResponse(BaseModel):
     total_users: int = 0
     total_usage_this_month: int = 0
     free_limit: int = 0
+
+
+# ── Invite code admin models (Phase 5D) ──────────────────────────────────
+
+class CreateInviteCodeRequest(BaseModel):
+    code: str
+    monthly_limit: int = Field(default=10, ge=1, le=999)
+    notes: Optional[str] = None
+
+
+class InviteCodeItem(BaseModel):
+    id: str
+    code: str
+    created_by: Optional[str] = None
+    bound_user_id: Optional[str] = None
+    bound_user_name: Optional[str] = None
+    bound_user_email: Optional[str] = None
+    monthly_limit: int = 10
+    is_active: bool = True
+    created_at: Optional[str] = None
+    bound_at: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class InviteCodeListResponse(BaseModel):
+    invite_codes: list[InviteCodeItem]
+    total: int

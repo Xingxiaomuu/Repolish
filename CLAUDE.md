@@ -28,6 +28,7 @@ API 表
 | Phase 5A | Railway 公网部署（Dockerfile + 双服务 + Redis + Volume + Smoke Test）✅ |
 | Phase 5B | Railway 分离式部署（PostgreSQL + Redis + S3/R2 对象存储、无共享 Volume）✅ |
 | Phase 5C | 生产 Bug 修复 + 部署踩坑总结（download_token / _bearer / Railway 快照）✅ |
+| Phase 5D | 公网测试安全加固（邀请码注册、输入限制、Redis 限流、下载权限、敏感文件保护）✅ |
 
 ---
 
@@ -50,7 +51,7 @@ Railway: PostgreSQL + S3/R2 = 共享状态 + 对象存储
 
 ```
 Frontend → 用户注册/登录 → JWT token (localStorage)
-  → POST /api/auth/register (name, email, password) → bcrypt hash → SQLite
+  → POST /api/auth/register (name, email, password, invite_code?) → 邀请码验证 (Phase 5D) → bcrypt hash → SQLite
   → POST /api/auth/login → JWT token (7天过期) → 后续请求带 Authorization: Bearer <token>
 
 Frontend (已登录) → POST /api/jobs (topic, content... + Bearer token)
@@ -199,6 +200,10 @@ frontend/
 | GET | /api/download/{job_id}/standalone | (JWT) 下载 standalone.html |
 | GET | /api/download/{job_id}/zip | (JWT) 下载 ZIP 包 |
 | GET | /api/admin/jobs/{job_id}/logs | (Auth) 查看/下载日志 |
+| GET | /api/admin/invite-codes | (Auth) 列出所有邀请码（Phase 5D）|
+| POST | /api/admin/invite-codes | (Auth) 创建邀请码（Phase 5D）|
+| PUT | /api/admin/invite-codes/{id} | (Auth) 编辑邀请码（Phase 5D）|
+| DELETE | /api/admin/invite-codes/{id} | (Auth) 删除邀请码（Phase 5D）|
 
 ## 任务状态
 
@@ -366,6 +371,8 @@ services/storage/storage_client.py  存储抽象层（Local + S3）
 | 4 | `_bearer` NameError | Python 前向引用 + 旧快照 | `_extract_token` + 删服务重建 |
 | 5 | **Railway 代码快照卡死** | Railway 内部快照永不更新，Disconnect/Reconnect 无效 | **删服务重建** |
 | 6 | 相对 URL 下载失败 | API 返回 `/api/download/...` 相对路径 | `public_backend_url` 拼绝对 URL |
+| 7 | Admin 页面全部空白 | `Promise.all` 里新增 `adminListInviteCodes` 失败 → 整个 admin 页不加载 + 错误被静默吃掉 | 新 API 拆出 `Promise.all`，单独 try-catch，失败时降级不阻塞主页面 |
+| 8 | 邀请码不生效 | `INVITE_CODE_REQUIRED` 默认 `false`，忘记在 Railway 设环境变量 | 部署后确认已在 Railway backend 服务设 `INVITE_CODE_REQUIRED=true` |
 
 ### Railway 快照卡死 — 诊断 & 处理
 
@@ -380,6 +387,95 @@ services/storage/storage_client.py  存储抽象层（Local + S3）
 正常：改代码 → `git push` → Railway 自动/手动 Deploy → 生效
 
 快照又卡死：直接删服务重建，5 分钟搞定。不要折腾 Disconnect/Reconnect。
+
+---
+
+## Phase 5D — 公网测试安全加固
+
+### 一、邀请码注册
+
+新增环境变量：
+- `INVITE_CODE_REQUIRED=false` — 设为 `true` 启用在注册时必须填写邀请码
+- `TEST_INVITE_CODE=` — 通用邀请码（留空则禁用），可无限次使用，不绑定用户
+
+新增数据库表 `invite_codes`：
+- `id`, `code` (unique), `created_by`, `bound_user_id` (nullable FK→users.id), `monthly_limit` (default 10), `is_active`, `created_at`, `bound_at`, `notes`
+
+注册流程（`POST /api/auth/register`）：
+- 若 `INVITE_CODE_REQUIRED=true`，则 `invite_code` 字段必填
+- 先检查 `TEST_INVITE_CODE`（通用码直接放行）
+- 再查 DB 中匹配 code：不存在 → 拒绝；已绑定 → 拒绝
+- 注册成功后自动将 invite code 绑定到该用户（`bound_user_id` + `bound_at`）
+- 绑定后用户每月免费次数 = invite code 的 `monthly_limit`（不再用全局 `FREE_GENERATIONS_PER_MONTH`）
+
+### 二、输入大小限制
+
+新增环境变量：
+- `MAX_REPORT_CHARS=80000` — report content 最大字符数
+- `MAX_TOPIC_CHARS=200` — topic 最大字符数
+- `MAX_EXTRA_REQUIREMENTS_CHARS=2000` — extra requirements 最大字符数
+
+创建 job（`POST /api/jobs`）时检查超限返回 400 明确错误。
+
+### 三、Redis 限流
+
+使用 Redis sorted set 实现滑动窗口限流（`_check_rate_limit` 函数）：
+
+| 接口 | Key 模式 | 窗口 | 限制 | Env Var |
+|---|---|---|---|---|
+| Register | `ratelimit:register:{ip}` | 1 小时 | 10 次 | `RATE_LIMIT_REGISTER_PER_HOUR` |
+| Login | `ratelimit:login:{ip}` | 10 分钟 | 20 次 | `RATE_LIMIT_LOGIN_PER_10MIN` |
+| Create Job | `ratelimit:create_job:{user_id}` | 1 小时 | 5 次 | `RATE_LIMIT_CREATE_JOB_PER_HOUR` |
+
+- Admin 用户跳过 create job 限流
+- Redis 故障时 fail open（不限流）
+- 客户端 IP 从 `X-Forwarded-For` header 获取（适配 Railway 代理）
+
+### 四、下载权限强化
+
+所有下载和预览 API（`/api/download/*`, `/api/preview/*`）已通过 `_auth_download()` 验证：
+- 先检查 `download_token` URL 参数
+- 再检查 JWT + job 归属（`_can_access_job`）
+- 两者都无 → 401
+
+**敏感文件保护**：普通用户（含 job 本人）**不可访问**以下文件：
+- `logs.txt`
+- `generation_prompt.txt`
+- `packed_context.json`
+- `deck_plan.json`
+
+仅 Admin（通过 `X-Admin-Password` header）可访问。文件列表定义在 `_SENSITIVE_ARTIFACTS`。
+
+### 五、禁止直接暴露 /outputs
+
+公网阶段（`STORAGE_PROVIDER=s3`）不挂载 `/outputs` 静态目录。所有文件访问走 backend API，经过认证。
+
+`/outputs` 静态挂载仅在 `STORAGE_PROVIDER=local`（本地开发）时启用。
+
+### 六、Admin 邀请码管理
+
+新增 API：
+- `GET /api/admin/invite-codes` — 列出所有邀请码（含绑定用户信息）
+- `POST /api/admin/invite-codes` — 创建邀请码（code, monthly_limit, notes）
+- `PUT /api/admin/invite-codes/{id}` — 编辑邀请码（toggle active, 修改 limit/notes）
+- `DELETE /api/admin/invite-codes/{id}` — 删除邀请码（已绑定的不可删）
+
+Admin 页面新增 "Invite Codes" 管理区域（创建、查看绑定状态、启用/禁用、删除）。
+
+### 关键文件变更
+
+```
+backend/
+  settings.py           新增 8 个 Phase 5D 环境变量
+  models.py             新增 InviteCode ORM + 7 个 Pydantic 模型
+  database.py           新增 invite_codes 表迁移
+  main.py               邀请码验证、输入限制、Redis 限流、敏感文件保护、Admin 邀请码 CRUD
+
+frontend/
+  src/api.ts            新增 authRegister(inviteCode) + 5 个 admin 邀请码函数
+  src/LoginPage.tsx     注册表单新增 Invite Code 输入框
+  src/AdminPage.tsx     新增邀请码管理区域（创建/列表/切换/删除）
+```
 
 ---
 

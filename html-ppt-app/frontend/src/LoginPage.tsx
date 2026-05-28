@@ -11,6 +11,7 @@ export default function LoginPage({ onLogin }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -34,7 +35,7 @@ export default function LoginPage({ onLogin }: Props) {
           setLoading(false);
           return;
         }
-        await authRegister(name, email, password);
+        await authRegister(name, email, password, inviteCode || undefined);
         setSuccess('Registration successful! Please login.');
         setMode('login');
         setPassword('');
@@ -72,6 +73,19 @@ export default function LoginPage({ onLogin }: Props) {
                 onChange={e => setName(e.target.value)}
                 placeholder="Your name"
                 required
+              />
+            </div>
+          )}
+
+          {mode === 'register' && (
+            <div className="field">
+              <label htmlFor="reg-invite">Invite Code</label>
+              <input
+                id="reg-invite"
+                type="text"
+                value={inviteCode}
+                onChange={e => setInviteCode(e.target.value)}
+                placeholder="Enter your invite code"
               />
             </div>
           )}
